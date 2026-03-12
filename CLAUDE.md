@@ -1,0 +1,63 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project
+
+**sp** — маркетплейс скиллов и команд для Claude Code, вдохновлённый [obra/superpowers](https://github.com/obra/superpowers). Распространяется как Claude Code plugin через `.claude-plugin/marketplace.json`.
+
+## Architecture
+
+```
+.claude-plugin/
+  plugin.json          # манифест плагина (name, version, author)
+  marketplace.json     # реестр маркетплейса (name, owner, plugins[])
+skills/                # скиллы — auto-discovered по SKILL.md в поддиректориях
+commands/              # slash-команды — auto-discovered по .md файлам
+docs/                  # справочная документация по plugin system
+_skills/               # черновики — НЕ часть плагина, не трогать
+```
+
+Компоненты (`skills/`, `commands/`) располагаются в корне репозитория, НЕ внутри `.claude-plugin/`.
+
+## Plugin System
+
+- **Скиллы** (`skills/<name>/SKILL.md`): model-invoked, активируются автоматически по `description` в YAML frontmatter
+- **Команды** (`commands/<name>.md`): user-invoked через `/sp:<name>`, YAML frontmatter с `name` и `description`
+- **Namespace**: все компоненты доступны как `/sp:<name>` после установки
+- **`$ARGUMENTS`**: плейсхолдер для пользовательского ввода в командах
+- **`${CLAUDE_PLUGIN_ROOT}`**: для путей внутри плагина в хуках и MCP конфигах
+
+## Validation
+
+```bash
+# Проверить JSON манифесты
+python3 -c "import json; json.load(open('.claude-plugin/plugin.json')); json.load(open('.claude-plugin/marketplace.json')); print('OK')"
+
+# Проверить YAML frontmatter в скиллах/командах — первая строка должна быть ---
+head -1 skills/*/SKILL.md commands/*.md
+```
+
+## Testing locally
+
+```bash
+claude --plugin-dir .
+```
+
+## Conventions
+
+- **Язык контента**: русский (скиллы, команды, документация)
+- **Файлы и директории**: kebab-case
+- **Версионирование**: semver в `plugin.json` (source of truth для версии)
+- **marketplace.json**: обязательные поля верхнего уровня — `name`, `owner` (object с `name`), `plugins[]`
+- **Plugin source**: `"./"` для self-contained (плагин в корне маркетплейса), `{ "source": "github", "repo": "owner/repo" }` для внешних
+- **SKILL.md frontmatter**: `name` (идентификатор), `description` (когда активировать)
+
+## Planned skills
+
+`/task` `/brain` `/plan` `/do` `/polish` `/pr` `/review` `/qa` `/fix` `/memorize` `/merge`
+
+## Reference docs
+
+- `docs/plugins.md` — создание плагинов (структура, компоненты, тестирование)
+- `docs/plugin-marketplaces.md` — схема маркетплейса, sources, дистрибуция

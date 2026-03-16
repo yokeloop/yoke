@@ -57,10 +57,11 @@ claude --plugin-dir .
 
 - `/task` — формирование задач для AI-реализации
 - `/plan` — построение плана реализации по task-файлу
+- `/do` — выполнение задачи по плану
 
 ## Planned skills
 
-`/brain` `/do` `/polish` `/pr` `/review` `/qa` `/fix` `/memorize` `/merge`
+`/polish` `/pr` `/review` `/qa` `/fix` `/memorize` `/merge`
 
 ## Reference docs
 

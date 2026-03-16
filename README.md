@@ -23,11 +23,15 @@ sp/
 │   │   ├── agents/          # субагенты (task-explorer, task-architect)
 │   │   ├── reference/       # справочные материалы
 │   │   └── examples/        # примеры task-файлов
-│   └── plan/
+│   ├── plan/
+│   │   ├── SKILL.md
+│   │   ├── agents/          # субагенты (plan-explorer, plan-designer)
+│   │   ├── reference/       # routing rules, формат plan-файла
+│   │   └── examples/        # примеры планов (simple, complex)
+│   └── do/
 │       ├── SKILL.md
-│       ├── agents/          # субагенты (plan-explorer, plan-designer)
-│       ├── reference/       # routing rules, формат plan-файла
-│       └── examples/        # примеры планов (simple, complex)
+│       ├── agents/          # субагенты (task-executor, code-simplifier, cleanup, doc-updater)
+│       └── reference/       # status protocol, report format, commit convention
 ├── commands/                # slash-команды
 ├── docs/                    # документация
 ├── _skills/                 # черновики (не часть плагина)
@@ -67,12 +71,13 @@ git clone https://github.com/projectory-com/sp.git
 | `hi`      | skill | `/sp:hi`    | Приветствие и обзор структуры маркетплейса           |
 | `task`    | skill | `/sp:task`  | Формирование задачи для AI-реализации из тикета или описания фичи |
 | `plan`    | skill | `/sp:plan`  | Построение плана реализации по task-файлу            |
+| `do`      | skill | `/sp:do`    | Выполнение задачи по плану                          |
 
-Pipeline: `/sp:task` → `/sp:plan` → `/sp:do` (будущий)
+Pipeline: `/sp:task` → `/sp:plan` → `/sp:do`
 
 ## Планируемые скиллы
 
-`/brain` `/do` `/polish` `/pr` `/review` `/qa` `/fix` `/memorize` `/merge`
+`/polish` `/pr` `/review` `/qa` `/fix` `/memorize` `/merge`
 
 ## Разработка
 
@@ -92,10 +97,18 @@ commands/<имя-команды>.md
 
 ## Документация
 
+- `docs/do.md` — описание скилла /do (pipeline, режимы, субагенты)
 - `docs/plan.md` — описание скилла /plan (фазы, routing, субагенты)
 - `docs/plugins.md` — создание плагинов (структура, компоненты, тестирование)
 - `docs/plugin-marketplaces.md` — схема маркетплейса, sources, дистрибуция
 - `docs/roadmap.md` — roadmap: pipeline task → plan → do → review
+
+## Референсы
+
+- https://github.com/Q00/ouroboros
+- https://github.com/Yeachan-Heo/oh-my-claudecode
+- https://plannotator.ai/
+- superpowers-lab
 
 ## Лицензия
 

@@ -161,25 +161,17 @@ pipeline и пиши отчёт.
 
 ## Фаза 4 — Validate
 
-Выполни через Bash (НЕ sub-agent):
+Запусти sub-agent через Agent tool. Промт — из `agents/validator.md`.
 
-```bash
-# Определи доступные команды из package.json scripts
-# Запусти те что есть:
-npm run lint          # или yarn lint, pnpm lint
-npm run type-check    # если есть скрипт
-npm test              # если есть
-npm run build         # если есть
-```
+Передай:
 
-Запиши результат каждой команды: ✅ / ❌ + вывод ошибки.
+- Список изменённых файлов из Фаз 2-3
+- SLUG для коммит-конвенции
+- CONSTRAINTS из плана
 
-Если команда fails:
-
-1. Одна попытка исправить — запусти sub-agent с контекстом ошибки
-2. Коммит по конвенции из `reference/commit-convention.md`.
-3. Перезапусти failed команды
-4. Если снова fails → записать как issue в report, продолжить
+Sub-agent определяет доступные команды из package.json scripts, запускает
+(lint, type-check, test, build), фиксит failures (одна попытка),
+коммитит фиксы и возвращает результат каждой команды.
 
 Отметь в TodoWrite: [x]
 

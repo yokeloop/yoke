@@ -139,14 +139,6 @@ docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
     Task 6: Validation (depends on all)
   ```
 
-## Resolved questions
-
-1. **Транспорт?** → SSE (DD-1)
-2. **Fallback polling?** → Да, при потере SSE (DD-3)
-3. **Push payload?** → Полный state (DD-2)
-4. **Auth на SSE?** → Нет — leaderboard публичные данные, экран в закрытой сети
-5. **Анимация при initial load?** → Нет — только при изменении после подключения
-
 ## Verification
 
 - `npm test --workspace=apps/game-api` — все тесты зелёные

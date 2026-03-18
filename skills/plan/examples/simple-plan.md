@@ -114,14 +114,6 @@ docs/ai/112-password-reset-email/112-password-reset-email-task.md
 - **Reasoning:** 3 задачи + validation, все sequential (Task 2 зависит от Task 1, тесты от обоих), простая задача в одном модуле.
 - **Order:** Task 1 → Task 2 → Task 3 → Task 4
 
-## Resolved questions
-
-1. **Срок жизни токена?** → 1 час (DD-2)
-2. **Повторный запрос сброса?** → Перезаписать токен — проще, инвалидирует старый
-3. **Rate limiting?** → Вне скоупа, отдельный тикет
-4. **Формат ссылки?** → Полный URL через APP_URL из конфига
-5. **Фронтенд?** → Только API, фронтенд отдельно
-
 ## Verification
 
 - `npm test src/auth/__tests__/forgot-password.test.ts` — зелёный

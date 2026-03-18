@@ -31,15 +31,16 @@ pipeline и пиши отчёт.
 
 ## Pipeline
 
-6 этапов. Каждый отмечается в TodoWrite.
+7 этапов. Каждый отмечается в TodoWrite.
 
 ```
 1. Parse        → прочитать план, создать todo
 2. Execute      → dispatch sub-agents + spec review + quality review
 3. Polish       → упростить и почистить код
-4. Validate     → lint + types + tests + build
+4. Validate     → dispatch validator sub-agent
 5. Document     → обновить документацию
-6. Finalize     → format + report + notification
+6. Finalize     → format + report
+7. Complete     → review / plannotator / завершить
 ```
 
 ---
@@ -240,21 +241,30 @@ Sub-agent решает что обновить:
 
 ### 6c. Notification
 
-Выведи итог пользователю:
+Выведи краткий итог: `<SLUG> done (N/M tasks)` или `<SLUG> done with issues (N/M tasks, K blocked)`.
+Путь к report-файлу.
 
-```
-✅ <SLUG> done (N/M tasks)
-Report: docs/ai/<SLUG>/<SLUG>-report.md
-Для ревью: /sp:review <SLUG>
-```
+**Переход →** Фаза 7.
 
-Или если были проблемы:
+---
 
-```
-⚠️ <SLUG> done with issues (N/M tasks, K blocked)
-Report: docs/ai/<SLUG>/<SLUG>-report.md
-Для ревью: /sp:review <SLUG>
-```
+### Фаза 7 — Complete
+
+Сообщи путь к report-файлу, затем запусти цикл завершения.
+
+**Цикл:**
+
+Через AskUserQuestion предложи 3 варианта:
+
+1. **Запустить /sp:review (Recommended)** — автоматический переход к code review
+2. **Ревью через plannotator** — интерактивная проверка report-файла
+3. **Завершить** — выход
+
+**Обработка выбора:**
+
+- **Запустить /sp:review:** вызови Skill tool с `/sp:review` и аргументом `<SLUG>`. Выход из цикла.
+- **Ревью через plannotator:** вызови Skill tool с `/plannotator-annotate` и путём к report-файлу. После получения аннотаций — примени правки к report-файлу, перезапиши его. Вернись к началу цикла.
+- **Завершить:** сообщи путь к файлу. Выход из цикла.
 
 ---
 

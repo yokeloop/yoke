@@ -236,10 +236,6 @@ Dispatch subagent для ревью плана.
 - Routing decision
 - Execution order (DAG)
 - Verification criteria из task-файла
-- Resolved questions (из задачи) — отвеченные вопросы из task-файла с зафиксированными ответами.
-  Если в task-файле нет отвеченных вопросов — «—».
-- Уточняющие вопросы по реализации (от plan-architect, с вариантами и чекбоксами).
-  Если вопросов нет — поставь «—».
 
 **4.** Dispatch subagent для copyedit плана:
 
@@ -247,12 +243,9 @@ Dispatch subagent для ревью плана.
 - Subagent правит прозу: активный залог, конкретный язык, убирает лишние слова
 - Subagent перезаписывает файл
 
-**5.** Сообщи пользователю:
+**5.** Сообщи пользователю путь к файлу.
 
-```
-План записан: docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md
-Для выполнения: /sp:do docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md
-```
+**Переход →** Фаза 7.
 
 ---
 

@@ -212,33 +212,29 @@ Sub-agent решает что обновить:
 
 ### 6a. Format
 
-Определи formatter проекта:
+Запусти sub-agent через Agent tool. Промт — из `agents/formatter.md`.
 
-- `.prettierrc` или `prettier` в package.json → `npx prettier --write`
-- `.eslintrc` или `eslint` в package.json → `npx eslint --fix`
-- `biome.json` → `npx biome format --write`
-- Formatter отсутствует → пропустить
+Передай:
 
-Прогнать на изменённых файлах с `2>&1 | tail -20`.
+- Список изменённых файлов
+- SLUG для коммит-конвенции
 
-Коммит по конвенции из `reference/commit-convention.md`.
+Sub-agent определяет formatter, прогоняет на файлах, коммитит результат.
+
 Отметь в TodoWrite: [x]
 
 ### 6b. Report
 
-Прочитай `reference/report-format.md`.
+Запусти sub-agent через Agent tool. Промт — из `agents/report-writer.md`.
 
-Запиши `docs/ai/<SLUG>/<SLUG>-report.md`:
+Передай:
 
-- Статусы всех tasks (DONE / BLOCKED / SKIPPED)
-- Хэши и сообщения всех коммитов
-- Spec review результаты (✅/❌ + issues для каждого task)
-- Quality review результаты (✅/❌ + issues для каждого task)
-- Concerns (если были DONE_WITH_CONCERNS)
-- Blocked tasks (причины + impact)
-- Post-implementation статусы (polish, validate, document)
-- Validation result (каждая команда: ✅/❌)
-- Changes summary (файл, action, описание)
+- SLUG
+- Путь к plan-файлу
+- Собранные данные для отчёта: статусы tasks, concerns, blocked, validation results,
+  post-implementation статусы, changes summary
+
+Sub-agent читает `reference/report-format.md` и записывает `docs/ai/<SLUG>/<SLUG>-report.md`.
 
 ### 6c. Notification
 

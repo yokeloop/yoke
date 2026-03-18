@@ -73,6 +73,7 @@ pipeline и пиши отчёт.
 [ ] Validate: lint + types + tests
 [ ] Documentation: обновить документацию
 [ ] Finalize: format + report
+[ ] Complete: review / завершить
 ```
 
 **Переход:** план загружен, todo создан → Фаза 2.
@@ -138,7 +139,7 @@ pipeline и пиши отчёт.
 **Если изменённых файлов ноль** (все tasks BLOCKED/SKIPPED):
 пропустить Фазы 3 (Polish) и 5 (Document).
 Перейти к Фазе 4 (Validate) — пропустить если изменений нет.
-Затем Фаза 6 (Finalize) со статусом failed.
+Затем Фаза 6 (Finalize) со статусом failed → Фаза 7 (Complete).
 
 ---
 
@@ -248,7 +249,7 @@ Sub-agent решает что обновить:
 
 ---
 
-### Фаза 7 — Complete
+## Фаза 7 — Complete
 
 Сообщи путь к report-файлу, затем запусти цикл завершения.
 

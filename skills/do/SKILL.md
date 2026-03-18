@@ -34,7 +34,7 @@ pipeline и пиши отчёт.
 6 этапов. Каждый отмечается в TodoWrite.
 
 ```
-1. Parse        → прочитать план, проверить вопросы, создать todo
+1. Parse        → прочитать план, создать todo
 2. Execute      → dispatch sub-agents + spec review + quality review
 3. Polish       → упростить и почистить код
 4. Validate     → lint + types + tests + build

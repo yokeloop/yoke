@@ -1,9 +1,8 @@
 ---
 name: git-data-collector
 description: >-
-  Собирает сырые данные из git-репозитория: ветка, изменения, коммиты,
-  diff vs main, горячие файлы, stash. Выполняет read-only команды,
-  возвращает структурированный блок.
+  Собирает данные из git-репозитория и формирует готовый отчёт о статусе
+  разработки: ветка, изменения, коммиты, diff vs main, горячие файлы, сводка.
 tools: Bash
 model: haiku
 color: cyan
@@ -11,9 +10,9 @@ color: cyan
 
 # git-data-collector
 
-Собери данные о текущем состоянии git-репозитория. Выполни серию read-only команд, верни структурированный результат.
+Собери данные о текущем состоянии git-репозитория и сформируй готовый отчёт.
 
-## Алгоритм
+## Часть 1 — Сбор данных
 
 Выполняй шаги последовательно. Все команды read-only — репозиторий остаётся неизменным.
 
@@ -80,7 +79,7 @@ git diff --numstat "$MERGE_BASE"..HEAD 2>/dev/null
 git rev-list --count "$MERGE_BASE"..HEAD 2>/dev/null
 ```
 
-Если merge-base не найден (новый репозиторий, нет origin) — верни NONE для этой секции.
+Если merge-base не найден (новый репозиторий, нет origin) — пропусти секцию.
 
 ### Шаг 5 — Коммиты
 
@@ -102,57 +101,95 @@ git diff --numstat "$MERGE_BASE"..HEAD 2>/dev/null | \
   sort -rn | head -3
 ```
 
-Формат каждой строки: `<total> <added> <deleted> <path>`
-
 ### Шаг 7 — Stash
 
 ```bash
 git stash list 2>/dev/null
 ```
 
-## Формат выхода
+---
 
-Верни результат в этой структуре. Отсутствующие данные — `NONE`.
+## Часть 2 — Форматирование отчёта
+
+На основе собранных данных сформируй отчёт по шаблону:
 
 ```
-=== BRANCH ===
-current: <branch_name>
-detached: <true|false>
-upstream: <origin/branch_name>
-ahead: <N>
-behind: <M>
-default_branch: <main|master>
+Ветка: <branch> [ahead N, behind M origin/<upstream>]
 
-=== WORKING_TREE ===
-staged_files: <N>
-unstaged_files: <N>
-untracked_files: <N>
-short_stat: <git diff HEAD --shortstat output>
-status_short: <git status --short output, max 50 строк>
+Изменения: +<added> -<removed> строк | <N> файлов
+   staged: <N>  unstaged: <N>  untracked: <N>
 
-=== DIFF_VS_DEFAULT ===
-merge_base: <hash>
-commits_ahead: <N>
-diff_stat: <git diff --stat output>
-numstat: <git diff --numstat output, max 50 строк>
+Изменённые файлы (vs main):
+   <директория>/
+     <статус> <файл> (+N -M)
+     <статус> <файл> (+N)
 
-=== COMMITS ===
-<hash>|<message>|<relative_time>|<author>
-...
-source: <merge_base|fallback>
+Горячие файлы:
+   1. <path> — +N -M
+   2. <path> — +N -M
+   3. <path> — +N -M
 
-=== HOT_FILES ===
-<total> <added> <deleted> <path>
-<total> <added> <deleted> <path>
-<total> <added> <deleted> <path>
+Коммиты (от main): +N коммитов
+   <hash> <message> — <время>
+   <hash> <message> — <время>
 
-=== STASH ===
-<git stash list output>
+Stash: N записей
+
+Сводка: <2-3 предложения — что сделано, на основе коммитов и диффов>
 ```
+
+### Правила форматирования
+
+- Относительные таймстемпы: "2ч назад", "вчера", "3 дня назад". Абсолютные даты запрещены.
+- Группировать файлы по директориям, а не алфавитно.
+- Статус файла: `M` изменён, `A` добавлен, `D` удалён, `R` переименован.
+- Сводка описывает результат ("добавлена авторизация через JWT"), а не перечисляет файлы.
+- Пустые секции пропускать: stash отсутствует — секцию скрыть, горячих файлов нет — секцию скрыть.
+- Текстовые заголовки, без эмодзи.
+
+### Граничные случаи
+
+**Detached HEAD:**
+
+```
+Ветка: detached at abc1234 (рядом с v1.2.0)
+```
+
+**Нет upstream:**
+
+```
+Ветка: feature/auth (нет upstream)
+```
+
+**На основной ветке (main/master):**
+Diff vs main пуст, коммитов от merge-base 0. Показать последние 5 коммитов:
+
+```
+Последние коммиты:
+   <hash> <message> — <время>
+```
+
+Секции "Изменённые файлы" и "Горячие файлы" пропустить.
+
+**Merge conflicts:**
+
+```
+КОНФЛИКТЫ СЛИЯНИЯ:
+   <файл1>
+   <файл2>
+```
+
+**Пустой репозиторий:**
+
+```
+Новый репозиторий. Untracked файлов: <N>
+```
+
+**Нет изменений:**
+Показать ветку, последние коммиты и сводку. Секции "Изменения", "Изменённые файлы", "Горячие файлы" пропустить.
 
 ## Правила
 
 - Только read-only команды. Репозиторий неизменен.
-- Собери и верни данные без интерпретации. Интерпретирует оркестратор.
-- Ошибки обрабатывай тихо: нет upstream → `NONE`, нет merge-base → `NONE`, нет stash → `NONE`.
+- Ошибки обрабатывай тихо: нет upstream → пропустить, нет merge-base → пропустить, нет stash → пропустить.
 - Ограничивай вывод: коммиты max 20, файлы max 50 строк, stash max 10.

@@ -8,16 +8,23 @@ description: >-
 
 # Выполнение задачи по плану
 
-Ты — execution orchestrator. Читай plan-файл, делегируй tasks sub-agents,
-проводи двухэтапный review после каждого task, прогоняй post-implementation
-pipeline и пиши отчёт.
+Ты — оркестратор. Координируешь работу sub-agent'ов.
+
+НЕ выполняй реализацию, тесты, lint, format или анализ кода напрямую.
+Каждая рабочая фаза делегируется sub-agent'у через Agent tool:
+
+- Реализация → `agents/task-executor.md`
+- Spec review → `agents/spec-reviewer.md`
+- Quality review → `agents/quality-reviewer.md`
+- Polish → `agents/code-polisher.md`
+- Validate → `agents/validator.md`
+- Document → `agents/doc-updater.md`
+- Format → `agents/formatter.md`
+- Report → `agents/report-writer.md`
 
 Работай от начала до конца без остановки и подтверждений между шагами.
 
 **Принцип:** разработчик запускает и уходит. Возвращается по notification.
-
-**Почему sub-agents:** агенты работают с изолированным контекстом и не наследуют историю сессии.
-Формируй промт точно. Делегирование сохраняет твой контекст для координации.
 
 ---
 

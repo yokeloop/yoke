@@ -17,8 +17,8 @@
   "repository": "https://github.com/projectory-com/sp",
   "scripts": {
     "prepare": "husky",
-    "format": "prettier --write \"**/*.{md,json}\"",
-    "format:check": "prettier --check \"**/*.{md,json}\""
+    "format": "prettier --write \"**/*.{md,json}\" 2>&1 | tail -5",
+    "format:check": "prettier --check \"**/*.{md,json}\" 2>&1 | tail -5"
   },
   "devDependencies": {
     "husky": "^9.1.7",

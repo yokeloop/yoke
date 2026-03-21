@@ -60,6 +60,7 @@ description: Приветственный скилл — объясняет до
   → ответить на вопросы в файле
 /sp:do <путь к plan-файлу>        # выполнить план
 /sp:review <slug>                 # подготовить review
+/sp:gp                           # push в remote
 ```
 
 ### /gca — git commit с умной группировкой
@@ -71,6 +72,17 @@ description: Приветственный скилл — объясняет до
 ```
 /sp:gca
 /sp:gca #86
+```
+
+### /gp — git push с проверками и отчётом
+
+Проверяет состояние репозитория (ветка, upstream, uncommitted changes, gh auth), пушит в remote, выводит отчёт: отправленные коммиты, diff stat, ссылка на ветку, статус PR.
+
+**Вход:** опционально `--force-with-lease` → **Выход:** push + отчёт
+
+```
+/sp:gp
+/sp:gp --force-with-lease
 ```
 
 ## Планируемые скиллы

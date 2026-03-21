@@ -65,7 +65,7 @@ description: >-
 - `VERIFICATION` — из секции «Verification»
 - `EXECUTION_ORDER` — из секции «Execution / Order» (parallel groups, barriers, sequence)
 
-**3.** Извлеки ticket ID из slug для коммитов (по `reference/commit-convention.md`).
+**3.** Извлеки ticket ID из slug для коммитов (по `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
 **4.** Найди task-файл: `docs/ai/<SLUG>/<SLUG>-task.md`
 
@@ -131,7 +131,7 @@ description: >-
 
 5. Гарантируй коммит:
    - Проверь `git status` — есть ли незакоммиченные изменения
-   - Если есть — коммит по конвенции из `reference/commit-convention.md`
+   - Если есть — коммит по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`
    - Записать commit hash для report
 
 6. Отметь в TodoWrite: [x]
@@ -161,7 +161,7 @@ description: >-
 
 После завершения:
 
-- Коммит по конвенции из `reference/commit-convention.md`.
+- Коммит по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - Отметь в TodoWrite: [x]
 
 **Переход →** Фаза 4.
@@ -208,7 +208,7 @@ Sub-agent решает что обновить:
 
 После завершения:
 
-- Коммит по конвенции из `reference/commit-convention.md`.
+- Коммит по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - Отметь в TodoWrite: [x]
 
 **Переход →** Фаза 6.
@@ -243,7 +243,18 @@ Sub-agent определяет formatter, прогоняет на файлах, 
 
 Sub-agent читает `reference/report-format.md` и записывает `docs/ai/<SLUG>/<SLUG>-report.md`.
 
-### 6c. Notification
+### 6c. Commit Report Artifact
+
+Проверь: `docs/ai/` под `.gitignore`? Если да -- пропустить.
+
+Если не под gitignore -- закоммитить отчёт по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+
+```bash
+git add docs/ai/<SLUG>/<SLUG>-report.md
+git commit -m "<ticket> docs(<SLUG>): add execution report"
+```
+
+### 6d. Notification
 
 Выведи краткий итог: `<SLUG> done (N/M tasks)` или `<SLUG> done with issues (N/M tasks, K blocked)`.
 Путь к report-файлу.
@@ -271,7 +282,7 @@ Sub-agent читает `reference/report-format.md` и записывает `doc
 ## Правила
 
 - **Без остановки.** Запустил — работает до конца, без подтверждений между шагами.
-- **Коммиты по конвенции.** Формат и ticket ID — из `reference/commit-convention.md`.
+- **Коммиты по конвенции.** Формат и ticket ID — из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - **Работа в текущей директории.** Worktrees и управление ветками запрещены.
 - **Context isolation.** Sub-agent получает полный текст своего task, а не весь план.
 - **Review после каждого task.** Spec compliance → code quality. Обязателен.

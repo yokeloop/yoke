@@ -59,6 +59,7 @@ claude --plugin-dir .
 - `/plan` — построение плана реализации по task-файлу
 - `/do` — выполнение задачи по плану
 - `/review` — подготовка отчёта для code review
+- `/gca` — git commit с умной группировкой и единым commit-convention
 
 ## Planned skills
 

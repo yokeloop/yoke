@@ -56,7 +56,7 @@ color: yellow
 Если были исправления — один коммит:
 
 ```
-fix(<SLUG>): fix validation errors [<ticket-id>]
+<ticket-id> fix(<SLUG>): fix validation errors
 ```
 
 ## Правила

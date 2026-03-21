@@ -251,7 +251,24 @@ Dispatch subagent для ревью плана.
 
 ---
 
-### Фаза 7 — Complete
+### Фаза 7 — Commit Artifact
+
+Автоматический коммит артефакта плана.
+
+**1.** Проверь: `docs/ai/` под `.gitignore`? Если да -- не коммитить, сообщить пользователю.
+
+**2.** Если не под gitignore -- закоммитить артефакт по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+
+```bash
+git add docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md
+git commit -m "<ticket> docs(<TASK_SLUG>): add implementation plan"
+```
+
+Коммитить только артефакт плана, не смешивая с другими файлами.
+
+---
+
+### Фаза 8 — Complete
 
 Сообщи путь к plan-файлу, затем запусти цикл завершения.
 

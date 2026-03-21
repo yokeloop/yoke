@@ -55,7 +55,24 @@ Sub-agent собирает git-данные, анализирует измене
 
 ---
 
-### Фаза 3 — Complete
+### Фаза 3 — Commit Artifact
+
+Автоматический коммит артефакта ревью.
+
+**1.** Проверь: `docs/ai/` под `.gitignore`? Если да -- не коммитить, сообщить пользователю.
+
+**2.** Если не под gitignore -- закоммитить артефакт по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+
+```bash
+git add docs/ai/<SLUG>/<SLUG>-review.md
+git commit -m "<ticket> docs(<SLUG>): add review report"
+```
+
+Коммитить только артефакт ревью, не смешивая с другими файлами.
+
+---
+
+### Фаза 4 — Complete
 
 Сообщи пользователю путь к review-файлу.
 

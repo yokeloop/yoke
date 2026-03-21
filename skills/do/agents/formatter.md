@@ -36,7 +36,7 @@ color: gray
 Если были изменения:
 
 ```
-chore(<SLUG>): format [<ticket-id>]
+<ticket-id> chore(<SLUG>): format code
 ```
 
 ## Формат ответа

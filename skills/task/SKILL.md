@@ -231,7 +231,24 @@ description: >-
 
 ---
 
-### Фаза 5 — Complete
+### Фаза 5 — Commit Artifact
+
+Автоматический коммит артефакта задачи.
+
+**1.** Проверь: `docs/ai/` под `.gitignore`? Если да -- не коммитить, сообщить пользователю.
+
+**2.** Если не под gitignore -- закоммитить артефакт по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+
+```bash
+git add docs/ai/<task-slug>/<task-slug>-task.md
+git commit -m "<ticket> docs(<task-slug>): add task definition"
+```
+
+Коммитить только артефакт задачи, не смешивая с другими файлами.
+
+---
+
+### Фаза 6 — Complete
 
 Сообщи путь к файлу и task-slug, затем запусти цикл завершения.
 

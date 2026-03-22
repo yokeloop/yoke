@@ -61,12 +61,13 @@ claude --plugin-dir .
 - `/review` — подготовка отчёта для code review
 - `/gca` — git commit с умной группировкой и единым commit-convention
 - `/gp` — git push с проверками и отчётом
+- `/pr` — создание и обновление GitHub Pull Request
 - `/gst` — статус разработки: ветка, изменения, diff, горячие файлы
 - `/hi` — приветствие и объяснение доступных скиллов
 
 ## Planned skills
 
-`/polish` `/pr` `/qa` `/fix` `/memorize` `/merge`
+`/polish` `/qa` `/fix` `/memorize` `/merge`
 
 ## Reference docs
 

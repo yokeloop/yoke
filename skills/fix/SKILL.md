@@ -43,7 +43,7 @@ description: >-
 
 ## Pipeline
 
-7 фаз. Каждая отмечается через TodoWrite.
+7 фаз. Отмечай каждую через TodoWrite.
 
 ```
 1. Collect     → dispatch fix-context-collector (haiku)
@@ -103,7 +103,7 @@ COMPLEXITY: trivial | simple | escalate
 
 ### 0. Защита default branch
 
-Если текущая ветка `main`/`master`/`develop` → AskUserQuestion:
+Если `IS_DEFAULT_BRANCH = true` (из Фазы 1) → AskUserQuestion:
 
 > Fix на `<BRANCH>` — default branch. Продолжить?
 
@@ -270,7 +270,7 @@ AskUserQuestion — что дальше:
 
 - **Тонкий оркестратор.** Все файловые операции и bash делегируй агентам.
 - **Без остановок.** Работай до конца без подтверждений между фазами.
-- **Opus на code-фазах.** task-executor и code-polisher dispatch-ятся с model: opus.
+- **Opus на code-фазах.** Dispatch task-executor и code-polisher с model: opus.
 - **Коммиты по конвенции.** Формат и ticket ID — из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - **Scope guard.** 4+ файлов или архитектурные решения → предложи escalate в /sp:task.
 - **TodoWrite.** Отмечай каждый шаг сразу по завершении.

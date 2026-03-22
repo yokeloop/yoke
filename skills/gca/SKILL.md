@@ -1,12 +1,11 @@
 ---
 name: gca
 description: >-
-  Git staging and commit with smart file grouping and SP flow awareness.
-  This skill should be used when the user asks to commit changes, stage files,
-  make a git commit, "commit this", "save my work", "gca", "закоммить",
-  "сделай коммит", "закоммитить изменения", or when any other skill needs
-  to commit results. Also use after completing /task, /plan, /do, /review
-  to commit artifacts.
+  Git staging и коммит с умной группировкой файлов и учётом SP-воркфлоу.
+  Используй когда пользователь пишет "commit", "gca", "закоммить",
+  "сделай коммит", "закоммитить изменения", "save my work",
+  или когда другой скилл завершил работу и нужно закоммитить результат.
+  Также после выполнения /task, /plan, /do, /review для фиксации артефактов.
 ---
 
 # Git Commit с умной группировкой

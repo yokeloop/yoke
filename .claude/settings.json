@@ -1,13 +1,2 @@
 {
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
-  "permissions": {
-    "additionalDirectories": [
-      "/home/heliotik/project/try/claude-plugins-official",
-      "/home/heliotik/project/try/superpowers",
-      "/home/heliotik/Stuff",
-      "/home/heliotik/project/try/the-elements-of-style"
-    ]
-  }
 }

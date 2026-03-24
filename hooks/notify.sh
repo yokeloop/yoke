@@ -50,24 +50,33 @@ case "$EVENT_TYPE" in
   *)               EMOJI="🔔" ;;
 esac
 
+# --- HTML-escape dynamic content for Telegram parse_mode=HTML ---
+_html() {
+  local s="$1"
+  s=${s//&/&amp;}
+  s=${s//</&lt;}
+  s=${s//>/&gt;}
+  printf '%s' "$s"
+}
+
 # --- Format HTML message ---
-MSG="${EMOJI} <b>${EVENT_TYPE}</b>"
+MSG="${EMOJI} <b>$(_html "$EVENT_TYPE")</b>"
 
 # Project / skill / phase line
 META=""
-[[ -n "$PROJECT_NAME" ]] && META="$PROJECT_NAME"
-[[ -n "$SKILL" ]] && META="${META:+$META / }$SKILL"
-[[ -n "$PHASE" ]] && META="${META:+$META / }$PHASE"
+[[ -n "$PROJECT_NAME" ]] && META="$(_html "$PROJECT_NAME")"
+[[ -n "$SKILL" ]] && META="${META:+$META / }$(_html "$SKILL")"
+[[ -n "$PHASE" ]] && META="${META:+$META / }$(_html "$PHASE")"
 [[ -n "$META" ]] && MSG="${MSG}\n${META}"
 
 # Title
-[[ -n "$TITLE" ]] && MSG="${MSG}\n\n${TITLE}"
+[[ -n "$TITLE" ]] && MSG="${MSG}\n\n$(_html "$TITLE")"
 
 # Body
-[[ -n "$BODY" ]] && MSG="${MSG}\n${BODY}"
+[[ -n "$BODY" ]] && MSG="${MSG}\n$(_html "$BODY")"
 
 # tmux session
-[[ -n "$TMUX_SESSION" ]] && MSG="${MSG}\n\n<i>tmux: ${TMUX_SESSION}</i>"
+[[ -n "$TMUX_SESSION" ]] && MSG="${MSG}\n\n<i>tmux: $(_html "$TMUX_SESSION")</i>"
 
 # --- Build JSON payload via jq (DD-4) ---
 PAYLOAD=$(jq -n \

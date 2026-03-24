@@ -114,10 +114,9 @@ COMPLEXITY: trivial | simple | escalate
 
 ### 1. Scope guard
 
-Отправь нотификацию о большом скоупе:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill fix --phase Decide --slug "$SLUG" --title "Большой фикс" --body "Затронуто $FILES_COUNT файлов"`
+Если `COMPLEXITY = escalate` → отправь нотификацию и AskUserQuestion:
 
-Если `COMPLEXITY = escalate` → AskUserQuestion:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill fix --phase Decide --slug "$SLUG" --title "Большой фикс" --body "Затронуто $FILES_COUNT файлов"`
 
 > Фикс затрагивает N файлов: [список]. Выглядит как задача для /sp:task.
 

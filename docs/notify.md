@@ -95,7 +95,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
 cat .sp/notify-pending.json
 ```
 
-Файл должен содержать JSON-массив с одной записью. Stop-hook (`hooks/notify.sh`) заберёт его при завершении сессии и отправит в Telegram.
+Файл должен содержать JSON-объект с одной записью уведомления. Stop-hook (`hooks/notify.sh`) заберёт его при завершении сессии и отправит в Telegram.
 
 ---
 

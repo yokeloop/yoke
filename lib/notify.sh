@@ -62,8 +62,14 @@ if command -v jq >/dev/null 2>&1; then
     '{type:$type,skill:$skill,phase:$phase,slug:$slug,title:$title,body:$body,project_name:$project_name,tmux_session:$tmux_session,timestamp:$timestamp}' \
   ) || exit 0
 else
-  # Manual JSON construction — escape double quotes and backslashes
-  _esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+  # Manual JSON construction — escape backslashes, quotes, newlines, tabs
+  _esc() {
+    printf '%s' "$1" | sed \
+      -e 's/\\/\\\\/g' \
+      -e 's/"/\\"/g' \
+      -e 's/	/\\t/g' \
+      -e ':a' -e 'N' -e '$!ba' -e 's/\n/\\n/g'
+  }
   JSON=$(printf '{"type":"%s","skill":"%s","phase":"%s","slug":"%s","title":"%s","body":"%s","project_name":"%s","tmux_session":"%s","timestamp":"%s"}' \
     "$(_esc "$TYPE")" "$(_esc "$SKILL")" "$(_esc "$PHASE")" "$(_esc "$SLUG")" \
     "$(_esc "$TITLE")" "$(_esc "$BODY")" "$(_esc "$PROJECT_NAME")" \

@@ -47,12 +47,6 @@ description: >-
 
 AskUserQuestion для slug: предложи 2-3 варианта из первого вопроса (prefix `explore-`, kebab-case, английский, max 40 символов) + вариант "Other" (пользователь вводит свой).
 
-Создай директорию:
-
-```bash
-mkdir -p docs/ai/<SLUG>/
-```
-
 Инициализируй переменные:
 
 - `EXPLORATION_SUMMARY` = "" (накопительная цепочка ключевых выводов)

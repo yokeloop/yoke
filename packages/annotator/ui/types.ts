@@ -87,6 +87,12 @@ export interface DiffAnnotationMetadata {
   suggestedCode?: string;
   originalCode?: string;
   author?: string;
+  // AI marker fields (set when kind === 'ai-marker')
+  kind?: 'annotation' | 'ai-marker';
+  questionId?: string;
+  promptPreview?: string;
+  hasResponse?: boolean;
+  isStreaming?: boolean;
 }
 
 export interface SelectedLineRange {
@@ -94,6 +100,31 @@ export interface SelectedLineRange {
   end: number;
   side: 'deletions' | 'additions';
   endSide?: 'deletions' | 'additions';
+}
+
+// ---------------------------------------------------------------------------
+// AI Chat (inline AI on diffs)
+// ---------------------------------------------------------------------------
+
+export interface AIQuestion {
+  id: string;
+  prompt: string;
+  /** undefined = general question (no file scope) */
+  filePath?: string;
+  /** undefined + filePath present = file-scoped; with filePath = line-scoped */
+  lineStart?: number;
+  lineEnd?: number;
+  side?: 'old' | 'new';
+  selectedCode?: string;
+  createdAt: number;
+}
+
+export interface AIResponse {
+  questionId: string;
+  text: string;
+  isStreaming: boolean;
+  error?: string;
+  createdAt: number;
 }
 
 export interface VaultNode {

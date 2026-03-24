@@ -3,11 +3,11 @@
 # Reads stdin (hook JSON), finds .sp/notify-pending.json, sends via Bot API.
 # Always exits 0. Never writes to stdout (would block Stop).
 
-# --- Read hook input from stdin (ralph-loop pattern) ---
-HOOK_INPUT=$(cat)
+# --- Drain stdin so the hook doesn't block ---
+cat > /dev/null
 
 # --- Project directory (Stop hook runs in project dir, see DD-3) ---
-PROJECT_DIR="$(pwd)"
+PROJECT_DIR="$PWD"
 
 # --- Paths ---
 PENDING="$PROJECT_DIR/.sp/notify-pending.json"
@@ -39,7 +39,7 @@ TMUX_SESSION=$(jq -r '.tmux_session // ""' "$PENDING") || exit 0
 
 # --- Filter by levels ---
 if [[ -n "$LEVELS" ]]; then
-  echo "$LEVELS" | grep -q "$EVENT_TYPE" || { rm -f "$PENDING"; exit 0; }
+  [[ ",$LEVELS," == *",$EVENT_TYPE,"* ]] || { rm -f "$PENDING"; exit 0; }
 fi
 
 # --- Emoji by type (DD-7) ---

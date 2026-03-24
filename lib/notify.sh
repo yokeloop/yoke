@@ -23,7 +23,7 @@ while [ $# -gt 0 ]; do
 done
 
 # --- Project directory ---
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 
 # --- Auto-detect project_name ---
 PROJECT_NAME=""

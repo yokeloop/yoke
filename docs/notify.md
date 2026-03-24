@@ -49,29 +49,29 @@ echo '.sp/' >> .gitignore
 
 ## Типы нотификаций
 
-| Тип              | Маркер | Когда срабатывает                        |
-| ---------------- | ------ | ---------------------------------------- |
-| ACTION_REQUIRED  | ⏸      | Перед вопросами, требующими ответа       |
-| STAGE_COMPLETE   | ✅     | Задача, план, PR или другой артефакт готов |
-| ALERT            | ⚠️     | Блокировка, scope guard, критическая ситуация |
+| Тип             | Маркер | Когда срабатывает                             |
+| --------------- | ------ | --------------------------------------------- |
+| ACTION_REQUIRED | ⏸      | Перед вопросами, требующими ответа            |
+| STAGE_COMPLETE  | ✅     | Задача, план, PR или другой артефакт готов    |
+| ALERT           | ⚠️     | Блокировка, scope guard, критическая ситуация |
 
 ---
 
 ## Карта точек нотификаций
 
-| Скилл  | Фаза       | Тип              | Описание                               |
-| ------ | ---------- | ---------------- | -------------------------------------- |
-| task   | Synthesize | ACTION_REQUIRED  | Уточняющие вопросы по задаче           |
-| task   | Complete   | STAGE_COMPLETE   | Task-файл готов                        |
-| plan   | Design     | ACTION_REQUIRED  | Вопросы по реализации                  |
-| plan   | Complete   | STAGE_COMPLETE   | План готов                             |
-| do     | Execute    | ALERT            | Task заблокирован                      |
-| do     | Complete   | STAGE_COMPLETE   | Реализация завершена                   |
-| fix    | Decide     | ALERT            | Большой фикс (scope guard)            |
-| fix    | Decide     | ACTION_REQUIRED  | Требуется уточнение                    |
-| fix    | Complete   | STAGE_COMPLETE   | Fix завершён                           |
-| pr     | Decide     | ACTION_REQUIRED  | Выбор типа PR (draft/ready)           |
-| pr     | Complete   | STAGE_COMPLETE   | PR создан или обновлён                 |
+| Скилл | Фаза       | Тип             | Описание                     |
+| ----- | ---------- | --------------- | ---------------------------- |
+| task  | Synthesize | ACTION_REQUIRED | Уточняющие вопросы по задаче |
+| task  | Complete   | STAGE_COMPLETE  | Task-файл готов              |
+| plan  | Design     | ACTION_REQUIRED | Вопросы по реализации        |
+| plan  | Complete   | STAGE_COMPLETE  | План готов                   |
+| do    | Execute    | ALERT           | Task заблокирован            |
+| do    | Complete   | STAGE_COMPLETE  | Реализация завершена         |
+| fix   | Decide     | ALERT           | Большой фикс (scope guard)   |
+| fix   | Decide     | ACTION_REQUIRED | Требуется уточнение          |
+| fix   | Complete   | STAGE_COMPLETE  | Fix завершён                 |
+| pr    | Decide     | ACTION_REQUIRED | Выбор типа PR (draft/ready)  |
+| pr    | Complete   | STAGE_COMPLETE  | PR создан или обновлён       |
 
 ---
 
@@ -110,12 +110,12 @@ cat .sp/notify-pending.json
 
 ## Troubleshooting
 
-| Проблема                            | Проверка                                                                  |
-| ----------------------------------- | ------------------------------------------------------------------------- |
-| Нотификации не приходят             | Проверь наличие `.sp/notify.json` и правильность `bot_token` / `chat_id`  |
-| curl not found                      | Установи curl: `sudo apt install curl` / `brew install curl`             |
-| jq not found                        | Установи jq: `sudo apt install jq` / `brew install jq`                  |
-| Ошибка 401 от Telegram              | Неверный bot token — пересоздай через @BotFather                          |
-| Ошибка 400 (chat not found)         | Неверный chat_id — отправь сообщение боту и повтори getUpdates            |
-| Очередь не очищается                | Проверь, что `hooks/notify.sh` указан в `hooks/hooks.json` как stop-hook  |
-| Нотификация не записывается в очередь | Проверь, что `levels` в конфиге включает нужный тип                     |
+| Проблема                              | Проверка                                                                 |
+| ------------------------------------- | ------------------------------------------------------------------------ |
+| Нотификации не приходят               | Проверь наличие `.sp/notify.json` и правильность `bot_token` / `chat_id` |
+| curl not found                        | Установи curl: `sudo apt install curl` / `brew install curl`             |
+| jq not found                          | Установи jq: `sudo apt install jq` / `brew install jq`                   |
+| Ошибка 401 от Telegram                | Неверный bot token — пересоздай через @BotFather                         |
+| Ошибка 400 (chat not found)           | Неверный chat_id — отправь сообщение боту и повтори getUpdates           |
+| Очередь не очищается                  | Проверь, что `hooks/notify.sh` указан в `hooks/hooks.json` как stop-hook |
+| Нотификация не записывается в очередь | Проверь, что `levels` в конфиге включает нужный тип                      |

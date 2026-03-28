@@ -31,6 +31,7 @@ import {
   handleDraftLoad,
   handleDraftDelete,
   handleFavicon,
+  handleConfig,
 } from "./shared-handlers";
 import { contentHash, deleteDraft } from "./draft";
 import {
@@ -448,6 +449,11 @@ export async function startReviewServer(
             const handler = aiEndpoints[url.pathname as keyof AIEndpoints];
             if (handler) return handler(req);
             return Response.json({ error: "Not found" }, { status: 404 });
+          }
+
+          // API: Save user config
+          if (url.pathname === "/api/config" && req.method === "POST") {
+            return handleConfig(req);
           }
 
           // Favicon

@@ -23,6 +23,7 @@ import {
   handleDraftLoad,
   handleDraftDelete,
   handleFavicon,
+  handleConfig,
 } from "./shared-handlers";
 import { handleDoc } from "./doc";
 import { contentHash, deleteDraft } from "./draft";
@@ -185,6 +186,11 @@ export async function startAnnotateServer(
                 err instanceof Error ? err.message : "Failed to process feedback";
               return Response.json({ error: message }, { status: 500 });
             }
+          }
+
+          // API: Save user config
+          if (url.pathname === "/api/config" && req.method === "POST") {
+            return handleConfig(req);
           }
 
           // Favicon

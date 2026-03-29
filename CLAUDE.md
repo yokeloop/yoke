@@ -14,6 +14,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   marketplace.json     # реестр маркетплейса (name, owner, plugins[])
 skills/                # скиллы — auto-discovered по SKILL.md в поддиректориях
 commands/              # slash-команды — auto-discovered по .md файлам
+hooks/                 # хуки — auto-discovered по hooks.json (Telegram notifications)
+lib/                   # shared-скрипты для вызова из скиллов (notify.sh)
 docs/                  # справочная документация по plugin system
 packages/annotator/    # TypeScript-пакет annotator (CLI + библиотека)
 _skills/               # черновики — НЕ часть плагина, не трогать
@@ -66,6 +68,7 @@ claude --plugin-dir .
 - `/gst` — статус разработки: ветка, изменения, diff, горячие файлы
 - `/fix` — быстрый фикс или доработка (1-3 файла, opus на code-фазах)
 - `/hi` — приветствие и объяснение доступных скиллов
+- `/explore` — исследование кодовой базы: read-only Q&A loop с summary chain
 - `/review-artifact` — интерактивное ревью task/plan артефактов с аннотациями
 
 ## Planned skills
@@ -74,8 +77,7 @@ claude --plugin-dir .
 
 ## Reference docs
 
-- `docs/plugins.md` — создание плагинов (структура, компоненты, тестирование)
-- `docs/plugin-marketplaces.md` — схема маркетплейса, sources, дистрибуция
+- `docs/notify.md` — Telegram-нотификации: настройка, типы, карта точек
 
 ## Packages
 

@@ -1,7 +1,7 @@
 ---
 name: pr
 description: >-
-  Создание и обновление GitHub Pull Request. Используй когда пользователь пишет
+  Создание и обновление GitHub Pull Request. Используется когда пользователь пишет
   "pr", "pull request", "создай pr", "обнови pr", "открой pr",
   или после выполнения /gp для создания pull request.
 ---
@@ -51,6 +51,9 @@ description: >-
 ### 3. Draft (только CREATE)
 
 Если `$ARGUMENTS` содержит `--draft` → `IS_DRAFT = true`, пропустить вопрос.
+
+Отправь нотификацию перед вопросом о типе PR:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill pr --phase Decide --slug "$TICKET_ID" --title "Выбор типа PR" --body "Ready for review или Draft?"`
 
 Иначе → AskUserQuestion:
 
@@ -124,6 +127,9 @@ PR создан: <URL>              # или "PR обновлён: <URL>"
   Ticket: <ticket_id>
   Source: <DATA_SOURCE>
 ```
+
+Отправь нотификацию (с URL — финальный артефакт цикла):
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill pr --phase Complete --slug "$TICKET_ID" --title "PR $MODE" --body "$PR_URL"`
 
 Переход → Фаза 5.
 

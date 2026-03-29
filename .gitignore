@@ -1,5 +1,7 @@
 docs/ai
 node_modules/
+.sp/
+.worktrees
 
 # packages/annotator build artifacts
 packages/annotator/node_modules/

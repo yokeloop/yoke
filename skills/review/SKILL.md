@@ -1,16 +1,24 @@
 ---
 name: review
 description: >-
-  Подготовка отчёта для code review. Используется когда пользователь пишет
-  "review", "ревью", "подготовь отчёт", "что изменилось", или после
-  выполнения /do для анализа всех изменений.
+  Code review с поиском проблем, автоматическим исправлением и расширенным отчётом.
+  Используется когда пользователь пишет "review", "ревью", "code review",
+  "найди проблемы", или после /do для анализа изменений.
 ---
 
-# Подготовка отчёта для code review
+# Code review с автоматическим исправлением
 
-Ты — оркестратор. Git-команды и анализ выполняй только через Agent tool:
+Ты — оркестратор. Координируешь работу sub-agent'ов и общаешься с пользователем.
 
-- Анализ и запись отчёта → `agents/review-analyzer.md`
+Агенты:
+
+- Анализ → `agents/code-reviewer.md`
+- Исправления → `agents/issue-fixer.md` (→ `agents/single-fix-agent.md`)
+- Отчёт → `agents/review-report-writer.md`
+- Валидация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
+- Форматирование → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
+
+Работай от начала до конца без остановок. Две паузы: выбор scope фиксов и финальное действие.
 
 ---
 
@@ -22,7 +30,20 @@ description: >-
 
 ---
 
-## Фазы
+## Pipeline
+
+6 фаз. Каждую отмечай в TodoWrite.
+
+```
+1. Parse     → определить SLUG, собрать контекст
+2. Analyze   → dispatch code-reviewer
+3. Select    → показать проблемы, выбрать scope фиксов
+4. Fix       → dispatch issue-fixer + validator + formatter
+5. Finalize  → dispatch report-writer + PR-комментарии + commit
+6. Complete  → нотификация + выбор действия
+```
+
+---
 
 ### Фаза 1 — Parse
 
@@ -32,60 +53,134 @@ description: >-
 - Из пути к task-файлу: `docs/ai/<slug>/<slug>-task.md`
 - Из текущей ветки или последнего каталога `docs/ai/*/`
 
-**2.** Определи путь к task-файлу: `docs/ai/<SLUG>/<SLUG>-task.md`
+**2.** Определи путь к task-файлу: `docs/ai/<SLUG>/<SLUG>-task.md`.
 Если файл не существует — передай `—` в sub-agent.
 
 **3.** Извлеки `TICKET_ID` из SLUG (по `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
-**Переход:** SLUG и TICKET_ID определены → Фаза 2.
+**4.** Post-flow awareness — проверь наличие артефактов:
+
+- `docs/ai/<SLUG>/<SLUG>-report.md` — если существует, прочитай секции Concerns и quality review results → собери KNOWN_ISSUES
+- `docs/ai/<SLUG>/<SLUG>-fixes.md` — если существует, прочитай список исправлений → добавь к KNOWN_ISSUES
+- Если артефактов нет — KNOWN_ISSUES = `—`
+
+**Переход:** SLUG, TICKET_ID, KNOWN_ISSUES определены → Фаза 2.
 
 ---
 
 ### Фаза 2 — Analyze
 
-Запусти sub-agent через Agent tool с промтом из `agents/review-analyzer.md`.
+Dispatch code-reviewer через Agent tool. Прочитай `agents/code-reviewer.md`, подставь SLUG, TASK_FILE_PATH, KNOWN_ISSUES.
 
-Передай:
+Получи SUMMARY + ISSUES + ISSUES_COUNT.
 
-- `SLUG`
-- Путь к task-файлу (или `—`)
+Если ISSUES_COUNT = 0 → пропусти Фазы 3-4, перейди к Фазе 5 (отчёт без фиксов).
 
-Sub-agent собирает git-данные, анализирует изменения по 7 измерениям
-и записывает отчёт в `docs/ai/<SLUG>/<SLUG>-review.md`.
-
-**Переход:** sub-agent вернул результат → Фаза 3.
+**Переход:** SUMMARY и ISSUES получены → Фаза 3.
 
 ---
 
-### Фаза 3 — Commit Artifact
+### Фаза 3 — Select
 
-Закоммить артефакт ревью автоматически.
+**1.** Отправь нотификацию:
 
-**1.** Проверь: `docs/ai/` под `.gitignore`? Если да -- сообщи пользователю, не коммить.
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review --phase Select --slug "$SLUG" --title "Найдено N проблем" --body "Critical: X, Important: Y, Minor: Z"
+```
 
-**2.** Если не под gitignore -- закоммить артефакт по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+**2.** Покажи пользователю все issues (кратко: severity, category, file:line, description).
 
-Формат коммита: `TICKET docs(SLUG): add review report` (БЕЗ двоеточия после ticket).
+**3.** Через AskUserQuestion предложи scope:
+
+- **"Fix Critical + Important (Recommended)"** — исключить Minor
+- **"Fix only Critical"** — только score >= 80
+- **"Fix all"** — все issues
+- **"Skip fixes"** — только отчёт, без исправлений
+
+**4.** Отфильтруй issues по выбору → ISSUES_TO_FIX, ISSUES_TO_SKIP.
+
+**Переход:** scope выбран → Фаза 4.
+
+---
+
+### Фаза 4 — Fix
+
+Если ISSUES_TO_FIX не пусто:
+
+**a)** Dispatch issue-fixer через Agent tool. Прочитай `agents/issue-fixer.md`, подставь ISSUES_TO_FIX, SLUG, TICKET_ID, CONSTRAINTS.
+Issue-fixer сам dispatch'ит параллельные single-fix-agent'ы.
+
+**b)** Получи FIXED_ISSUES, SKIPPED_ISSUES (от fixer), FILES_CHANGED.
+
+**c)** Добавь issues из ISSUES_TO_SKIP к SKIPPED_ISSUES (с причиной "Excluded by user").
+
+**d)** Dispatch validator из /do:
+Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, подставь FILES_CHANGED, SLUG, TICKET_ID, CONSTRAINTS.
+
+**e)** Dispatch formatter из /do:
+Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, подставь FILES_CHANGED, SLUG, TICKET_ID.
+
+Если "Skip fixes" выбран → все issues в SKIPPED_ISSUES с причиной "Skipped by user choice".
+
+**Переход:** фиксы завершены → Фаза 5.
+
+---
+
+### Фаза 5 — Finalize
+
+**a)** Dispatch review-report-writer через Agent tool. Прочитай `agents/review-report-writer.md`, подставь SLUG, SUMMARY, ALL_ISSUES (полный список из Фазы 2), FIXED_ISSUES, SKIPPED_ISSUES, COMMIT_HASHES.
+
+**b)** PR-комментарии:
+
+Проверь наличие PR: `gh pr view --json number 2>/dev/null`
+
+Если PR существует и есть SKIPPED_ISSUES — постить каждый как комментарий:
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{number}/comments -f body="[severity] category: file:line — description"
+```
+
+Если PR нет — пропусти.
+
+**c)** Commit report artifact:
+
+Проверь `docs/ai/` под `.gitignore`. Если нет:
 
 ```bash
 git add docs/ai/<SLUG>/<SLUG>-review.md
 git commit -m "TICKET docs(SLUG): add review report"
 ```
 
-Пример: `R2-220 docs(R2-220-fix-doubled-stats): add review report`
+Пример: `#44 docs(44-review-with-fixes): add review report`
 
-Коммить только артефакт ревью, не смешивай с другими файлами.
+**Переход:** отчёт записан → Фаза 6.
 
 ---
 
-### Фаза 4 — Complete
+### Фаза 6 — Complete
 
-Сообщи пользователю путь к review-файлу.
+**1.** Нотификация:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --phase Complete --slug "$SLUG" --title "Review завершён" --body "docs/ai/$SLUG/$SLUG-review.md"
+```
+
+**2.** Сообщи результат: количество найденных / исправленных / пропущенных, путь к review-файлу.
+
+**3.** AskUserQuestion — что дальше:
+
+- **"Push (/sp:gp) (Recommended)"** — вызови Skill tool с `/sp:gp`
+- **"Create PR (/sp:pr)"** — вызови Skill tool с `/sp:pr`
+- **"Завершить"** — выйди
 
 ---
 
 ## Правила
 
-- Анализ выполняет sub-agent, не оркестратор.
-- Язык отчёта — язык task-файла.
-- Язык коммита — английский (по commit-convention).
+- **Без остановок.** Две паузы: scope selection (Фаза 3) и финальное действие (Фаза 6).
+- **Тонкий оркестратор.** Файловые операции и bash делегируй sub-agent'ам.
+- **Коммиты по конвенции.** Формат и ticket ID — из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
+- **Context isolation.** Sub-agent получает только свои данные, не весь pipeline.
+- **Обратная совместимость.** $ARGUMENTS = SLUG. Вызов из /do и /fix без изменений.
+- **Вывод CLI.** Команды с длинным выводом запускай с `2>&1 | tail -20`.
+- **Язык контента** — русский. Язык коммитов — английский.

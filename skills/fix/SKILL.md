@@ -14,8 +14,8 @@ description: >-
 
 - Контекст → `agents/fix-context-collector.md`
 - Исследование → `agents/fix-investigator.md`
-- Реализация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md` (dispatch с **opus**)
-- Polish → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md` (dispatch с **opus**)
+- Реализация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md`
+- Polish → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md`
 - Валидация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
 - Документация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/doc-updater.md`
 - Форматирование → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
@@ -152,7 +152,7 @@ COMPLEXITY: trivial | simple | escalate
 
 ## Фаза 4 — Implement
 
-Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md`. Dispatch через Agent tool (модель определена в frontmatter агента).
+Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md`. Dispatch через Agent tool с моделью из frontmatter агента.
 
 Передай подготовленный промт из Фазы 3 (TASK_WHAT, TASK_HOW, TASK_FILES, TASK_CONTEXT, CONSTRAINTS, TASK_VERIFY, COMMIT_MESSAGE).
 
@@ -177,7 +177,7 @@ Task-executor коммитит по COMMIT_MESSAGE из промта. Если �
 
 ### 5a. Polish
 
-Dispatch `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md` (модель определена в frontmatter агента).
+Dispatch `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md` с моделью из frontmatter агента.
 
 Передай: изменённые файлы, CONSTRAINTS.
 

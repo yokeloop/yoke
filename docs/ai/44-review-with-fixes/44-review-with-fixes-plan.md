@@ -9,7 +9,7 @@
 
 ### DD-1: Pipeline из 6 фаз по образцу /do
 
-**Решение:** Parse → Analyze → Select → Fix → Finalize → Complete. Оркестратор координирует 3 агента (code-reviewer, issue-fixer, report-writer) и reuse-агенты из /do.
+**Решение:** Parse → Analyze → Select → Fix → Finalize → Complete. Оркестратор координирует 4 агента (code-reviewer, issue-fixer + single-fix-agent, report-writer) и reuse-агенты из /do.
 **Обоснование:** /do (`skills/do/SKILL.md`) доказал pipeline-паттерн с sub-agents. /review повторяет структуру: каждая фаза — dispatch агента, обработка статуса, переход.
 **Альтернатива:** Monolith-агент (всё в одном) — теряет context isolation, превышает лимит контекста при большом diff.
 
@@ -28,7 +28,7 @@
 ### DD-4: Issue-fixer получает отфильтрованный список
 
 **Решение:** Оркестратор показывает пользователю все issues через AskUserQuestion, пользователь выбирает scope (All Critical+Important / Only Critical / Custom / Skip). Оркестратор фильтрует и передаёт issue-fixer только выбранные.
-**Обоснование:** Паттерн AskUserQuestion из /fix (`skills/fix/SKILL.md:130-134`): варианты с рекомендацией. Фильтрация на стороне оркестратора — issue-fixer получает чистый список и работает за один проход.
+**Обоснование:** Паттерн AskUserQuestion из /fix (`skills/fix/SKILL.md:130-134`): варианты с рекомендацией. Фильтрация на стороне оркестратора — issue-fixer получает чистый список, группирует по файлам и dispatch'ит параллельные fix-агенты (DD-7).
 **Альтернатива:** Issue-fixer сам фильтрует — нарушает принцип context isolation, пользователь теряет контроль.
 
 ### DD-5: Post-flow и fix-log awareness через чтение артефактов
@@ -36,6 +36,12 @@
 **Решение:** В фазе Parse оркестратор проверяет наличие `<SLUG>-report.md` и `<SLUG>-fixes.md`. Если существуют — читает и передаёт code-reviewer как `KNOWN_ISSUES` для исключения дублей.
 **Обоснование:** report.md содержит quality review results из /do, fixes.md — журнал исправлений из /fix. Code-reviewer исключает уже известные проблемы на этапе анализа.
 **Альтернатива:** Фильтрация после анализа — двойная работа, сложнее сопоставление.
+
+### DD-7: Issue-fixer как оркестратор параллельных fix-агентов
+
+**Решение:** Issue-fixer группирует issues по файлам. Issues, затрагивающие разные файлы, dispatch'ит параллельным sub-agent'ам (каждый — отдельный Agent tool call с model: opus). Issues, затрагивающие один файл, объединяет в одну группу и выполняет sequential. После завершения всех — один общий коммит.
+**Обоснование:** При 5+ issues в разных файлах параллельные fix-агенты сокращают время в 2-3 раза. Группировка по файлам исключает конфликты записи. Паттерн parallel dispatch из /do (`skills/do/reference/status-protocol.md:109-131`): параллельные группы без общих файлов.
+**Альтернатива:** Один проход (sequential) — проще, но медленнее при большом количестве issues. Оправдан только при 1-3 issues или если все в одном файле.
 
 ### DD-6: Обязательное использование скиллов при разработке и валидации
 
@@ -78,23 +84,31 @@
 - **Context:** `skills/review/agents/review-analyzer.md:1-119` (текущий агент — основа), `skills/do/agents/quality-reviewer.md:57-75` (паттерн классификации и формата)
 - **Verify:** `head -1 skills/review/agents/code-reviewer.md` → `---`; файл содержит YAML frontmatter с `model: sonnet`; `ls skills/review/agents/review-analyzer.md` → файл удалён
 
-### Task 3: Создать issue-fixer.md
+### Task 3: Создать issue-fixer.md и single-fix-agent.md
 
-- **Files:** `skills/review/agents/issue-fixer.md` (create)
+- **Files:** `skills/review/agents/issue-fixer.md` (create), `skills/review/agents/single-fix-agent.md` (create)
 - **Depends on:** none
 - **Scope:** M
-- **What:** Создать агента issue-fixer (opus), который получает список проблем с file:line и suggested_fix, исправляет их за один проход, коммитит результат.
+- **What:** Создать двухуровневую систему исправления: issue-fixer (оркестратор, sonnet) группирует issues по файлам и dispatch'ит параллельные single-fix-agent'ы (opus) для независимых групп. Issues в одном файле идут в одну группу sequential.
 - **How:**
-  1. Использовать скилл `plugin-dev:agent-development` — структура агента, YAML frontmatter
+  1. Использовать скилл `plugin-dev:agent-development` — структура агентов, YAML frontmatter
   2. Использовать скилл `elements-of-style:writing-clearly-and-concisely` — проверить прозу
-  3. YAML frontmatter: `name: issue-fixer`, `model: opus`, `tools: Read, Edit, Bash, Glob, Grep, LS`
-  4. Вход: список ISSUES (severity, score, file:line, description, suggested_fix), SLUG, TICKET_ID, CONSTRAINTS
-  5. Процесс: для каждого issue — прочитать файл, применить fix, проверить что не сломал соседний код
-  6. Один коммит в конце: `TICKET fix(SLUG): fix N review issues`
-  7. Формат вывода: FIXED (список исправленных issues с commit hash) + SKIPPED (список пропущенных с причиной) + FILES_CHANGED
-  8. Паттерн из task-executor.md (`skills/do/agents/task-executor.md`) — структура ввода/вывода
-- **Context:** `skills/do/agents/task-executor.md:1-30` (паттерн агента-исполнителя), `skills/do/agents/quality-reviewer.md:57-75` (формат issues)
-- **Verify:** `head -1 skills/review/agents/issue-fixer.md` → `---`; YAML frontmatter содержит `model: opus`
+  3. **single-fix-agent.md** — атомарный исполнитель:
+     - YAML frontmatter: `name: single-fix-agent`, `model: opus`, `tools: Read, Edit, Bash, Glob, Grep, LS`
+     - Вход: список ISSUES для одной группы файлов, CONSTRAINTS
+     - Процесс: прочитать файл, применить fix, проверить что не сломал соседний код
+     - Формат вывода: FIXED (список) + SKIPPED (список с причиной) + FILES_CHANGED
+  4. **issue-fixer.md** — оркестратор:
+     - YAML frontmatter: `name: issue-fixer`, `model: sonnet`, `tools: Read, Bash, Glob, Grep`
+     - Вход: список ISSUES (severity, score, file:line, description, suggested_fix), SLUG, TICKET_ID, CONSTRAINTS
+     - Шаг 1: группировка issues по файлам (issues с одинаковым file → одна группа)
+     - Шаг 2: dispatch параллельных single-fix-agent'ов через Agent tool для групп без общих файлов
+     - Шаг 3: дождаться завершения всех, собрать FIXED/SKIPPED/FILES_CHANGED
+     - Шаг 4: один коммит: `TICKET fix(SLUG): fix N review issues`
+     - Fallback: при 1-3 issues в одном файле — dispatch одного single-fix-agent без параллелизма
+  5. Паттерн parallel dispatch из status-protocol.md (`skills/do/reference/status-protocol.md:109-131`)
+- **Context:** `skills/do/agents/task-executor.md:1-30` (паттерн агента-исполнителя), `skills/do/reference/status-protocol.md:109-131` (parallel dispatch), `skills/do/agents/quality-reviewer.md:57-75` (формат issues)
+- **Verify:** `head -1 skills/review/agents/issue-fixer.md skills/review/agents/single-fix-agent.md` → оба начинаются с `---`; issue-fixer содержит `model: sonnet`; single-fix-agent содержит `model: opus`
 
 ### Task 4: Создать review-report-writer.md
 
@@ -142,10 +156,11 @@
      - Отфильтровать issues по выбору → ISSUES_TO_FIX, ISSUES_TO_SKIP
   7. **Фаза 4 — Fix:**
      - Если ISSUES_TO_FIX не пусто:
-       a) Dispatch issue-fixer.md (opus) с ISSUES_TO_FIX, SLUG, TICKET_ID
-       b) Получить FIXED_ISSUES, SKIPPED_ISSUES, FILES_CHANGED
-       c) Dispatch validator.md из /do через `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
-       d) Dispatch formatter.md из /do через `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
+       a) Dispatch issue-fixer.md (sonnet-оркестратор) с ISSUES_TO_FIX, SLUG, TICKET_ID
+       b) Issue-fixer группирует issues по файлам, dispatch'ит параллельные single-fix-agent'ы (opus) для независимых групп (DD-7)
+       c) Получить FIXED_ISSUES, SKIPPED_ISSUES, FILES_CHANGED
+       d) Dispatch validator.md из /do через `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
+       e) Dispatch formatter.md из /do через `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
      - Если "Skip fixes" → все issues в SKIPPED_ISSUES
   8. **Фаза 5 — Finalize:**
      - Dispatch review-report-writer.md с данными из Фаз 2 и 4

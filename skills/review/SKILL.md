@@ -116,10 +116,10 @@ Issue-fixer сам dispatch'ит параллельные single-fix-agent'ы.
 **c)** Добавь issues из ISSUES_TO_SKIP к SKIPPED_ISSUES (причина "Excluded by user").
 
 **d)** Dispatch validator из /do:
-Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, подставь {{FILES_CHANGED}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
+Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, подставь {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
 
 **e)** Dispatch formatter из /do:
-Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, подставь {{FILES_CHANGED}}, {{SLUG}}, {{TICKET_ID}}.
+Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, подставь {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}.
 
 Пользователь выбрал "Skip fixes" → все issues в SKIPPED_ISSUES, причина "Skipped by user choice".
 
@@ -138,7 +138,7 @@ Issue-fixer сам dispatch'ит параллельные single-fix-agent'ы.
 PR существует и SKIPPED_ISSUES непуст — опубликуй каждый issue как PR-комментарий:
 
 ```bash
-gh api --method POST repos/{owner}/{repo}/pulls/{number}/comments -f body="[severity] category: file:line — description"
+gh api --method POST repos/{owner}/{repo}/issues/{number}/comments -f body="[severity] category: file:line — description"
 ```
 
 Без PR — пропусти.

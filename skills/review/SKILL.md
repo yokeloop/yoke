@@ -8,7 +8,7 @@ description: >-
 
 # Code review с автоматическим исправлением
 
-Ты — оркестратор. Координируешь работу sub-agent'ов и общаешься с пользователем.
+Ты — оркестратор. Координируешь sub-agent'ов и общаешься с пользователем.
 
 Агенты:
 
@@ -18,7 +18,7 @@ description: >-
 - Валидация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
 - Форматирование → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
 
-Работай от начала до конца без остановок. Две паузы: выбор scope фиксов и финальное действие.
+Без остановок. Две паузы: выбор scope фиксов и финальное действие.
 
 ---
 
@@ -26,7 +26,7 @@ description: >-
 
 `$ARGUMENTS` — task-slug или путь к task-файлу.
 
-Если отсутствует — определи slug из текущей ветки или последнего каталога `docs/ai/*/`.
+Если не указан — определи slug из текущей ветки или последнего каталога `docs/ai/*/`.
 
 ---
 
@@ -49,20 +49,20 @@ description: >-
 
 **1.** Определи `SLUG`:
 
-- Из `$ARGUMENTS` напрямую (если это slug)
+- Из `$ARGUMENTS` (если slug)
 - Из пути к task-файлу: `docs/ai/<slug>/<slug>-task.md`
 - Из текущей ветки или последнего каталога `docs/ai/*/`
 
-**2.** Определи путь к task-файлу: `docs/ai/<SLUG>/<SLUG>-task.md`.
-Если файл не существует — передай `—` в sub-agent.
+**2.** Путь к task-файлу: `docs/ai/<SLUG>/<SLUG>-task.md`.
+Если не существует — передай `—` в sub-agent.
 
 **3.** Извлеки `TICKET_ID` из SLUG (по `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
-**4.** Post-flow awareness — проверь наличие артефактов:
+**4.** Post-flow awareness — проверь артефакты:
 
-- `docs/ai/<SLUG>/<SLUG>-report.md` — если существует, прочитай секции Concerns и quality review results → собери KNOWN_ISSUES
-- `docs/ai/<SLUG>/<SLUG>-fixes.md` — если существует, прочитай список исправлений → добавь к KNOWN_ISSUES
-- Если артефактов нет — KNOWN_ISSUES = `—`
+- `docs/ai/<SLUG>/<SLUG>-report.md` — прочитай секции Concerns и quality review results → собери KNOWN_ISSUES
+- `docs/ai/<SLUG>/<SLUG>-fixes.md` — прочитай список исправлений → добавь к KNOWN_ISSUES
+- Артефактов нет — KNOWN_ISSUES = `—`
 
 **Переход:** SLUG, TICKET_ID, KNOWN_ISSUES определены → Фаза 2.
 
@@ -70,7 +70,7 @@ description: >-
 
 ### Фаза 2 — Analyze
 
-Dispatch code-reviewer через Agent tool. Прочитай `agents/code-reviewer.md`, подставь SLUG, TASK_FILE_PATH, KNOWN_ISSUES.
+Dispatch code-reviewer через Agent tool. Прочитай `agents/code-reviewer.md`, подставь {{SLUG}}, {{TASK_FILE_PATH}}, {{KNOWN_ISSUES}}.
 
 Получи SUMMARY + ISSUES + ISSUES_COUNT.
 
@@ -107,18 +107,18 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review -
 
 Если ISSUES_TO_FIX не пусто:
 
-**a)** Dispatch issue-fixer через Agent tool. Прочитай `agents/issue-fixer.md`, подставь ISSUES_TO_FIX, SLUG, TICKET_ID, CONSTRAINTS.
+**a)** Dispatch issue-fixer через Agent tool. Прочитай `agents/issue-fixer.md`, подставь {{ISSUES_TO_FIX}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
 Issue-fixer сам dispatch'ит параллельные single-fix-agent'ы.
 
-**b)** Получи FIXED_ISSUES, SKIPPED_ISSUES (от fixer), FILES_CHANGED.
+**b)** Получи FIXED_ISSUES, SKIPPED_ISSUES, FILES_CHANGED.
 
-**c)** Добавь issues из ISSUES_TO_SKIP к SKIPPED_ISSUES (с причиной "Excluded by user").
+**c)** Добавь issues из ISSUES_TO_SKIP к SKIPPED_ISSUES (причина "Excluded by user").
 
 **d)** Dispatch validator из /do:
-Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, подставь FILES_CHANGED, SLUG, TICKET_ID, CONSTRAINTS.
+Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, подставь {{FILES_CHANGED}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
 
 **e)** Dispatch formatter из /do:
-Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, подставь FILES_CHANGED, SLUG, TICKET_ID.
+Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, подставь {{FILES_CHANGED}}, {{SLUG}}, {{TICKET_ID}}.
 
 Если "Skip fixes" выбран → все issues в SKIPPED_ISSUES с причиной "Skipped by user choice".
 
@@ -128,13 +128,13 @@ Issue-fixer сам dispatch'ит параллельные single-fix-agent'ы.
 
 ### Фаза 5 — Finalize
 
-**a)** Dispatch review-report-writer через Agent tool. Прочитай `agents/review-report-writer.md`, подставь SLUG, SUMMARY, ALL_ISSUES (полный список из Фазы 2), FIXED_ISSUES, SKIPPED_ISSUES, COMMIT_HASHES.
+**a)** Dispatch review-report-writer через Agent tool. Прочитай `agents/review-report-writer.md`, подставь {{SLUG}}, {{SUMMARY}}, {{ALL_ISSUES}} (полный список из Фазы 2), {{FIXED_ISSUES}}, {{SKIPPED_ISSUES}}, {{COMMIT_HASHES}}.
 
 **b)** PR-комментарии:
 
-Проверь наличие PR: `gh pr view --json number 2>/dev/null`
+Проверь PR: `gh pr view --json number 2>/dev/null`
 
-Если PR существует и есть SKIPPED_ISSUES — постить каждый как комментарий:
+Если PR существует и есть SKIPPED_ISSUES — опубликуй каждый как комментарий:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{number}/comments -f body="[severity] category: file:line — description"
@@ -177,10 +177,10 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --
 
 ## Правила
 
-- **Без остановок.** Две паузы: scope selection (Фаза 3) и финальное действие (Фаза 6).
-- **Тонкий оркестратор.** Файловые операции и bash делегируй sub-agent'ам.
-- **Коммиты по конвенции.** Формат и ticket ID — из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
+- **Без остановок.** Паузы: scope selection (Фаза 3) и финальное действие (Фаза 6).
+- **Тонкий оркестратор.** Файловые операции и bash — sub-agent'ам.
+- **Коммиты по конвенции.** Формат и ticket ID из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - **Context isolation.** Sub-agent получает только свои данные, не весь pipeline.
 - **Обратная совместимость.** $ARGUMENTS = SLUG. Вызов из /do и /fix без изменений.
-- **Вывод CLI.** Команды с длинным выводом запускай с `2>&1 | tail -20`.
+- **Длинный вывод CLI.** Запускай с `2>&1 | tail -20`.
 - **Язык контента** — русский. Язык коммитов — английский.

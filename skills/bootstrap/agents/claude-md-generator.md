@@ -18,6 +18,9 @@ color: green
 **CLAUDE_MD_EXISTS:**
 {{CLAUDE_MD_EXISTS}}
 
+**DOC_CONTENT (документация проекта):**
+{{DOC_CONTENT}}
+
 **ISSUES (опционально, для re-dispatch):**
 {{ISSUES}}
 
@@ -41,11 +44,12 @@ color: green
    - **comprehensive** — стандартный проект с build/test/lint
    - **monorepo** — monorepo с несколькими пакетами/сервисами
 3. Заполни шаблон данными из PROJECT_PROFILE:
-   - Project description
+   - Project description (используй DOC_CONTENT как источник описания проекта)
    - Команды (build, test, lint, format, deploy)
    - Структура директорий с ролями
    - Conventions (naming, commits, branching)
-   - Non-obvious решения (gotchas, workarounds)
+   - Non-obvious решения и gotchas (извлекай из DOC_CONTENT — workarounds, ограничения, нестандартные решения)
+   - Workflows и процессы (извлекай из DOC_CONTENT — CI/CD, deploy, release flow)
 4. Write CLAUDE.md в корень проекта
 
 ### 4. Режим обогащения (CLAUDE_MD_EXISTS = true)
@@ -56,7 +60,10 @@ color: green
    - Architecture — есть ли структура директорий с ролями?
    - Non-obvious — зафиксированы ли gotchas/workarounds?
    - Conventions — описаны ли project-specific conventions?
-3. Для каждой недостающей секции — добавь через Edit
+3. Для каждой недостающей секции — добавь через Edit, используя DOC_CONTENT как источник:
+   - Project description — из README.md и других файлов документации
+   - Non-obvious решения и gotchas — из CONTRIBUTING.md, docs/
+   - Workflows и процессы — из документации проекта
 4. Для каждой устаревшей секции — обнови через Edit
 5. Пользовательский контент (секции, которых нет в шаблоне) — сохраняй без изменений
 

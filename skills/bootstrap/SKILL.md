@@ -115,7 +115,7 @@ Dispatch 5 агентов **параллельно** через Agent tool (5 в
 5. **existing-rules-detector** (haiku) — прочитай `agents/existing-rules-detector.md`, передай промт агенту.
    Результат → RULES_FINDINGS:
    ```text
-   CLAUDE_MD_EXISTS, CLAUDE_MD_QUALITY, CLAUDE_MD_CONTENT, OTHER_RULES
+   CLAUDE_MD_EXISTS, CLAUDE_MD_QUALITY, CLAUDE_MD_CONTENT, OTHER_RULES, DOC_CONTENT
    ```
 
 Дождись завершения всех 5.
@@ -164,6 +164,7 @@ PROJECT_PROFILE:
     claude_md_quality: <из RULES_FINDINGS>
     claude_md_content: <из RULES_FINDINGS, если exists>
     other_rules: <из RULES_FINDINGS>
+    doc_content: <из RULES_FINDINGS.DOC_CONTENT>
 ```
 
 Если `$ARGUMENTS` содержит описание проекта — дополни PROJECT_PROFILE полем `user_description`.
@@ -182,6 +183,7 @@ Dispatch 3 агента **параллельно** через Agent tool:
    - PROJECT_PROFILE целиком
    - CLAUDE_MD_EXISTS из RULES_FINDINGS
    - CLAUDE_MD_CONTENT (если существует)
+   - DOC_CONTENT из PROJECT_PROFILE.existing_rules.doc_content
      Результат → CLAUDE_MD_STATUS:
 
    ```text
@@ -191,6 +193,7 @@ Dispatch 3 агента **параллельно** через Agent tool:
 
 2. **sp-context-generator** (haiku) — прочитай `agents/sp-context-generator.md`, передай агенту:
    - PROJECT_PROFILE целиком
+   - DOC_CONTENT из PROJECT_PROFILE.existing_rules.doc_content
      Результат → SP_CONTEXT_FILE (путь к .claude/sp-context.md)
 
 3. **automation-recommender** (haiku) — прочитай `agents/automation-recommender.md`, передай агенту:

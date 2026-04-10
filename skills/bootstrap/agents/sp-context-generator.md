@@ -15,6 +15,9 @@ color: gray
 **PROJECT_PROFILE:**
 {{PROJECT_PROFILE}}
 
+**DOC_CONTENT (документация проекта):**
+{{DOC_CONTENT}}
+
 ## Процесс
 
 ### 1. Создай директорию
@@ -25,7 +28,9 @@ mkdir -p .claude
 
 ### 2. Сформируй sp-context.md
 
-Извлеки данные из PROJECT_PROFILE и запиши файл `.claude/sp-context.md` в следующем формате:
+Извлеки данные из PROJECT_PROFILE и запиши файл `.claude/sp-context.md`. Используй DOC_CONTENT для обогащения описания проекта и архитектурных заметок — если документация содержит полезные детали (назначение проекта, ключевые решения, ограничения), включи их в соответствующие секции.
+
+Формат файла:
 
 ```markdown
 # SP Context: <project-name>

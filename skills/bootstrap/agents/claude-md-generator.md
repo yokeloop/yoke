@@ -55,7 +55,8 @@ color: green
    - Conventions (naming, commits, branching)
    - Non-obvious решения и gotchas (извлекай из DOC_CONTENT — workarounds, ограничения; из `DOMAIN_FINDINGS.CODE_WORKAROUNDS` — code-level workarounds)
    - Workflows и процессы (извлекай из DOC_CONTENT — CI/CD, deploy, release flow)
-4. Write CLAUDE.md в корень проекта
+4. При совпадении данных из DOMAIN_FINDINGS и DOC_CONTENT отдавай приоритет DOC_CONTENT. Не дублируй информацию, уже представленную в документации проекта.
+5. Write CLAUDE.md в корень проекта
 
 ### 4. Режим обогащения (CLAUDE_MD_EXISTS = true)
 
@@ -70,8 +71,9 @@ color: green
    - Project description — из README.md и других файлов документации
    - Non-obvious решения и gotchas — из CONTRIBUTING.md, docs/
    - Workflows и процессы — из документации проекта
-4. Для каждой устаревшей секции — обнови через Edit
-5. Пользовательский контент (секции, которых нет в шаблоне) — сохраняй без изменений
+4. При совпадении данных из DOMAIN_FINDINGS и DOC_CONTENT отдавай приоритет DOC_CONTENT. Не дублируй информацию, уже представленную в документации проекта.
+5. Для каждой устаревшей секции — обнови через Edit
+6. Пользовательский контент (секции, которых нет в шаблоне) — сохраняй без изменений
 
 ### 5. Исправление issues (если ISSUES непуст)
 

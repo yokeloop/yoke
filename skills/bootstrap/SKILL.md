@@ -181,7 +181,7 @@ PROJECT_PROFILE:
     api_endpoints: <из DOMAIN_FINDINGS>
     key_abstractions: <из DOMAIN_FINDINGS>
     env_vars: <из DOMAIN_FINDINGS>
-    workarounds: <из DOMAIN_FINDINGS>
+    code_workarounds: <из DOMAIN_FINDINGS>
 ```
 
 Если `$ARGUMENTS` содержит описание проекта — дополни PROJECT_PROFILE полем `user_description`.

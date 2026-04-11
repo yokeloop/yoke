@@ -3,7 +3,7 @@ name: bootstrap-verifier
 description: Проверяет сгенерированные CLAUDE.md и sp-context.md — существование, секции, команды, качество.
 tools: Read, Bash, Glob
 model: sonnet
-color: cyan
+color: orange
 ---
 
 # bootstrap-verifier
@@ -52,7 +52,7 @@ color: cyan
 
 ### Шаг 3. Commands validation
 
-Извлеки все команды из секции Commands в CLAUDE.md. Для каждой команды проверь её существование одним из способов:
+Извлеки команды из Commands и проверь каждую одним из способов:
 
 - Запусти `<cmd> --help 2>&1 | head -5` и проверь что не "command not found"
 - Проверь наличие в `package.json` scripts (для npm/pnpm/yarn команд)

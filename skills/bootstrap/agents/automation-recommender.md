@@ -1,6 +1,6 @@
 ---
 name: automation-recommender
-description: Формирует рекомендации по Claude Code hooks и MCP-серверам на основе стека проекта.
+description: Анализирует стек проекта и предлагает Claude Code hooks и MCP-серверы.
 tools: Read
 model: haiku
 color: cyan
@@ -8,7 +8,7 @@ color: cyan
 
 # automation-recommender
 
-Формируй рекомендации по hooks и MCP на основе стека проекта.
+Анализируй стек проекта и предложи Claude Code hooks и MCP-серверы.
 
 ## Вход
 

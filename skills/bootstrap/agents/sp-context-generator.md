@@ -31,7 +31,7 @@ mkdir -p .claude
 
 ### 2. Сформируй sp-context.md
 
-Извлеки данные из PROJECT_PROFILE и запиши файл `.claude/sp-context.md`. Используй DOC_CONTENT для обогащения описания проекта и архитектурных заметок — если документация содержит полезные детали (назначение проекта, ключевые решения, ограничения), включи их в соответствующие секции.
+Извлеки данные из PROJECT_PROFILE и запиши `.claude/sp-context.md`. Обогащай описание и архитектуру из DOC_CONTENT: назначение проекта, ключевые решения, ограничения.
 
 Формат файла:
 
@@ -90,7 +90,7 @@ mkdir -p .claude
 
 ## Правила
 
-- Всегда Write (overwrite) — не используй Edit, не проверяй существование файла
+- Перезаписывай файл (Write, не Edit) — source of truth это кодовая база
 - Если данные отсутствуют в PROJECT_PROFILE — ставь `NOT_FOUND`
 - Формат строго фиксированный — sp-скиллы парсят этот файл
 - Базовые секции (Stack, Commands, Architecture, Conventions) — обязательные. Domain Models, API Endpoints, Key Abstractions, Environment Variables — условные: пиши только при наличии данных в DOMAIN_FINDINGS

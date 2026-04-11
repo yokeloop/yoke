@@ -21,6 +21,9 @@ color: green
 **DOC_CONTENT (документация проекта):**
 {{DOC_CONTENT}}
 
+**DOMAIN_FINDINGS (доменный контекст):**
+{{DOMAIN_FINDINGS}}
+
 **ISSUES (опционально, для re-dispatch):**
 {{ISSUES}}
 
@@ -47,8 +50,10 @@ color: green
    - Project description (используй DOC_CONTENT как источник описания проекта)
    - Команды (build, test, lint, format, deploy)
    - Структура директорий с ролями
+   - Architecture — data flow из `DOMAIN_FINDINGS.API_ENDPOINTS` + `DOMAIN_FINDINGS.DOMAIN_MODELS`, key abstractions из `DOMAIN_FINDINGS.KEY_ABSTRACTIONS`
+   - Environment — переменные окружения из `DOMAIN_FINDINGS.ENV_VARS`
    - Conventions (naming, commits, branching)
-   - Non-obvious решения и gotchas (извлекай из DOC_CONTENT — workarounds, ограничения, нестандартные решения)
+   - Non-obvious решения и gotchas (извлекай из DOC_CONTENT — workarounds, ограничения; из `DOMAIN_FINDINGS.CODE_WORKAROUNDS` — code-level workarounds)
    - Workflows и процессы (извлекай из DOC_CONTENT — CI/CD, deploy, release flow)
 4. Write CLAUDE.md в корень проекта
 
@@ -58,6 +63,7 @@ color: green
 2. Определи недостающие секции, сравнивая с quality-criteria:
    - Commands — задокументированы ли build/test/lint/deploy?
    - Architecture — есть ли структура директорий с ролями?
+   - Environment — задокументированы ли переменные окружения?
    - Non-obvious — зафиксированы ли gotchas/workarounds?
    - Conventions — описаны ли project-specific conventions?
 3. Для каждой недостающей секции — добавь через Edit, используя DOC_CONTENT как источник:

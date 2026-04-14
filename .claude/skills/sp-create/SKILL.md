@@ -1,394 +1,394 @@
 ---
 name: sp-create
 description: >-
-  Фабрика скиллов для плагина sp. Полный pipeline создания нового скилла:
-  анализ задачи, проектирование с mermaid-диаграммой, реализация SKILL.md
-  и агентов, валидация качества, создание документации, обновление README и CLAUDE.md.
-  Используется когда пользователь пишет "создай скилл", "новый скилл", "new skill",
-  "добавь скилл", "сделай скилл", "skill for", "скилл для".
+  Skill factory for the sp plugin. Full pipeline for creating a new skill:
+  task analysis, design with a mermaid diagram, implementation of SKILL.md
+  and agents, quality validation, documentation creation, updating README and CLAUDE.md.
+  Used when the user writes "create a skill", "new skill", "add a skill",
+  "make a skill", "skill for".
 ---
 
-# Фабрика скиллов
+# Skill factory
 
-Ты — оркестратор создания новых скиллов для плагина sp. Координируй работу через TodoWrite и sub-agents. AskUserQuestion — для уточнений и подтверждений.
+You are the orchestrator for creating new skills for the sp plugin. Coordinate the work through TodoWrite and sub-agents. Use AskUserQuestion for clarifications and confirmations.
 
-Работай без остановок между фазами, кроме Фазы 3 (подтверждение плана).
+Work without pauses between phases, except for Phase 3 (plan confirmation).
 
 ---
 
-## Вход
+## Input
 
-`$ARGUMENTS` — описание скилла: что он должен делать, примеры использования, URL тикета или путь к файлу с описанием.
+`$ARGUMENTS` — skill description: what it should do, usage examples, ticket URL, or path to a file with the description.
 
-Если `$ARGUMENTS` пуст — спроси через AskUserQuestion: "Опиши что должен делать новый скилл."
+If `$ARGUMENTS` is empty — ask via AskUserQuestion: "Describe what the new skill should do."
 
 ---
 
 ## Pipeline
 
-8 фаз. Создай TodoWrite в начале:
+8 phases. Create a TodoWrite at the start:
 
 ```
-[ ] Preflight: проверить корень проекта
-[ ] Analyze: понять задачу и контекст
-[ ] Design: спроектировать скилл с mermaid-диаграммой
-[ ] Confirm: согласовать план с пользователем
-[ ] Implement: создать SKILL.md, агентов, reference
-[ ] Validate: проверить качество прозы и структуры
+[ ] Preflight: verify the project root
+[ ] Analyze: understand the task and context
+[ ] Design: design the skill with a mermaid diagram
+[ ] Confirm: agree on the plan with the user
+[ ] Implement: create SKILL.md, agents, reference
+[ ] Validate: check prose quality and structure
 [ ] Integrate: docs, README, CLAUDE.md
-[ ] Complete: итоговая сводка
+[ ] Complete: final summary
 ```
 
 ---
 
-## Фаза 0 — Preflight
+## Phase 0 — Preflight
 
-Проверь что мы в корне проекта sp:
+Verify that we are in the sp project root:
 
 ```bash
 test -f .claude-plugin/plugin.json && test -d skills/
 ```
 
-Если нет → сообщи: "Запусти из корня проекта sp." Выйди.
+If not → report: "Run from the sp project root." Exit.
 
 ---
 
-## Фаза 1 — Analyze
+## Phase 1 — Analyze
 
-Запусти 2 агента параллельно (model: sonnet, subagent_type: general-purpose).
+Run 2 agents in parallel (model: sonnet, subagent_type: general-purpose).
 
-### Agent 1 — Анализ задачи
+### Agent 1 — Task analysis
 
-Промт:
+Prompt:
 
-> Проанализируй запрос пользователя на создание нового скилла для плагина sp.
+> Analyze the user's request for creating a new skill for the sp plugin.
 >
-> Запрос пользователя: `<$ARGUMENTS>`
+> User request: `<$ARGUMENTS>`
 >
-> Определи:
-> 1. **GOAL** — что скилл должен делать (1-2 предложения)
-> 2. **TRIGGERS** — при каких фразах активируется (минимум 5 trigger-фраз на русском и английском)
-> 3. **INPUT** — что принимает через $ARGUMENTS
-> 4. **OUTPUT** — что производит (артефакты, файлы, действия)
-> 5. **PHASES** — предварительная декомпозиция на фазы (3-7 фаз)
-> 6. **AGENTS_NEEDED** — нужны ли sub-agents, если да — какие роли
-> 7. **REFERENCES_NEEDED** — нужны ли reference-файлы с шаблонами/форматами
-> 8. **COMPLEXITY** — simple (1-2 фазы, без агентов) | medium (3-5 фаз, 1-3 агента) | complex (5+ фаз, 3+ агентов)
+> Determine:
+> 1. **GOAL** — what the skill should do (1-2 sentences)
+> 2. **TRIGGERS** — which phrases activate it (at least 5 trigger phrases in Russian and English)
+> 3. **INPUT** — what it accepts through $ARGUMENTS
+> 4. **OUTPUT** — what it produces (artifacts, files, actions)
+> 5. **PHASES** — preliminary decomposition into phases (3-7 phases)
+> 6. **AGENTS_NEEDED** — whether sub-agents are needed, and if so — which roles
+> 7. **REFERENCES_NEEDED** — whether reference files with templates/formats are needed
+> 8. **COMPLEXITY** — simple (1-2 phases, no agents) | medium (3-5 phases, 1-3 agents) | complex (5+ phases, 3+ agents)
 >
-> Если в запросе есть URL или путь к файлу — прочитай и извлеки требования.
+> If the request contains a URL or a file path — read it and extract requirements.
 >
-> Верни structured output с полями выше.
+> Return structured output with the fields above.
 
-### Agent 2 — Анализ существующих скиллов
+### Agent 2 — Analysis of existing skills
 
-Промт:
+Prompt:
 
-> Проанализируй все существующие скиллы в директории `skills/` проекта sp для обеспечения консистентности нового скилла.
+> Analyze all existing skills in the `skills/` directory of the sp project to ensure consistency of the new skill.
 >
-> Для каждого `skills/*/SKILL.md`:
-> 1. Прочитай frontmatter (name, description)
-> 2. Определи паттерн: количество фаз, количество агентов, используемые модели (haiku/sonnet/opus)
-> 3. Отметь стилистические конвенции: язык, формат заголовков, шаблоны фраз
+> For each `skills/*/SKILL.md`:
+> 1. Read the frontmatter (name, description)
+> 2. Determine the pattern: number of phases, number of agents, models used (haiku/sonnet/opus)
+> 3. Note stylistic conventions: language, header format, phrase templates
 >
-> Также прочитай:
-> - Один docs-файл (`docs/fix.md` или `docs/explore.md`) как шаблон документации
-> - README.md — секцию "Скиллы" как шаблон для новой записи
-> - CLAUDE.md — секцию "Implemented skills"
+> Also read:
+> - One docs file (`docs/fix.md` or `docs/explore.md`) as a documentation template
+> - README.md — the "Skills" section as a template for the new entry
+> - CLAUDE.md — the "Implemented skills" section
 >
-> Верни:
+> Return:
 > ```
-> SKILL_COUNT: <число>
-> COMMON_PHASES: <типичные фазы>
-> AGENT_MODELS: <какие модели для каких ролей>
-> STYLE_CONVENTIONS: <ключевые конвенции>
-> DOC_TEMPLATE: <структура docs/*.md>
-> README_TEMPLATE: <структура записи в README>
-> CLAUDE_MD_TEMPLATE: <формат записи в CLAUDE.md>
+> SKILL_COUNT: <number>
+> COMMON_PHASES: <typical phases>
+> AGENT_MODELS: <which models for which roles>
+> STYLE_CONVENTIONS: <key conventions>
+> DOC_TEMPLATE: <structure of docs/*.md>
+> README_TEMPLATE: <structure of a README entry>
+> CLAUDE_MD_TEMPLATE: <format of an entry in CLAUDE.md>
 > ```
 
-Дождись обоих агентов. Объедини результаты: TASK_ANALYSIS + CONVENTIONS.
+Wait for both agents. Merge the results: TASK_ANALYSIS + CONVENTIONS.
 
-TodoWrite: отметь "Analyze" выполненным.
+TodoWrite: mark "Analyze" as done.
 
 ---
 
-## Фаза 2 — Design
+## Phase 2 — Design
 
-На основе анализа спроектируй скилл. Действуй сам (без агентов).
+Based on the analysis, design the skill. Act yourself (without agents).
 
-### 2a. Определи название
+### 2a. Choose the name
 
-Название = kebab-case, английский, 1-2 слова. Предложи 2-3 варианта через AskUserQuestion.
+Name = kebab-case, English, 1-2 words. Propose 2-3 variants via AskUserQuestion.
 
-### 2b. Спроектируй архитектуру
+### 2b. Design the architecture
 
-Определи:
+Determine:
 
-- **Фазы** — список фаз с названиями и описанием
-- **Агенты** — для каждого агента: name, роль, model (haiku для сбора данных, sonnet для анализа, opus для реализации), tools
-- **Reference-файлы** — шаблоны и форматы если нужны
-- **Input/Output** — что принимает и что производит
+- **Phases** — list of phases with names and descriptions
+- **Agents** — for each agent: name, role, model (haiku for data gathering, sonnet for analysis, opus for implementation), tools
+- **Reference files** — templates and formats if needed
+- **Input/Output** — what it accepts and what it produces
 
-### 2c. Mermaid flow-диаграмма
+### 2c. Mermaid flow diagram
 
-Создай mermaid-диаграмму прохождения по скиллу:
+Create a mermaid diagram of the skill's flow:
 
 ```mermaid
 flowchart TD
-    A[Вход: $ARGUMENTS] --> B[Фаза 1: ...]
-    B --> C{Решение}
-    C -->|Вариант 1| D[Фаза 2: ...]
-    C -->|Вариант 2| E[Выход]
-    D --> F[Фаза 3: ...]
+    A[Input: $ARGUMENTS] --> B[Phase 1: ...]
+    B --> C{Decision}
+    C -->|Option 1| D[Phase 2: ...]
+    C -->|Option 2| E[Output]
+    D --> F[Phase 3: ...]
 ```
 
-Включи: фазы, точки принятия решений (AskUserQuestion), агентов (как sub-процессы), артефакты.
+Include: phases, decision points (AskUserQuestion), agents (as sub-processes), artifacts.
 
-### 2d. Сформируй план
+### 2d. Compose the plan
 
-Объедини в план:
+Combine into a plan:
 
 ```
-Скилл: /<name> — <описание>
+Skill: /<name> — <description>
 
-Фазы:
-  1. <Название> — <что делает> [agent: <name>, model: <model>]
-  2. <Название> — <что делает>
+Phases:
+  1. <Name> — <what it does> [agent: <name>, model: <model>]
+  2. <Name> — <what it does>
   ...
 
-Агенты:
-  - <agent-name> (model) — <роль>
+Agents:
+  - <agent-name> (model) — <role>
   ...
 
 Reference:
-  - <file-name>.md — <назначение>
+  - <file-name>.md — <purpose>
   ...
 
-Артефакты: <что создаётся>
+Artifacts: <what is created>
 
 Mermaid:
-<диаграмма>
+<diagram>
 ```
 
-TodoWrite: отметь "Design" выполненным.
+TodoWrite: mark "Design" as done.
 
 ---
 
-## Фаза 3 — Confirm
+## Phase 3 — Confirm
 
-Покажи план пользователю (включая mermaid-диаграмму). AskUserQuestion:
+Show the plan to the user (including the mermaid diagram). AskUserQuestion:
 
-- **Утвердить и реализовать** (Recommended)
-- **Доработать план** — пользователь описывает что изменить → вернуться к Фазе 2
-- **Отменить** → выйди
+- **Approve and implement** (Recommended)
+- **Refine the plan** — the user describes what to change → return to Phase 2
+- **Cancel** → exit
 
-Максимум 3 цикла доработки. После третьего — только "Утвердить" или "Отменить".
+Maximum 3 refinement cycles. After the third — only "Approve" or "Cancel".
 
-TodoWrite: отметь "Confirm" выполненным.
+TodoWrite: mark "Confirm" as done.
 
 ---
 
-## Фаза 4 — Implement
+## Phase 4 — Implement
 
-Создай все файлы скилла. Действуй последовательно.
+Create all skill files. Act sequentially.
 
-### 4a. Структура директории
+### 4a. Directory structure
 
 ```bash
 mkdir -p skills/<name>/agents skills/<name>/reference
 ```
 
-Создавай `agents/` и `reference/` только если они нужны по плану.
+Create `agents/` and `reference/` only if they are needed by the plan.
 
 ### 4b. SKILL.md
 
-Создай `skills/<name>/SKILL.md` через Write tool.
+Create `skills/<name>/SKILL.md` via the Write tool.
 
-Следуй конвенциям sp:
+Follow sp conventions:
 
-- **Frontmatter**: `name` и `description` (description в третьем лице, минимум 5 trigger-фраз)
-- **Заголовок**: `# <Название на русском>`
-- **Роль**: "Ты — оркестратор." + краткое описание
-- **Вход**: секция `## Вход` с описанием `$ARGUMENTS`
-- **Фазы**: `## Фаза N — <Название>` с переходами
-- **Правила**: секция `## Правила` в конце
-- **Язык**: русский для контента
-- **Императив**: "Запусти", "Создай", "Проверь" (не "Вы должны")
-- **TodoWrite**: отмечай каждую фазу
+- **Frontmatter**: `name` and `description` (description in third person, at least 5 trigger phrases)
+- **Heading**: `# <Name>`
+- **Role**: "You are the orchestrator." + brief description
+- **Input**: a `## Input` section describing `$ARGUMENTS`
+- **Phases**: `## Phase N — <Name>` with transitions
+- **Rules**: a `## Rules` section at the end
+- **Language**: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
+- **Imperative**: "Run", "Create", "Verify" (not "You must")
+- **TodoWrite**: mark each phase
 
-### 4c. Агенты
+### 4c. Agents
 
-Для каждого агента создай `skills/<name>/agents/<agent-name>.md`:
+For each agent create `skills/<name>/agents/<agent-name>.md`:
 
 ```yaml
 ---
 name: <agent-name>
 description: >-
-  <Описание роли агента в третьем лице>
-tools: <список через запятую>
+  <Description of the agent's role in third person>
+tools: <comma-separated list>
 model: <haiku | sonnet | opus>
 color: <cyan | blue | green | yellow>
 ---
 ```
 
-Конвенции выбора модели:
-- **haiku**: сбор данных, форматирование, запись файлов (быстрые операции)
-- **sonnet**: анализ, исследование, валидация (сбалансированный)
-- **opus**: реализация кода, сложная логика (качество критично)
+Model selection conventions:
+- **haiku**: data gathering, formatting, writing files (fast operations)
+- **sonnet**: analysis, research, validation (balanced)
+- **opus**: code implementation, complex logic (quality is critical)
 
-Конвенции цветов:
-- **cyan**: git-операции и инфраструктура
-- **blue**: основная реализация
-- **green**: полировка и форматирование
-- **yellow**: предупреждения и алерты
+Color conventions:
+- **cyan**: git operations and infrastructure
+- **blue**: core implementation
+- **green**: polishing and formatting
+- **yellow**: warnings and alerts
 
-### 4d. Reference-файлы
+### 4d. Reference files
 
-Создай `skills/<name>/reference/<topic>.md` для шаблонов, форматов, гайдов.
+Create `skills/<name>/reference/<topic>.md` for templates, formats, and guides.
 
-### 4e. Examples (опционально)
+### 4e. Examples (optional)
 
-Если скилл производит артефакты — создай `skills/<name>/examples/` с примерами выходных файлов.
+If the skill produces artifacts — create `skills/<name>/examples/` with examples of output files.
 
-TodoWrite: отметь "Implement" выполненным.
-
----
-
-## Фаза 5 — Validate
-
-Запусти 2 агента параллельно (model: sonnet).
-
-### Agent 3 — Проверка прозы (elements-of-style)
-
-Промт:
-
-> Проверь качество текста в SKILL.md и agent-файлах нового скилла `skills/<name>/`.
->
-> Прочитай все .md файлы в `skills/<name>/`.
->
-> Проверь по правилам (для русскоязычного текста):
-> 1. **Активный залог** — "Агент собирает данные" не "Данные собираются агентом"
-> 2. **Позитивные утверждения** — "Используй X" не "Не забудь использовать X"
-> 3. **Конкретный язык** — без "различные", "соответствующие", "определённые"
-> 4. **Лишние слова** — без "в целом", "по сути", "в принципе"
-> 5. **Краткость** — можно ли сократить без потери смысла
-> 6. **Императив** — "Запусти" не "Нужно запустить"
->
-> Верни:
-> ```
-> FILES_CHECKED: <число>
-> ISSUES_COUNT: <число>
-> ISSUES:
->   - FILE: <путь> | LINE: <цитата> | RULE: <номер> | FIX: <как исправить>
-> ```
-
-### Agent 4 — Валидация структуры (skill-development)
-
-Промт:
-
-> Проверь структуру нового скилла `skills/<name>/` по best practices.
->
-> Прочитай все файлы в `skills/<name>/`.
->
-> Проверки:
-> 1. **Frontmatter**: SKILL.md имеет name и description
-> 2. **Name**: совпадает с именем директории
-> 3. **Description**: третье лицо, минимум 3 trigger-фразы, не расплывчатый
-> 4. **Agent frontmatter**: каждый agents/*.md имеет name, description, tools, model, color
-> 5. **Agent references**: все agents упомянутые в SKILL.md существуют в agents/
-> 6. **Reference integrity**: все reference/ файлы упомянутые в SKILL.md существуют
-> 7. **Body size**: SKILL.md < 500 строк (рекомендация)
-> 8. **Phases**: фазы пронумерованы, имеют названия
-> 9. **TodoWrite**: упоминается для отслеживания прогресса
-> 10. **Rules section**: секция "Правила" в конце SKILL.md
->
-> Верни:
-> ```
-> CHECKS_PASSED: <число из 10>
-> CHECKS_FAILED: <число>
-> ISSUES:
->   - CHECK: <номер> | DETAIL: <что не так>
-> ```
-
-Дождись обоих агентов.
-
-Если замечаний > 0 → покажи список, исправь проблемы через Edit tool, сообщи что исправлено.
-
-TodoWrite: отметь "Validate" выполненным.
+TodoWrite: mark "Implement" as done.
 
 ---
 
-## Фаза 6 — Integrate
+## Phase 5 — Validate
 
-### 6a. Документация
+Run 2 agents in parallel (model: sonnet).
 
-Создай `docs/<name>.md` по шаблону:
+### Agent 3 — Prose check (elements-of-style)
+
+Prompt:
+
+> Check the text quality in SKILL.md and the agent files of the new skill `skills/<name>/`.
+>
+> Read all .md files in `skills/<name>/`.
+>
+> Check against the rules:
+> 1. **Active voice** — "The agent gathers data" not "Data is gathered by the agent"
+> 2. **Positive statements** — "Use X" not "Don't forget to use X"
+> 3. **Concrete language** — no "various", "appropriate", "certain"
+> 4. **Extra words** — no "in general", "essentially", "basically"
+> 5. **Brevity** — can it be shortened without losing meaning
+> 6. **Imperative** — "Run" not "You need to run"
+>
+> Return:
+> ```
+> FILES_CHECKED: <number>
+> ISSUES_COUNT: <number>
+> ISSUES:
+>   - FILE: <path> | LINE: <quote> | RULE: <number> | FIX: <how to fix>
+> ```
+
+### Agent 4 — Structure validation (skill-development)
+
+Prompt:
+
+> Validate the structure of the new skill `skills/<name>/` against best practices.
+>
+> Read all files in `skills/<name>/`.
+>
+> Checks:
+> 1. **Frontmatter**: SKILL.md has name and description
+> 2. **Name**: matches the directory name
+> 3. **Description**: third person, at least 3 trigger phrases, not vague
+> 4. **Agent frontmatter**: each agents/*.md has name, description, tools, model, color
+> 5. **Agent references**: all agents mentioned in SKILL.md exist in agents/
+> 6. **Reference integrity**: all reference/ files mentioned in SKILL.md exist
+> 7. **Body size**: SKILL.md < 500 lines (recommendation)
+> 8. **Phases**: phases are numbered, have names
+> 9. **TodoWrite**: mentioned for progress tracking
+> 10. **Rules section**: a "Rules" section at the end of SKILL.md
+>
+> Return:
+> ```
+> CHECKS_PASSED: <number out of 10>
+> CHECKS_FAILED: <number>
+> ISSUES:
+>   - CHECK: <number> | DETAIL: <what's wrong>
+> ```
+
+Wait for both agents.
+
+If issues > 0 → show the list, fix the problems via the Edit tool, report what was fixed.
+
+TodoWrite: mark "Validate" as done.
+
+---
+
+## Phase 6 — Integrate
+
+### 6a. Documentation
+
+Create `docs/<name>.md` from the template:
 
 ```markdown
-# Скилл /<name>
+# Skill /<name>
 
-<1-2 предложения: что делает скилл>
+<1-2 sentences: what the skill does>
 
-## Вход
+## Input
 
-<описание входа и примеры>
+<input description and examples>
 
 ```
 /sp:<name> <argument>
 ```
 
-## Фазы
+## Phases
 
-| Фаза | Название | Что происходит |
-| ---- | -------- | -------------- |
-| 1    | **...**  | ...            |
+| Phase | Name    | What happens |
+| ----- | ------- | ------------ |
+| 1     | **...** | ...          |
 
-## Выход
+## Output
 
-<что производит>
+<what it produces>
 
-## Субагенты
+## Sub-agents
 
-| Агент | Модель | Роль |
-| ----- | ------ | ---- |
-| `...` | ...    | ...  |
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `...` | ...   | ...  |
 
-## Пример
+## Example
 
-<конкретный пример использования>
+<concrete usage example>
 
-## Связи
+## Relations
 
-<как связан с другими скиллами>
+<how it relates to other skills>
 ```
 
 ### 6b. README.md
 
-Добавь секцию нового скилла в README.md перед `### /hi`. Формат:
+Add a section for the new skill in README.md before `### /hi`. Format:
 
 ```markdown
-### /<name> — <краткое описание>
+### /<name> — <short description>
 
-<2-3 предложения>. [Подробнее →](docs/<name>.md)
+<2-3 sentences>. [More →](docs/<name>.md)
 
 ```
-/sp:<name> <пример>
+/sp:<name> <example>
 ```
 
-**Выход:** <описание артефактов>
+**Output:** <artifact description>
 ```
 
-Также обнови дерево структуры в секции "Структура", добавив директорию нового скилла.
+Also update the structure tree in the "Structure" section, adding the new skill's directory.
 
 ### 6c. CLAUDE.md
 
-Добавь запись в секцию "Implemented skills":
+Add an entry to the "Implemented skills" section:
 
 ```
-- `/<name>` — <краткое описание>
+- `/<name>` — <short description>
 ```
 
-Проверь секцию "Planned skills" — если новый скилл был в planned, убери его оттуда.
+Check the "Planned skills" section — if the new skill was in planned, remove it from there.
 
 ### 6d. Format
 
@@ -396,48 +396,48 @@ TodoWrite: отметь "Validate" выполненным.
 pnpm run format
 ```
 
-TodoWrite: отметь "Integrate" выполненным.
+TodoWrite: mark "Integrate" as done.
 
 ---
 
-## Фаза 7 — Complete
+## Phase 7 — Complete
 
-Выведи итог:
+Print the summary:
 
 ```
-Скилл /<name> создан
+Skill /<name> created
 
-Файлы:
+Files:
   skills/<name>/SKILL.md
   skills/<name>/agents/<agent1>.md
   skills/<name>/agents/<agent2>.md
   skills/<name>/reference/<ref>.md
   docs/<name>.md
 
-Обновлено:
-  README.md — добавлена секция /<name>
-  CLAUDE.md — добавлен в Implemented skills
+Updated:
+  README.md — added a /<name> section
+  CLAUDE.md — added to Implemented skills
 ```
 
 AskUserQuestion:
 
-- **Закоммитить через /sp:gca** (Recommended)
-- **Протестировать скилл** — пользователь тестирует, возвращается с фидбэком
-- **Завершить** → выйди
+- **Commit via /sp:gca** (Recommended)
+- **Test the skill** — the user tests it and returns with feedback
+- **Finish** → exit
 
-При выборе "Протестировать": дождись фидбэка, исправь замечания через Edit tool, покажи обновлённый итог.
+If "Test" is chosen: wait for feedback, fix the issues via the Edit tool, show the updated summary.
 
-TodoWrite: отметь "Complete" выполненным.
+TodoWrite: mark "Complete" as done.
 
 ---
 
-## Правила
+## Rules
 
-- Все файлы скилла — на русском. Commit messages и frontmatter name — на английском.
-- Файлы и директории — kebab-case.
-- Description в SKILL.md и агентах — третье лицо с trigger-фразами.
-- Агенты Фазы 1 и 5 — read-only, не модифицируют файлы.
-- Максимум 3 цикла доработки плана в Фазе 3.
-- Не создавай пустые директории (agents/, reference/) если они не нужны.
-- При ошибке — покажи проблему и предложи решение.
-- Отмечай каждую фазу через TodoWrite сразу по завершении.
+- Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md. Commit messages and frontmatter `name` — in English.
+- Files and directories — kebab-case.
+- Description in SKILL.md and agents — third person with trigger phrases.
+- Phase 1 and Phase 5 agents — read-only, do not modify files.
+- Maximum 3 plan refinement cycles in Phase 3.
+- Do not create empty directories (agents/, reference/) if they are not needed.
+- On error — show the problem and propose a solution.
+- Mark each phase via TodoWrite immediately upon completion.

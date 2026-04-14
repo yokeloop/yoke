@@ -1,140 +1,140 @@
 ---
 name: hi
 description: >-
-  Приветственный скилл — объясняет доступные скиллы плагина sp и как с ними работать.
-  Используется когда пользователь пишет "hi", "привет", "что умеешь",
-  "помощь", "help", "с чего начать", "какие скиллы",
-  или при первом знакомстве с sp.
+  Welcome skill — explains the skills available in the sp plugin and how to work with them.
+  Used when the user writes "hi", "hello", "what can you do",
+  "help", "where to start", "which skills",
+  or on first encounter with sp.
 ---
 
-# Добро пожаловать в sp
+# Welcome to sp
 
-**sp** — маркетплейс скиллов и команд для Claude Code, вдохновлённый [obra/superpowers](https://github.com/obra/superpowers).
+**sp** — a marketplace of skills and commands for Claude Code, inspired by [obra/superpowers](https://github.com/obra/superpowers).
 
-## Скиллы
+## Skills
 
-### /task — формирование задачи
+### /task — task formulation
 
-Принимает URL тикета или текст описания. Исследует кодовую базу, анализирует архитектуру и формирует промт-задачу: контекст, requirements, constraints, уточняющие вопросы.
+Accepts a ticket URL or description text. Explores the codebase, analyzes the architecture, and produces a prompt-task: context, requirements, constraints, clarifying questions.
 
-**Вход:** URL тикета или текст → **Выход:** `docs/ai/<slug>/<slug>-task.md`
+**Input:** ticket URL or text → **Output:** `docs/ai/<slug>/<slug>-task.md`
 
 ```
 /sp:task https://github.com/owner/repo/issues/86
 
-добавить тёмную тему в настройки
+add dark theme to settings
 ```
 
-### /plan — построение плана реализации
+### /plan — building the implementation plan
 
-Читает task-файл, исследует кодовую базу, принимает design decisions и декомпозирует задачу на атомарные tasks с зависимостями и порядком.
+Reads the task file, explores the codebase, makes design decisions, and decomposes the task into atomic tasks with dependencies and order.
 
-**Вход:** путь к task-файлу → **Выход:** `docs/ai/<slug>/<slug>-plan.md`
+**Input:** path to task file → **Output:** `docs/ai/<slug>/<slug>-plan.md`
 
 ```
 /sp:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
-### /do — выполнение задачи по плану
+### /do — executing the task by plan
 
-Делегирует tasks sub-agents, проводит двухэтапный review (spec compliance -> code quality), полирует код, валидирует, обновляет документацию, пишет отчёт.
+Delegates tasks to sub-agents, runs a two-stage review (spec compliance -> code quality), polishes the code, validates, updates documentation, writes the report.
 
-**Вход:** путь к plan-файлу → **Выход:** реализованный код + `docs/ai/<slug>/<slug>-report.md`
+**Input:** path to plan file → **Output:** implemented code + `docs/ai/<slug>/<slug>-report.md`
 
 ```
 /sp:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
 ```
 
-### /review — подготовка отчёта для code review
+### /review — preparing the code review report
 
-Анализирует изменения относительно origin/main. Формирует отчёт: ключевые участки, сложные решения, риски, вопросы к ревьюеру, сценарии проверки.
+Analyzes changes against origin/main. Produces a report: key areas, complex decisions, risks, questions for the reviewer, verification scenarios.
 
-**Вход:** task-slug → **Выход:** `docs/ai/<slug>/<slug>-review.md`
+**Input:** task-slug → **Output:** `docs/ai/<slug>/<slug>-review.md`
 
 ```
 /sp:review 86-black-jack-page
 ```
 
-## Полный цикл
+## Full cycle
 
 ```
-/sp:explore <тема>                # исследовать кодовую базу
-/sp:task <тикет или описание>     # сформировать задачу
-  → ответить на вопросы в файле
-/sp:plan <путь к task-файлу>      # построить план
-  → ответить на вопросы в файле
-/sp:do <путь к plan-файлу>        # выполнить план
-/sp:fix <описание>               # быстрый фикс после /do
-/sp:review <slug>                 # подготовить review
-/sp:gp                           # push в remote
-/sp:pr                           # создать pull request
+/sp:explore <topic>                # explore the codebase
+/sp:task <ticket or description>   # formulate the task
+  → answer questions in the file
+/sp:plan <path to task file>       # build the plan
+  → answer questions in the file
+/sp:do <path to plan file>         # execute the plan
+/sp:fix <description>              # quick fix after /do
+/sp:review <slug>                  # prepare review
+/sp:gp                             # push to remote
+/sp:pr                             # create pull request
 ```
 
-### /gca — git commit с умной группировкой
+### /gca — git commit with smart grouping
 
-Анализирует изменённые файлы, классифицирует по группам, формирует атомарные коммиты с Conventional Commits на английском. Ticket ID определяет из аргументов, ветки или SP flow.
+Analyzes changed files, classifies them into groups, and produces atomic commits with Conventional Commits in English. Determines the ticket ID from arguments, the branch, or the sp flow.
 
-**Вход:** опционально ticket ID или URL -> **Выход:** атомарные git-коммиты
+**Input:** optionally ticket ID or URL -> **Output:** atomic git commits
 
 ```
 /sp:gca
 /sp:gca #86
 ```
 
-### /gp — git push с проверками и отчётом
+### /gp — git push with checks and report
 
-Проверяет состояние репозитория (ветка, upstream, uncommitted changes, gh auth), пушит в remote, выводит отчёт: отправленные коммиты, diff stat, ссылка на ветку, статус PR.
+Checks the repository state (branch, upstream, uncommitted changes, gh auth), pushes to remote, prints a report: pushed commits, diff stat, branch link, PR status.
 
-**Вход:** опционально `--force-with-lease` → **Выход:** push + отчёт
+**Input:** optionally `--force-with-lease` → **Output:** push + report
 
 ```
 /sp:gp
 /sp:gp --force-with-lease
 ```
 
-### /pr — создание и обновление Pull Request
+### /pr — creating and updating a Pull Request
 
-Создаёт или обновляет GitHub PR из артефактов sp flow (review + report). Формирует description с ключевыми участками, design decisions, вопросами к ревьюеру. Без артефактов — fallback на коммиты. Поддерживает PR template, auto-labels, `<!-- sp:start/end -->` маркеры для update.
+Creates or updates a GitHub PR from sp flow artifacts (review + report). Produces a description with key areas, design decisions, and questions for the reviewer. Without artifacts — falls back to commits. Supports PR template, auto-labels, `<!-- sp:start/end -->` markers for update.
 
-**Вход:** опционально `--draft`, `--base <branch>` → **Выход:** PR на GitHub
+**Input:** optionally `--draft`, `--base <branch>` → **Output:** PR on GitHub
 
 ```
 /sp:pr
 /sp:pr --draft
 ```
 
-### /fix — быстрый фикс
+### /fix — quick fix
 
-Compressed pipeline для доработок (1-3 файла). Исследует кодовую базу, реализует фикс (opus), полирует, валидирует, записывает в fix-log. Два режима: post-flow (после task/plan/do) и standalone. Поддерживает цепочки фиксов и fix from PR comment URL.
+Compressed pipeline for small changes (1-3 files). Explores the codebase, implements the fix (opus), polishes, validates, writes to fix-log. Two modes: post-flow (after task/plan/do) and standalone. Supports fix chains and fix from PR comment URL.
 
-**Вход:** описание фикса или URL PR-комментария → **Выход:** код + `docs/ai/<slug>/<slug>-fixes.md`
+**Input:** fix description or PR comment URL → **Output:** code + `docs/ai/<slug>/<slug>-fixes.md`
 
 ```
-/sp:fix поправить валидацию email
+/sp:fix correct email validation
 /sp:fix https://github.com/owner/repo/pull/42#discussion_r123456
 ```
 
-### /explore — исследование кодовой базы
+### /explore — exploring the codebase
 
-Read-only Q&A loop для исследования кодовой базы и брейнсторма. Классифицирует вопросы (codebase / web / hybrid), ищет в коде и интернете, накапливает контекст через summary chain, записывает exploration log.
+Read-only Q&A loop for codebase exploration and brainstorming. Classifies questions (codebase / web / hybrid), searches the code and the internet, accumulates context through a summary chain, writes an exploration log.
 
-**Вход:** тема или вопрос → **Выход:** `docs/ai/<slug>/<slug>-exploration.md`
+**Input:** topic or question → **Output:** `docs/ai/<slug>/<slug>-exploration.md`
 
 ```
-/sp:explore как работает аутентификация
-/sp:explore сравни Framer Motion и react-spring для наших анимаций
+/sp:explore how authentication works
+/sp:explore compare Framer Motion and react-spring for our animations
 ```
 
-## Планируемые скиллы
+## Planned skills
 
-| Скилл       | Назначение          |
-| ----------- | ------------------- |
-| `/polish`   | Полировка кода      |
-| `/qa`       | Тестирование        |
-| `/memorize` | Сохранение в память |
-| `/merge`    | Мерж веток          |
+| Skill       | Purpose              |
+| ----------- | -------------------- |
+| `/polish`   | Code polishing       |
+| `/qa`       | Testing              |
+| `/memorize` | Saving to memory     |
+| `/merge`    | Branch merging       |
 
-## Установка
+## Installation
 
 ```bash
 claude marketplace add github:projectory-com/sp

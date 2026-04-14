@@ -63,15 +63,15 @@ Remove claims that are true for any project:
 
 Signs of a problematic CLAUDE.md:
 
-| Red flag                             | Problem                                   | Fix                                  |
-| ------------------------------------ | ----------------------------------------- | ------------------------------------ |
-| File > 300 lines                     | Exceeds Claude's context window           | Move details into docs/              |
-| Unverified commands                  | May not work                              | Run each before recording            |
-| "Don't modify X" without a reason    | Unclear why, people will violate it       | Add the reason                       |
-| Duplicating README                   | README is for humans, CLAUDE.md for Claude | Remove the overlap                   |
-| Listing every project file           | Noise, Claude sees files via tools        | Keep only the key ones               |
-| Generic coding guidelines            | Don't help, take up context               | Remove entirely                      |
-| IDE instructions (VSCode settings)   | Claude doesn't use an IDE                 | Remove or move them out              |
+| Red flag                           | Problem                                    | Fix                       |
+| ---------------------------------- | ------------------------------------------ | ------------------------- |
+| File > 300 lines                   | Exceeds Claude's context window            | Move details into docs/   |
+| Unverified commands                | May not work                               | Run each before recording |
+| "Don't modify X" without a reason  | Unclear why, people will violate it        | Add the reason            |
+| Duplicating README                 | README is for humans, CLAUDE.md for Claude | Remove the overlap        |
+| Listing every project file         | Noise, Claude sees files via tools         | Keep only the key ones    |
+| Generic coding guidelines          | Don't help, take up context                | Remove entirely           |
+| IDE instructions (VSCode settings) | Claude doesn't use an IDE                  | Remove or move them out   |
 
 ## Idempotency rules
 

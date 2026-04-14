@@ -54,34 +54,34 @@ Format of the output file `<SLUG>-review.md`. The review-report-writer agent wri
 
 ## Changed Files
 
-| File             | +/-     | Description      |
-| ---------------- | ------- | ---------------- |
-| src/path/file.ts | +42/-10 | <what changed>   |
+| File             | +/-     | Description    |
+| ---------------- | ------- | -------------- |
+| src/path/file.ts | +42/-10 | <what changed> |
 
 ## Issues Found
 
-| Severity  | Score | Category    | File:line            | Description                  |
-| --------- | ----- | ----------- | -------------------- | ---------------------------- |
-| Critical  | 90    | security    | src/auth/login.ts:42 | SQL injection in query       |
-| Important | 65    | performance | src/api/list.ts:15   | N+1 query in loop            |
-| Minor     | 30    | style       | src/utils/fmt.ts:8   | Unused import                |
+| Severity  | Score | Category    | File:line            | Description            |
+| --------- | ----- | ----------- | -------------------- | ---------------------- |
+| Critical  | 90    | security    | src/auth/login.ts:42 | SQL injection in query |
+| Important | 65    | performance | src/api/list.ts:15   | N+1 query in loop      |
+| Minor     | 30    | style       | src/utils/fmt.ts:8   | Unused import          |
 
 > No issues — replace the table with text: **Code is clean.**
 
 ## Fixed Issues
 
-| Issue                       | Commit    | Description                  |
-| --------------------------- | --------- | ---------------------------- |
-| SQL injection in login.ts:42 | `def5678` | Parameterized query          |
-| N+1 query in list.ts:15     | `ghi9012` | Batch load via Promise       |
+| Issue                        | Commit    | Description            |
+| ---------------------------- | --------- | ---------------------- |
+| SQL injection in login.ts:42 | `def5678` | Parameterized query    |
+| N+1 query in list.ts:15      | `ghi9012` | Batch load via Promise |
 
 > No fixes — replace the table with text: **All issues fixed.**
 
 ## Skipped Issues
 
-| Issue          | Reason                           |
-| -------------- | -------------------------------- |
-| Unused import  | Stylistic, out of PR scope       |
+| Issue         | Reason                     |
+| ------------- | -------------------------- |
+| Unused import | Stylistic, out of PR scope |
 
 > No skipped — replace the table with text: **All found issues were fixed.**
 

@@ -14,13 +14,13 @@ For each of the 5 dimensions: write one sentence of reasoning aloud (a "CoT step
 
 **Rule:** one verb — one action. Replace vague verbs with concrete ones.
 
-| Vague                     | Concrete                                                                 |
-| ------------------------- | ------------------------------------------------------------------------ |
-| process                   | parse / write to DB / enqueue                                            |
-| improve                   | cut response time from ~800ms to <200ms                                  |
-| fix                       | return 404 instead of 500 when the user is not found                     |
-| add support               | accept `multipart/form-data` on endpoint `POST /upload`                  |
-| refactor                  | split `UserService` (src/services/user.ts:1–340) into three classes      |
+| Vague       | Concrete                                                            |
+| ----------- | ------------------------------------------------------------------- |
+| process     | parse / write to DB / enqueue                                       |
+| improve     | cut response time from ~800ms to <200ms                             |
+| fix         | return 404 instead of 500 when the user is not found                |
+| add support | accept `multipart/form-data` on endpoint `POST /upload`             |
+| refactor    | split `UserService` (src/services/user.ts:1–340) into three classes |
 
 **Task section format:**
 
@@ -213,12 +213,12 @@ Use it for 429 Too Many Requests.
 
 Classify complexity before writing the Task — it drives Output Format and Context detail.
 
-| Complexity  | Signals                                                                 | Typical Context size        |
-| ----------- | ----------------------------------------------------------------------- | --------------------------- |
-| **trivial** | 1 file, 1–5 lines, no dependencies                                      | 2–3 lines                   |
-| **simple**  | 1–2 files, clear scope, tests exist                                     | 5–15 lines                  |
-| **medium**  | 3–7 files, connections to understand, possible regressions              | 15–40 lines                 |
-| **complex** | touches architecture / multiple layers / no tests / public API          | 40+ lines, data-flow diagram |
+| Complexity  | Signals                                                        | Typical Context size         |
+| ----------- | -------------------------------------------------------------- | ---------------------------- |
+| **trivial** | 1 file, 1–5 lines, no dependencies                             | 2–3 lines                    |
+| **simple**  | 1–2 files, clear scope, tests exist                            | 5–15 lines                   |
+| **medium**  | 3–7 files, connections to understand, possible regressions     | 15–40 lines                  |
+| **complex** | touches architecture / multiple layers / no tests / public API | 40+ lines, data-flow diagram |
 
 **Signs it's harder than it looks:**
 

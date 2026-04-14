@@ -8,13 +8,13 @@ CLAUDE.md quality scoring across 6 criteria. Maximum 100 points, grades A-F.
 
 Are build, test, lint, deploy documented?
 
-| Points | Description                                                              |
-| ------ | ------------------------------------------------------------------------ |
-| 20     | All key commands with explanations, covering build/test/lint/deploy      |
-| 15     | Core commands present, but without explanations or missing one category  |
-| 10     | Only build or only test, the rest absent                                 |
-| 5      | Mentioned in passing without exact commands                              |
-| 0      | Commands absent                                                          |
+| Points | Description                                                             |
+| ------ | ----------------------------------------------------------------------- |
+| 20     | All key commands with explanations, covering build/test/lint/deploy     |
+| 15     | Core commands present, but without explanations or missing one category |
+| 10     | Only build or only test, the rest absent                                |
+| 5      | Mentioned in passing without exact commands                             |
+| 0      | Commands absent                                                         |
 
 ### 2. Architecture (20 points)
 
@@ -32,55 +32,55 @@ Is the project structure described: directories, key files, data flow?
 
 Are non-obvious decisions, gotchas, workarounds, required env vars captured?
 
-| Points | Description                                                         |
-| ------ | ------------------------------------------------------------------- |
-| 15     | 3+ non-obvious facts ("why this way"), env vars documented          |
-| 10     | 1-2 non-obvious facts                                               |
-| 5      | Mentioned without explanation                                       |
-| 0      | Absent                                                              |
+| Points | Description                                                |
+| ------ | ---------------------------------------------------------- |
+| 15     | 3+ non-obvious facts ("why this way"), env vars documented |
+| 10     | 1-2 non-obvious facts                                      |
+| 5      | Mentioned without explanation                              |
+| 0      | Absent                                                     |
 
 ### 4. Conciseness (15 points)
 
 Is the file concise, free of generic advice and boilerplate?
 
-| Points | Description                                                             |
-| ------ | ----------------------------------------------------------------------- |
-| 15     | Every line carries project-specific information                         |
-| 10     | 1-2 generic sections, but the core is concrete                          |
-| 5      | Half is generic advice ("write clean code", "follow best practices")    |
-| 0      | Mostly boilerplate                                                      |
+| Points | Description                                                          |
+| ------ | -------------------------------------------------------------------- |
+| 15     | Every line carries project-specific information                      |
+| 10     | 1-2 generic sections, but the core is concrete                       |
+| 5      | Half is generic advice ("write clean code", "follow best practices") |
+| 0      | Mostly boilerplate                                                   |
 
 ### 5. Currency (15 points)
 
 Is the file current? Commands run, paths exist, versions match?
 
-| Points | Description                                          |
-| ------ | ---------------------------------------------------- |
-| 15     | Everything is verifiable and current at review time  |
-| 10     | Mostly current, 1-2 outdated facts                   |
-| 5      | A significant portion is outdated                    |
-| 0      | File has not been updated since major changes        |
+| Points | Description                                         |
+| ------ | --------------------------------------------------- |
+| 15     | Everything is verifiable and current at review time |
+| 10     | Mostly current, 1-2 outdated facts                  |
+| 5      | A significant portion is outdated                   |
+| 0      | File has not been updated since major changes       |
 
 ### 6. Actionability (15 points)
 
 Can Claude Code act from this file without additional questions?
 
-| Points | Description                                                             |
-| ------ | ----------------------------------------------------------------------- |
-| 15     | Claude can build/test/lint/deploy without clarifications                |
-| 10     | Can perform core operations, but edge cases need clarifications         |
-| 5      | Clarifications are needed for basic operations                          |
-| 0      | The file does not help                                                  |
+| Points | Description                                                     |
+| ------ | --------------------------------------------------------------- |
+| 15     | Claude can build/test/lint/deploy without clarifications        |
+| 10     | Can perform core operations, but edge cases need clarifications |
+| 5      | Clarifications are needed for basic operations                  |
+| 0      | The file does not help                                          |
 
 ## Grades
 
-| Grade | Points | Description                                 |
-| ----- | ------ | ------------------------------------------- |
-| A     | 90-100 | Production-ready, Claude works autonomously |
-| B     | 70-89  | Good foundation, minimal clarifications     |
+| Grade | Points | Description                                  |
+| ----- | ------ | -------------------------------------------- |
+| A     | 90-100 | Production-ready, Claude works autonomously  |
+| B     | 70-89  | Good foundation, minimal clarifications      |
 | C     | 55-69  | Working file, but missing important sections |
-| D     | 40-54  | Basic skeleton, needs work                  |
-| F     | 0-39   | Absent or useless                           |
+| D     | 40-54  | Basic skeleton, needs work                   |
+| F     | 0-39   | Absent or useless                            |
 
 ## Scoring process
 

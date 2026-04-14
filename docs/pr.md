@@ -26,11 +26,11 @@ to commits and diff. Supports PR templates, auto-labels, and update markers.
 
 ## Data sources (DATA_SOURCE)
 
-| Source       | Condition                 | PR body contents                                                   |
-| ------------ | ------------------------- | ------------------------------------------------------------------ |
-| `sp_full`    | review + report found     | Summary, Attention, Design decisions, Questions, Risks, Test plan  |
-| `sp_partial` | report only               | Summary, Test plan, Changes, Commits                               |
-| `fallback`   | no sp artifacts           | Summary from commits, Changes, Commits, generic Test plan          |
+| Source       | Condition             | PR body contents                                                  |
+| ------------ | --------------------- | ----------------------------------------------------------------- |
+| `sp_full`    | review + report found | Summary, Attention, Design decisions, Questions, Risks, Test plan |
+| `sp_partial` | report only           | Summary, Test plan, Changes, Commits                              |
+| `fallback`   | no sp artifacts       | Summary from commits, Changes, Commits, generic Test plan         |
 
 ## PR body
 

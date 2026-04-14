@@ -16,12 +16,12 @@ from the branch or the latest directory under `docs/ai/`.
 
 ## Phases
 
-| Phase | Name         | What happens                                                                             |
-| ----- | ------------ | ---------------------------------------------------------------------------------------- |
-| 1     | **Parse**    | Resolve SLUG and TICKET_ID from arguments, task file path, or branch name                |
-| 2     | **Analyze**  | Sub-agent `review-analyzer` collects git data and analyzes changes across 7 dimensions   |
-| 3     | **Commit**   | Auto-commit the artifact: `TICKET docs(SLUG): add review report`                         |
-| 4     | **Complete** | Output the path to the review file                                                       |
+| Phase | Name         | What happens                                                                           |
+| ----- | ------------ | -------------------------------------------------------------------------------------- |
+| 1     | **Parse**    | Resolve SLUG and TICKET_ID from arguments, task file path, or branch name              |
+| 2     | **Analyze**  | Sub-agent `review-analyzer` collects git data and analyzes changes across 7 dimensions |
+| 3     | **Commit**   | Auto-commit the artifact: `TICKET docs(SLUG): add review report`                       |
+| 4     | **Complete** | Output the path to the review file                                                     |
 
 ## Output
 
@@ -37,9 +37,9 @@ File `docs/ai/<slug>/<slug>-review.md` with 7 sections:
 
 ## Sub-agents
 
-| Agent             | Model  | Role                                                                        |
-| ----------------- | ------ | --------------------------------------------------------------------------- |
-| `review-analyzer` | sonnet | Collects git data, analyzes diff, writes a 7-dimension review report        |
+| Agent             | Model  | Role                                                                 |
+| ----------------- | ------ | -------------------------------------------------------------------- |
+| `review-analyzer` | sonnet | Collects git data, analyzes diff, writes a 7-dimension review report |
 
 ## Example
 

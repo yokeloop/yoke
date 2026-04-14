@@ -40,13 +40,13 @@ Priority cascade:
 
 The user passes a ticket ID or URL.
 
-| Input                              | Ticket ID  |
-| ---------------------------------- | ---------- |
-| `86` or `#86`                      | `#86`      |
-| `R2-50`                            | `R2-50`    |
-| `PROJ-123`                         | `PROJ-123` |
-| `https://github.com/.../issues/86` | `#86`      |
-| YouTrack URL with `/issue/PROJ-123`| `PROJ-123` |
+| Input                               | Ticket ID  |
+| ----------------------------------- | ---------- |
+| `86` or `#86`                       | `#86`      |
+| `R2-50`                             | `R2-50`    |
+| `PROJ-123`                          | `PROJ-123` |
+| `https://github.com/.../issues/86`  | `#86`      |
+| YouTrack URL with `/issue/PROJ-123` | `PROJ-123` |
 
 ### From the branch name
 
@@ -63,11 +63,11 @@ The user passes a ticket ID or URL.
 
 Within SP flow (`/task` -> `/plan` -> `/do` -> `/review`) the ticket ID is extracted from the slug:
 
-| Slug pattern                                | Ticket ID | Example  |
-| ------------------------------------------- | --------- | -------- |
-| Starts with a number: `86-black-jack-page`  | `#86`     | `#86`    |
-| Starts with `R\d+-\d+`: `R2-50-user-id-db`  | `R2-50`   | `R2-50`  |
-| Without ID: `fix-navbar-overflow`           | none      | omit     |
+| Slug pattern                               | Ticket ID | Example |
+| ------------------------------------------ | --------- | ------- |
+| Starts with a number: `86-black-jack-page` | `#86`     | `#86`   |
+| Starts with `R\d+-\d+`: `R2-50-user-id-db` | `R2-50`   | `R2-50` |
+| Without ID: `fix-navbar-overflow`          | none      | omit    |
 
 ### Ask the user
 
@@ -80,16 +80,16 @@ If the cascade did not determine a ticket — ask via AskUserQuestion:
 
 ## Types
 
-| Type       | When                                              |
-| ---------- | ------------------------------------------------- |
-| `feat`     | New functionality                                 |
-| `fix`      | Bug fix                                           |
-| `refactor` | Refactoring without behavior change               |
-| `docs`     | Documentation only                                |
-| `test`     | Tests only                                        |
-| `chore`    | Build, CI, dependencies, configs                  |
-| `style`    | Formatting only (result of prettier/eslint)       |
-| `perf`     | Performance optimization                          |
+| Type       | When                                        |
+| ---------- | ------------------------------------------- |
+| `feat`     | New functionality                           |
+| `fix`      | Bug fix                                     |
+| `refactor` | Refactoring without behavior change         |
+| `docs`     | Documentation only                          |
+| `test`     | Tests only                                  |
+| `chore`    | Build, CI, dependencies, configs            |
+| `style`    | Formatting only (result of prettier/eslint) |
+| `perf`     | Performance optimization                    |
 
 ---
 
@@ -135,15 +135,15 @@ Commits for SP flow artifacts (format `TICKET docs(SLUG): description`):
 
 ## Types by pipeline stage (/do)
 
-| Stage                       | Type       | Example                                                 |
-| --------------------------- | ---------- | ------------------------------------------------------- |
-| Task: feature implementation| `feat`     | `#86 feat(86-black-jack-page): add SSE endpoint`        |
-| Task: tests                 | `test`     | `R2-50 test(R2-50-user-id-db): add unit tests`          |
-| Task: validation from plan  | `chore`    | `#86 chore(86-black-jack-page): add validation`         |
-| Polish                      | `refactor` | `#86 refactor(86-black-jack-page): simplify components` |
-| Validate fix                | `fix`      | `#86 fix(86-black-jack-page): fix lint errors`          |
-| Documentation               | `docs`     | `#86 docs(86-black-jack-page): update docs`             |
-| Format                      | `chore`    | `#86 chore(86-black-jack-page): format code`            |
+| Stage                        | Type       | Example                                                 |
+| ---------------------------- | ---------- | ------------------------------------------------------- |
+| Task: feature implementation | `feat`     | `#86 feat(86-black-jack-page): add SSE endpoint`        |
+| Task: tests                  | `test`     | `R2-50 test(R2-50-user-id-db): add unit tests`          |
+| Task: validation from plan   | `chore`    | `#86 chore(86-black-jack-page): add validation`         |
+| Polish                       | `refactor` | `#86 refactor(86-black-jack-page): simplify components` |
+| Validate fix                 | `fix`      | `#86 fix(86-black-jack-page): fix lint errors`          |
+| Documentation                | `docs`     | `#86 docs(86-black-jack-page): update docs`             |
+| Format                       | `chore`    | `#86 chore(86-black-jack-page): format code`            |
 
 ---
 

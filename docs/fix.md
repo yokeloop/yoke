@@ -34,16 +34,16 @@ The fix log contains: description, status, changed files, validation results, co
 
 ## Sub-agents
 
-| Agent                   | Model  | Role                                                                    |
-| ----------------------- | ------ | ----------------------------------------------------------------------- |
-| `fix-context-collector` | haiku  | Collects context: mode, slug, ticket ID, fix number, artifact paths     |
-| `fix-investigator`      | sonnet | Codebase exploration: files, patterns, constraints, complexity          |
-| `task-executor` (/do)   | opus   | Implements the fix, self-review, commit                                 |
-| `code-polisher` (/do)   | opus   | Simplifies and cleans up code                                           |
-| `validator` (/do)       | haiku  | Lint, type-check, tests, build + auto-fix                               |
-| `doc-updater` (/do)     | sonnet | Updates README, CHANGELOG, JSDoc                                        |
-| `formatter` (/do)       | haiku  | Formats code                                                            |
-| `fix-log-writer`        | haiku  | Writes / appends to the fix log artifact                                |
+| Agent                   | Model  | Role                                                                |
+| ----------------------- | ------ | ------------------------------------------------------------------- |
+| `fix-context-collector` | haiku  | Collects context: mode, slug, ticket ID, fix number, artifact paths |
+| `fix-investigator`      | sonnet | Codebase exploration: files, patterns, constraints, complexity      |
+| `task-executor` (/do)   | opus   | Implements the fix, self-review, commit                             |
+| `code-polisher` (/do)   | opus   | Simplifies and cleans up code                                       |
+| `validator` (/do)       | haiku  | Lint, type-check, tests, build + auto-fix                           |
+| `doc-updater` (/do)     | sonnet | Updates README, CHANGELOG, JSDoc                                    |
+| `formatter` (/do)       | haiku  | Formats code                                                        |
+| `fix-log-writer`        | haiku  | Writes / appends to the fix log artifact                            |
 
 ## Example
 

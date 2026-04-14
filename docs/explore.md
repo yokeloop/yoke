@@ -15,12 +15,12 @@ accumulates findings in a summary chain, and saves an exploration log when done.
 
 ## Phases
 
-| Phase | Name         | What happens                                                             |
-| ----- | ------------ | ------------------------------------------------------------------------ |
-| 1     | **Init**     | Pick slug, initialize summary chain and QA log                           |
-| 2     | **Loop**     | User-driven Q&A: enrich the prompt with context, dispatch explore-agent  |
-| 3     | **Finalize** | Sub-agent writes the exploration log                                     |
-| 4     | **Complete** | AskUserQuestion: another question / create a task via /sp:task / finish  |
+| Phase | Name         | What happens                                                            |
+| ----- | ------------ | ----------------------------------------------------------------------- |
+| 1     | **Init**     | Pick slug, initialize summary chain and QA log                          |
+| 2     | **Loop**     | User-driven Q&A: enrich the prompt with context, dispatch explore-agent |
+| 3     | **Finalize** | Sub-agent writes the exploration log                                    |
+| 4     | **Complete** | AskUserQuestion: another question / create a task via /sp:task / finish |
 
 ## Output
 
@@ -30,9 +30,9 @@ Each Q&A entry contains structured sections: question context, answer, details (
 
 ## Sub-agents
 
-| Agent                | Model  | Role                                                                        |
-| -------------------- | ------ | --------------------------------------------------------------------------- |
-| `explore-agent`      | sonnet | Exploration: code search, analysis, structured-output answer                |
+| Agent                | Model  | Role                                                                          |
+| -------------------- | ------ | ----------------------------------------------------------------------------- |
+| `explore-agent`      | sonnet | Exploration: code search, analysis, structured-output answer                  |
 | `explore-log-writer` | haiku  | Writes a structured exploration log to `docs/ai/<slug>/<slug>-exploration.md` |
 
 ## Example

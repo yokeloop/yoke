@@ -8,11 +8,11 @@ Claude Code supports hooks via `hooks.json` in a plugin or `settings.json` local
 
 ### Event types
 
-| Event         | When it fires              | Use case                              |
-| ------------- | -------------------------- | ------------------------------------- |
-| `PreToolUse`  | Before a tool call         | Validation, blocking dangerous commands |
-| `PostToolUse` | After a tool call          | Logging, notifications                |
-| `Stop`        | Agent finishes work        | Notifications, cleanup                |
+| Event         | When it fires       | Use case                                |
+| ------------- | ------------------- | --------------------------------------- |
+| `PreToolUse`  | Before a tool call  | Validation, blocking dangerous commands |
+| `PostToolUse` | After a tool call   | Logging, notifications                  |
+| `Stop`        | Agent finishes work | Notifications, cleanup                  |
 
 ### hooks.json format
 

@@ -14,11 +14,11 @@ Fires automatically on prompts like: "status", "gst", "git status", "what's goin
 
 ## Phases
 
-| Phase | Name                 | What happens                                                                          |
-| ----- | -------------------- | ------------------------------------------------------------------------------------- |
-| 1     | **Launch agent**     | Delegate data collection to sub-agent `git-data-collector`                            |
-| 2     | **Collect data**     | Current branch, ahead/behind, staged/unstaged/untracked, diff vs default branch       |
-| 3     | **Format output**    | Group files by directory, relative timestamps, hot files (top-3)                      |
+| Phase | Name              | What happens                                                                    |
+| ----- | ----------------- | ------------------------------------------------------------------------------- |
+| 1     | **Launch agent**  | Delegate data collection to sub-agent `git-data-collector`                      |
+| 2     | **Collect data**  | Current branch, ahead/behind, staged/unstaged/untracked, diff vs default branch |
+| 3     | **Format output** | Group files by directory, relative timestamps, hot files (top-3)                |
 
 ## Output
 
@@ -34,9 +34,9 @@ A text report:
 
 ## Sub-agents
 
-| Agent                | Model  | Role                                                   |
-| -------------------- | ------ | ------------------------------------------------------ |
-| `git-data-collector` | haiku  | Collects git data (read-only), formats the report      |
+| Agent                | Model | Role                                              |
+| -------------------- | ----- | ------------------------------------------------- |
+| `git-data-collector` | haiku | Collects git data (read-only), formats the report |
 
 ## Example
 

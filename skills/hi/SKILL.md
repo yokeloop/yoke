@@ -127,12 +127,12 @@ Read-only Q&A loop for codebase exploration and brainstorming. Classifies questi
 
 ## Planned skills
 
-| Skill       | Purpose              |
-| ----------- | -------------------- |
-| `/polish`   | Code polishing       |
-| `/qa`       | Testing              |
-| `/memorize` | Saving to memory     |
-| `/merge`    | Branch merging       |
+| Skill       | Purpose          |
+| ----------- | ---------------- |
+| `/polish`   | Code polishing   |
+| `/qa`       | Testing          |
+| `/memorize` | Saving to memory |
+| `/merge`    | Branch merging   |
 
 ## Installation
 

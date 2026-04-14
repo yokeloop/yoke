@@ -28,9 +28,9 @@ Format of the `<slug>-fixes.md` file and individual entries.
 
 ### Files
 
-| File   | Action                         | Description           |
-| ------ | ------------------------------ | --------------------- |
-| <path> | <created / modified / deleted> | <change description>  |
+| File   | Action                         | Description          |
+| ------ | ------------------------------ | -------------------- |
+| <path> | <created / modified / deleted> | <change description> |
 
 ### Validation
 

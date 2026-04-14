@@ -1,265 +1,265 @@
 # Synthesize Guide
 
-Этот файл читается в Фазе 3 — перед записью task-файла.
+Read this file in Phase 3 — before writing the task file.
 
-Для каждого из 5 измерений: напиши одно предложение рассуждения вслух («CoT-шаг»), потом формулируй секцию. CoT предотвращает галлюцинации на нетривиальных задачах.
+For each of the 5 dimensions: write one sentence of reasoning aloud (a "CoT step"), then formulate the section. CoT prevents hallucinations on non-trivial tasks.
 
 ---
 
-## Измерение 1 — Intent Clarity
+## Dimension 1 — Intent Clarity
 
-**Вопрос:** Два разных разработчика прочитают Task и сделают одно и то же?
+**Question:** Will two different developers read the Task and do the same thing?
 
-**CoT-шаг:** «Что именно нужно сделать — добавить, изменить, удалить, переместить, переписать? Если заменю глагол на более конкретный, смысл изменится?»
+**CoT step:** "What exactly has to happen — add, change, remove, move, rewrite? If I swap the verb for a more specific one, does the meaning shift?"
 
-**Правило:** один глагол — одно действие. Заменяй размытые глаголы конкретными.
+**Rule:** one verb — one action. Replace vague verbs with concrete ones.
 
-| Размыто            | Конкретно                                                        |
-| ------------------ | ---------------------------------------------------------------- |
-| обработать         | распарсить / записать в БД / отправить в очередь                 |
-| улучшить           | сократить время ответа с ~800ms до <200ms                        |
-| исправить          | вернуть 404 вместо 500 когда пользователь не найден              |
-| добавить поддержку | принимать `multipart/form-data` в endpoint `POST /upload`        |
-| рефакторить        | разбить `UserService` (src/services/user.ts:1–340) на три класса |
+| Vague                     | Concrete                                                                 |
+| ------------------------- | ------------------------------------------------------------------------ |
+| process                   | parse / write to DB / enqueue                                            |
+| improve                   | cut response time from ~800ms to <200ms                                  |
+| fix                       | return 404 instead of 500 when the user is not found                     |
+| add support               | accept `multipart/form-data` on endpoint `POST /upload`                  |
+| refactor                  | split `UserService` (src/services/user.ts:1–340) into three classes      |
 
-**Формат секции Task:**
+**Task section format:**
 
 ```
 ## Task
 
-Добавить rate limiting в middleware `src/api/middleware/auth.ts` —
-не более 100 запросов в минуту на IP, ответ 429 при превышении.
+Add rate limiting to the middleware `src/api/middleware/auth.ts` —
+max 100 requests per minute per IP, respond 429 on overflow.
 ```
 
-**Антипаттерн:**
+**Anti-pattern:**
 
 ```
 ## Task
 
-Улучшить безопасность API endpoints.
+Improve API endpoint security.
 ```
 
 ---
 
-## Измерение 2 — Scope Boundaries
+## Dimension 2 — Scope Boundaries
 
-**Вопрос:** Что точно входит в задачу, а что не входит — явно?
+**Question:** What is clearly in scope — and, explicitly, what is not?
 
-**CoT-шаг:** «Что реализатор может случайно затронуть, считая частью задачи? Что делать точно не нужно, даже если кажется логичным?»
+**CoT step:** "What could the implementer accidentally touch, thinking it's part of the task? What must not be done, even if it seems logical?"
 
-**Правило:** каждый пункт Constraints отвечает на конкретный риск из findings Investigate.
+**Rule:** every Constraints bullet answers a concrete risk from the Investigate findings.
 
-**Как заполнять Constraints:**
+**How to fill Constraints:**
 
-После Investigate у тебя есть список файлов и зависимостей. Для каждого файла вне скоупа — реши: упомянуть как «не трогать» или промолчать. Упоминай, если:
+After Investigate you have a list of files and dependencies. For each out-of-scope file — decide: mention as "do not touch" or stay silent. Mention when:
 
-- файл логически связан и реализатор решит его изменить
-- файл хрупкий (много зависимостей, нет тестов)
-- в нём есть похожий код, который трогать не нужно
+- the file is logically adjacent and the implementer might edit it
+- the file is fragile (many dependencies, no tests)
+- it contains similar code that must not be touched
 
 **Before / After:**
 
 ```
-# Плохо — банальщина
+# Bad — boilerplate
 ## Constraints
-- Не нарушать существующую функциональность
-- Соблюдать code style проекта
-- Писать чистый код
+- Do not break existing functionality
+- Follow project code style
+- Write clean code
 ```
 
 ```
-# Хорошо — конкретные риски из Investigate
+# Good — concrete risks from Investigate
 ## Constraints
-- Не изменять интерфейс `IAuthMiddleware` (src/api/middleware/types.ts:12–28) —
-  его используют 7 других middleware
-- Не трогать `src/api/middleware/logging.ts` — там идентичный паттерн,
-  но он специально отдельный (разные команды владеют файлами)
-- Не добавлять зависимость на Redis — используй существующий in-memory store
-  из `src/cache/memory-store.ts`
-- rate limiting не применять к `/health` и `/metrics` endpoints
+- Do not change the `IAuthMiddleware` interface (src/api/middleware/types.ts:12–28) —
+  7 other middlewares depend on it
+- Do not touch `src/api/middleware/logging.ts` — identical pattern,
+  but kept separate on purpose (different teams own the files)
+- Do not add a Redis dependency — use the existing in-memory store
+  from `src/cache/memory-store.ts`
+- Do not apply rate limiting to `/health` or `/metrics` endpoints
 ```
 
 ---
 
-## Измерение 3 — Context Anchoring
+## Dimension 3 — Context Anchoring
 
-**Вопрос:** Реализатор знает ровно столько, сколько нужно — не меньше и не больше?
+**Question:** Does the implementer know exactly what they need — no more, no less?
 
-**CoT-шаг:** «Какие файлы из findings прочитает реализатор? Какие паттерны повторит? Где точки входа и интеграции?»
+**CoT step:** "Which findings files will the implementer read? Which patterns should they repeat? Where are the entry points and integrations?"
 
-**Правило:** называй файлы с путями и номерами строк. Вместо «в модуле авторизации» пиши `src/auth/middleware.ts:validateToken():89`.
+**Rule:** name files with paths and line numbers. Instead of "in the auth module" write `src/auth/middleware.ts:validateToken():89`.
 
-**Структура Context — 4 обязательных подсекции:**
+**Context structure — 4 mandatory subsections:**
 
-Context структурирован для потребителя (/plan). Каждая подсекция — отдельный вход для plan-explorer и plan-designer:
+Context is structured for the consumer (/plan). Each subsection is a separate input for plan-explorer and plan-designer:
 
 ```
 ## Context
 
-### Архитектура области
+### Area architecture
 
-Запросы входят через `src/api/router.ts:42` → проходят цепочку middleware
-в `src/api/middleware/index.ts:buildChain():15` → попадают в handlers.
+Requests enter through `src/api/router.ts:42` → flow through the middleware chain
+in `src/api/middleware/index.ts:buildChain():15` → reach handlers.
 
-Текущая цепочка (src/api/middleware/index.ts:15–34):
+Current chain (src/api/middleware/index.ts:15–34):
 1. cors() — src/api/middleware/cors.ts
 2. bodyParser() — src/api/middleware/body.ts
-3. auth() — src/api/middleware/auth.ts  ← точка изменения
+3. auth() — src/api/middleware/auth.ts  ← change point
 4. requestLogger() — src/api/middleware/logging.ts
 
-### Файлы для изменения
+### Files to change
 
-- `src/api/middleware/auth.ts:45-67` — добавить rate limiting перед validateToken()
-- `src/api/middleware/types.ts:8` — расширить IMiddleware если нужно
+- `src/api/middleware/auth.ts:45-67` — add rate limiting before validateToken()
+- `src/api/middleware/types.ts:8` — extend IMiddleware if needed
 
-### Паттерны для повторения
+### Patterns to reuse
 
-Все middleware следуют интерфейсу `IMiddleware` (src/api/middleware/types.ts:8):
-возвращают `(req, res, next) => void`, бросают `AppError` при отказе.
+All middlewares follow the `IMiddleware` interface (src/api/middleware/types.ts:8):
+return `(req, res, next) => void`, throw `AppError` on rejection.
 
-Пример похожей логики — throttle для WebSocket в `src/ws/throttle.ts:24–67`:
-использует sliding window через `src/cache/memory-store.ts`.
+Similar logic example — WebSocket throttle at `src/ws/throttle.ts:24–67`:
+uses a sliding window via `src/cache/memory-store.ts`.
 
-### Тесты
+### Tests
 
-Тесты middleware лежат в `src/api/middleware/__tests__/`.
-Текущее покрытие auth.ts — 84% (src/api/middleware/__tests__/auth.test.ts).
+Middleware tests live in `src/api/middleware/__tests__/`.
+auth.ts coverage — 84% (src/api/middleware/__tests__/auth.test.ts).
 ```
 
-**Антипаттерн — неструктурированный Context:**
+**Anti-pattern — unstructured Context:**
 
 ```
 ## Context
 
-Проект использует Express.js с middleware-архитектурой.
-Авторизация реализована в модуле middleware.
-Есть кэш для хранения данных.
+The project uses Express.js with a middleware architecture.
+Authorization is implemented in the middleware module.
+There is a cache for data storage.
 ```
 
 ---
 
-## Измерение 4 — Acceptance Criteria
+## Dimension 4 — Acceptance Criteria
 
-**Вопрос:** Реализатор может проверить каждый критерий не запуская весь проект?
+**Question:** Can the implementer verify each criterion without running the whole project?
 
-**CoT-шаг:** «Что должно работать после реализации? Какую команду запущу для проверки? Что произойдёт в граничных случаях?»
+**CoT step:** "What must work after implementation? Which command will I run to check? What happens at the edges?"
 
-**Правило:** каждый пункт Verification — конкретная команда с ожидаемым результатом или наблюдаемое поведение. Добавляй edge cases из Investigate.
+**Rule:** each Verification bullet is a concrete command with an expected result or an observable behavior. Add edge cases from Investigate.
 
 **Before / After:**
 
 ```
-# Плохо — не проверяемо
+# Bad — not verifiable
 ## Verification
 
-- Rate limiting работает корректно
-- Существующие тесты проходят
-- Нет регрессий
+- Rate limiting works correctly
+- Existing tests pass
+- No regressions
 ```
 
 ```
-# Хорошо — команды и поведение
+# Good — commands and behavior
 ## Verification
 
-- `npm test src/api/middleware/__tests__/auth.test.ts` — все тесты зелёные
-- `npm test` — общий suite без новых failures
-- curl 101 раз подряд → первые 100 возвращают 200, 101-й возвращает 429
-  с телом `{"error": "Too Many Requests", "retryAfter": 60}`
-- curl с разных IP → лимиты независимы (IP A не влияет на счётчик IP B)
-- `GET /health` при исчерпанном лимите → 200 (rate limiting не применяется)
-- Перезапуск сервера → счётчики сбрасываются (in-memory, персистентность не нужна)
+- `npm test src/api/middleware/__tests__/auth.test.ts` — all tests green
+- `npm test` — full suite, no new failures
+- 101 curl requests in a row → first 100 return 200, the 101st returns 429
+  with body `{"error": "Too Many Requests", "retryAfter": 60}`
+- curl from different IPs → limits are independent (IP A does not affect IP B's counter)
+- `GET /health` with the limit exhausted → 200 (rate limiting does not apply)
+- Server restart → counters reset (in-memory, no persistence required)
 ```
 
-**Откуда брать edge cases:** из findings task-explorer. `/health` endpoint или несколько IP в тестах — сигнал важного case.
+**Where to pull edge cases from:** task-explorer findings. A `/health` endpoint or multiple IPs in tests signals an important case.
 
 ---
 
-## Измерение 5 — Reuse Opportunities
+## Dimension 5 — Reuse Opportunities
 
-**Вопрос:** Какие существующие компоненты, функции и паттерны можно переиспользовать?
+**Question:** Which existing components, functions, and patterns can be reused?
 
-**CoT-шаг:** «Что из найденного в Investigate уже делает часть работы? Есть ли готовые абстракции? Какие утилиты покрывают часть requirements?»
+**CoT step:** "What from Investigate already does part of the job? Are there ready abstractions? Which utilities cover part of the requirements?"
 
-**Правило:** для каждого requirement проверь — есть ли в кодовой базе готовое решение или его часть. Зафиксируй в секции Context -> Паттерны для повторения.
+**Rule:** for each requirement check — is there an existing solution or part of one in the codebase? Record it under Context → Patterns to reuse.
 
 **Before / After:**
 
 ```
-# Плохо — не анализирует reuse
+# Bad — no reuse analysis
 ## Context
 
-Проект использует Express.js. Нужно добавить rate limiting.
+The project uses Express.js. We need to add rate limiting.
 ```
 
 ```
-# Хорошо — конкретные reuse opportunities
+# Good — concrete reuse opportunities
 ## Context
 
-### Паттерны для повторения
+### Patterns to reuse
 
-Throttle для WebSocket (`src/ws/throttle.ts:24–67`) использует sliding window
-через `src/cache/memory-store.ts`. Тот же паттерн применим для HTTP rate limiting.
+The WebSocket throttle (`src/ws/throttle.ts:24–67`) uses a sliding window
+via `src/cache/memory-store.ts`. The same pattern fits HTTP rate limiting.
 
-Утилита `createCounter()` из `src/utils/counter.ts:12` — готовый atomic counter,
-переиспользовать для подсчёта запросов.
+Utility `createCounter()` in `src/utils/counter.ts:12` — a ready atomic counter,
+reuse it for request counting.
 
-`AppError` (`src/errors/app-error.ts:5`) — стандартный класс ошибок проекта.
-Использовать для 429 Too Many Requests.
+`AppError` (`src/errors/app-error.ts:5`) — the project's standard error class.
+Use it for 429 Too Many Requests.
 ```
 
 ---
 
-## Классификация сложности
+## Complexity classification
 
-Определи сложность до написания Task — она влияет на Output Format и уровень детализации Context.
+Classify complexity before writing the Task — it drives Output Format and Context detail.
 
-| Сложность   | Признаки                                                               | Типичный объём Context     |
-| ----------- | ---------------------------------------------------------------------- | -------------------------- |
-| **trivial** | 1 файл, 1–5 строк, нет зависимостей                                    | 2–3 строки                 |
-| **simple**  | 1–2 файла, понятный скоуп, есть тесты                                  | 5–15 строк                 |
-| **medium**  | 3–7 файлов, нужно понять связи, возможны регрессии                     | 15–40 строк                |
-| **complex** | затрагивает архитектуру / несколько слоёв / нет тестов / публичный API | 40+ строк, схема data flow |
+| Complexity  | Signals                                                                 | Typical Context size        |
+| ----------- | ----------------------------------------------------------------------- | --------------------------- |
+| **trivial** | 1 file, 1–5 lines, no dependencies                                      | 2–3 lines                   |
+| **simple**  | 1–2 files, clear scope, tests exist                                     | 5–15 lines                  |
+| **medium**  | 3–7 files, connections to understand, possible regressions              | 15–40 lines                 |
+| **complex** | touches architecture / multiple layers / no tests / public API          | 40+ lines, data-flow diagram |
 
-**Признаки сложнее чем кажется:**
+**Signs it's harder than it looks:**
 
-- нет тестов на затронутую область → medium минимум
-- изменение публичного интерфейса (экспортируемые типы, API endpoint) → +1 уровень
-- файлами владеют несколько команд → явно обозначь в Constraints
-- task-architect нашёл несколько несовместимых паттернов → complex, нужен Output Format «2 подхода»
+- no tests on the touched area → medium at minimum
+- change to a public interface (exported types, API endpoint) → +1 level
+- several teams own the files → call it out explicitly in Constraints
+- task-architect found multiple incompatible patterns → complex, Output Format "2 approaches" required
 
 ---
 
-## Уточняющие вопросы
+## Clarifying questions
 
-Генерируй **3-7 вопросов**. Только те, ответ на которые изменит реализацию.
+Generate **3–7 questions**. Only the ones whose answer changes implementation.
 
-**Тест на нужность вопроса:** «Если я угадаю ответ — реализатор сделает неправильно?» Если да — вопрос нужен. Если нет — убери.
+**Necessity test:** "If I guess the answer — will the implementer get it wrong?" If yes — the question stays. If no — remove it.
 
-**Валидация против входа пользователя:**
+**Validate against the user's input:**
 
-Перечитай исходный вход (`$ARGUMENTS` + текст тикета). Для каждого вопроса-кандидата:
+Re-read the original input (`$ARGUMENTS` + ticket text). For each candidate question:
 
-1. Пользователь указал конкретное решение? → **Убери вопрос**, вшей решение как факт в Requirements/Constraints.
-2. Пользователь указал направление без конкретного варианта? → **Оставь вопрос**, сделай вариант пользователя рекомендуемым.
-3. Тема отсутствует в промте? → **Оставь вопрос** как есть.
+1. Did the user specify a concrete decision? → **Remove the question**, fold the decision into Requirements/Constraints as fact.
+2. Did the user name a direction without a concrete variant? → **Keep the question**, promote the user's variant as Recommended.
+3. Topic absent from the prompt? → **Keep the question** as is.
 
-Антипаттерн: пользователь написал «спавн рядом с пустыми точками» → вопрос «Как выбирать слот подальше от занятых?» с вариантами. Ответ дан — вопрос лишний.
+Anti-pattern: user wrote "spawn next to empty slots" → question "How do we pick a slot farther from occupied ones?" with options. The answer is given — the question is noise.
 
-**Вопросы задавай интерактивно через AskUserQuestion** (в файл не записывай).
+**Ask questions interactively through AskUserQuestion** (do not write them to the file).
 
-Для каждого вопроса подготовь:
+For each question prepare:
 
-- Текст вопроса (одно предложение)
-- 2-4 варианта с пояснением влияния каждого на реализацию
-- Рекомендуемый вариант первым
+- One-sentence text
+- 2–4 options with an explanation of each option's impact on implementation
+- Recommended option first
 
-**Примеры хороших вопросов** (про реализацию, не про постановку):
+**Examples of good questions** (about implementation, not scope):
 
-- «Где хранить счётчики rate limiting?» → In-memory (текущий паттерн) / Redis (персистентно)
-- «Как считать лимит — по IP или по пользователю?» → По IP (проще) / По user ID (точнее) / Оба
+- "Where to store rate-limiting counters?" → In-memory (current pattern) / Redis (persistent)
+- "Count the limit per IP or per user?" → Per IP (simpler) / Per user ID (more precise) / Both
 
-**Антипаттерн — вопросы не про реализацию:**
+**Anti-pattern — questions not about implementation:**
 
-- Что именно нужно сделать?
-- Есть ли дедлайн?
-- Кто будет ревьювить?
+- What exactly needs to be done?
+- Is there a deadline?
+- Who reviews this?

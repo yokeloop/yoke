@@ -1,292 +1,292 @@
 ---
 name: task
 description: >-
-  Формирование задачи для AI-реализации. Используется когда пользователь пишет
-  "создай задачу", "сделай таск", "task from ticket", "оформи задачу",
-  "подготовь промт для реализации", или передаёт URL тикета / описание фичи.
+  Draft a task file for AI implementation. Triggered when the user writes
+  "create a task", "task from ticket", "draft a task", "prepare an implementation
+  prompt", or passes a ticket URL / feature description.
 ---
 
-# Формирование задачи для AI-реализации
+# Draft a task for AI implementation
 
-Ты — оркестратор. Координируешь работу sub-agent'ов и общаешься с пользователем.
+You are the orchestrator. Coordinate sub-agents and talk to the user.
 
-Делегируй исследование кодовой базы через Agent tool:
+Delegate codebase investigation through the Agent tool:
 
-- Исследование → `agents/task-explorer.md`
-- Архитектурный анализ → `agents/task-architect.md`
+- Exploration → `agents/task-explorer.md`
+- Architecture analysis → `agents/task-architect.md`
 
-Ты формулируешь задачу, а не реализуешь её.
-
----
-
-## Вход
-
-`$ARGUMENTS` содержит одно или оба:
-
-- **URL тикета** — GitHub Issues, YouTrack, Jira и др.
-- **Текст задачи** — описание, примеры кода, ссылки
+You formulate the task; you do not implement it.
 
 ---
 
-## Фазы
+## Input
 
-### Фаза 1 — Parse
+`$ARGUMENTS` contains one or both of:
 
-**1. Получи содержимое тикета:**
+- **Ticket URL** — GitHub Issues, YouTrack, Jira, etc.
+- **Task text** — description, code snippets, links
+
+---
+
+## Phases
+
+### Phase 1 — Parse
+
+**1. Fetch the ticket content:**
 
 - GitHub Issues → `gh issue view <url>`
-- Остальные трекеры → содержимое бери из текста пользователя, URL используй только для slug
+- Other trackers → take the content from the user's text; use the URL only for the slug
 
-**2. Извлеки материалы из входа:**
-Выпиши отдельным списком:
+**2. Extract materials from the input:**
+Collect a separate list of:
 
-- ссылки (Figma, документация, API)
-- пути к файлам и скриншотам
-- вставленные куски кода
-- внешние ресурсы
+- links (Figma, docs, API)
+- paths to files and screenshots
+- pasted code snippets
+- external resources
 
-Перенеси список без изменений в секцию «Материалы».
+Copy this list verbatim into the `Materials` section.
 
-**3. Сформируй task-slug** — идентификатор + описание на английском в kebab-case:
+**3. Build the task slug** — identifier + English kebab-case description:
 
-- `86-black-jack-page` — из GitHub issue #86
-- `R2-50-user-id-to-db` — из YouTrack R2-50
-- `fix-navbar-overflow` — без URL, только текст
+- `86-black-jack-page` — from GitHub issue #86
+- `R2-50-user-id-to-db` — from YouTrack R2-50
+- `fix-navbar-overflow` — no URL, text only
 
-Правило: ID из URL + 2-4 слова описания. Без URL — только описание.
+Rule: ID from the URL + 2–4 descriptive words. No URL — description only.
 
-**4.** Извлеки `TICKET_ID` из slug (по `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
+**4.** Extract `TICKET_ID` from the slug (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
-**Переход:** slug и TICKET_ID определены, материалы сохранены → Фаза 2.
-
----
-
-### Фаза 2 — Investigate
-
-Вызывай агентов через Agent tool (task-explorer и task-architect определены в `agents/`).
-Порядок строго последовательный: architect зависит от findings explorer.
-
-**Шаг 1 — Запусти task-explorer через Agent tool:**
-
-Задача агенту:
-
-```
-Исследуй кодовую базу для задачи: [вставить суть задачи из тикета].
-
-Найди и задокументируй:
-1. Все файлы и функции которые будут затронуты (пути + номера строк)
-2. Паттерны и конвенции в этой части кодовой базы
-3. Тесты покрывающие область изменений
-4. Зависимости — что может сломаться при изменениях
-5. Похожие реализации в проекте которые стоит повторить
-
-В конце — составь список файлов ОБЯЗАТЕЛЬНЫХ для понимания темы (essential file list).
-```
-
-**Шаг 2 — Прочитай все файлы из essential file list агента.**
-Каждый файл формирует контекст для Synthesize.
-
-**Шаг 3 — Запусти task-architect через Agent tool**
-
-Задача агенту:
-
-```
-На основе этих findings task-explorer: [вставить findings]
-
-Проанализируй архитектуру области затронутой задачей: [суть задачи].
-
-Определи:
-1. Паттерны и конвенции которые нужно соблюсти
-2. Точки интеграции и data flow
-3. Архитектурные риски и что может сломаться
-4. Если нашёл несколько несовместимых подходов — опиши оба с trade-offs
-
-Будь конкретен: файлы, строки, имена функций.
-```
-
-**Шаг 4 — Прочитай дополнительные файлы,** если task-architect расширил список.
-
-**Критерии остановки — Investigate завершена, когда:**
-
-- [ ] Точки входа (entry points) определены с номерами строк
-- [ ] Паттерны для повторения найдены с примерами файлов
-- [ ] Тесты на затронутую область найдены или отсутствие подтверждено
-- [ ] Зоны риска определены
-
-Пока остаётся открытый пункт — запусти ещё один task-explorer.
-
-**Переход:** четыре критерия закрыты → Фаза 3.
+**Transition:** slug and TICKET_ID determined, materials saved → Phase 2.
 
 ---
 
-### Фаза 3 — Synthesize
+### Phase 2 — Investigate
 
-**Определи тип задачи — frontend или general:**
+Invoke agents through the Agent tool (task-explorer and task-architect are defined in `agents/`).
+The order is strictly sequential: architect depends on explorer findings.
 
-Задача относится к **frontend**, если findings содержат:
+**Step 1 — Launch task-explorer through the Agent tool:**
 
-- Технологии: React, Vue, CSS, Tailwind, SCSS, styled-components, Framer Motion, Three.js
-- Файлы: .tsx, .jsx, .css, .scss в essential file list или карте изменений
-- Артефакты: component, page, layout, screen, UI, modal, animation
+Prompt to the agent:
 
-Запиши: `TASK_TYPE = frontend | general`
+```
+Investigate the codebase for this task: [paste the ticket essence].
 
-**WARNING:** Прочитай `reference/synthesize-guide.md` до начала записи.
+Find and document:
+1. Every file and function that will be touched (paths + line numbers)
+2. Patterns and conventions in this part of the codebase
+3. Tests covering the area of change
+4. Dependencies — what may break on edit
+5. Similar implementations in the project worth reusing
 
-**Если `TASK_TYPE = frontend`:** дополнительно прочитай `reference/frontend-guide.md`.
-Прочитай оба файла до начала работы.
+At the end — produce an essential file list: files REQUIRED to understand the topic.
+```
 
-Примени 5 измерений из synthesize-guide к findings Фазы 2. Для каждого измерения: одно предложение рассуждения вслух, затем формулировку.
+**Step 2 — Read every file from the agent's essential file list.**
+Each file feeds context into Synthesize.
 
-**Если `TASK_TYPE = frontend`:** для измерений Requirements, Constraints и Verification дополнительно применяй frontend-контрольные списки из frontend-guide.
+**Step 3 — Launch task-architect through the Agent tool**
 
-Определи сложность: trivial / simple / medium / complex.
+Prompt to the agent:
 
-**Валидация вопросов:**
+```
+Based on these task-explorer findings: [paste findings]
 
-Перечитай `$ARGUMENTS`. Отфильтруй вопросы с готовыми ответами в промте — по synthesize-guide.md, секция «Валидация против входа пользователя».
-Решения пользователя вшей в Requirements/Constraints как факты.
+Analyze the architecture of the area touched by the task: [task essence].
 
-**Интерактивные уточнения:**
+Determine:
+1. Patterns and conventions to follow
+2. Integration points and data flow
+3. Architectural risks and what may break
+4. If you find multiple incompatible approaches — describe each with trade-offs
 
-Сформируй 3-7 уточняющих вопросов по правилам synthesize-guide.md.
-Перед первым вызовом AskUserQuestion — отправь нотификацию:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill task --phase Synthesize --slug "$TASK_SLUG" --title "Уточняющие вопросы" --body "<краткий список тем вопросов>"`
+Be concrete: files, lines, function names.
+```
 
-Задай пользователю через AskUserQuestion порциями по 1-4 вопроса.
+**Step 4 — Read additional files** if task-architect expanded the list.
 
-Для каждого вопроса:
+**Stop criteria — Investigate is done when:**
 
-- 2-4 варианта ответа с пояснениями
-- Рекомендуемый вариант первым, с "(Recommended)" в label
-- Пользователь может выбрать "Other" для произвольного ввода
+- [ ] Entry points are identified with line numbers
+- [ ] Patterns to reuse are found with example files
+- [ ] Tests for the touched area are found, or their absence is confirmed
+- [ ] Risk zones are identified
 
-После каждой порции ответов — пересмотри Requirements, Constraints и Context.
-Вшей ответы в формулировки секций.
+While any item stays open — launch another task-explorer.
 
-Повторяй до получения ответов на все вопросы.
-
-**Переход:** 5 измерений применены, вопросы заданы и ответы вшиты → Фаза 4.
+**Transition:** all four criteria closed → Phase 3.
 
 ---
 
-### Фаза 4 — Write
+### Phase 3 — Synthesize
+
+**Determine the task type — frontend or general:**
+
+The task is **frontend** when findings contain:
+
+- Technologies: React, Vue, CSS, Tailwind, SCSS, styled-components, Framer Motion, Three.js
+- Files: .tsx, .jsx, .css, .scss in the essential file list or change map
+- Artifacts: component, page, layout, screen, UI, modal, animation
+
+Record: `TASK_TYPE = frontend | general`
+
+**WARNING:** Read `reference/synthesize-guide.md` before writing.
+
+**If `TASK_TYPE = frontend`:** also read `reference/frontend-guide.md`.
+Read both files before starting.
+
+Apply the 5 dimensions from synthesize-guide to the Phase 2 findings. For each dimension: one sentence of reasoning aloud, then the formulation.
+
+**If `TASK_TYPE = frontend`:** for the Requirements, Constraints, and Verification dimensions, also apply the frontend checklists from frontend-guide.
+
+Classify complexity: trivial / simple / medium / complex.
+
+**Question validation:**
+
+Re-read `$ARGUMENTS`. Filter out questions already answered in the prompt — per synthesize-guide.md, section "Validate against the user's input".
+Fold the user's decisions into Requirements/Constraints as facts.
+
+**Interactive clarifications:**
+
+Draft 3–7 clarifying questions per the rules in synthesize-guide.md.
+Before the first AskUserQuestion call — send a notification:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill task --phase Synthesize --slug "$TASK_SLUG" --title "Clarifying questions" --body "<brief list of question topics>"`
+
+Ask the user via AskUserQuestion in batches of 1–4 questions.
+
+For each question:
+
+- 2–4 answer options with explanations
+- Recommended option first, labeled `(Recommended)`
+- The user may pick "Other" for free-form input
+
+After each batch of answers — revise Requirements, Constraints, and Context.
+Fold the answers into the section wording.
+
+Repeat until every question is answered.
+
+**Transition:** 5 dimensions applied, questions asked and answers folded in → Phase 4.
+
+---
+
+### Phase 4 — Write
 
 **1.** `mkdir -p docs/ai/<task-slug>`
 
-**2.** Прочитай пример для калибровки тона и уровня детализации:
+**2.** Read the example to calibrate tone and detail level:
 
 - trivial / simple → `examples/simple-task.md`
 - medium / complex → `examples/complex-task.md`
 
-**3.** Запиши `docs/ai/<task-slug>/<task-slug>-task.md`:
+**3.** Write `docs/ai/<task-slug>/<task-slug>-task.md`:
 
 ```
-# <Заголовок задачи>
+# <Task title>
 
 **Slug:** <task-slug>
-**Тикет:** <URL или "—">
-**Сложность:** <trivial | simple | medium | complex>
-**Тип:** <frontend | general>
+**Ticket:** <URL or "—">
+**Complexity:** <trivial | simple | medium | complex>
+**Type:** <frontend | general>
 
 ## Task
 
-<Одно предложение — что сделать.>
+<One sentence — what to do.>
 
 ## Context
 
-### Архитектура области
-<Data flow, точки входа, слои абстракций>
+### Area architecture
+<Data flow, entry points, abstraction layers>
 
-### Файлы для изменения
-<Пути + строки — entry points для реализации>
+### Files to change
+<Paths + lines — entry points for implementation>
 
-### Паттерны для повторения
-<Похожие реализации с путями — что переиспользовать>
+### Patterns to reuse
+<Similar implementations with paths — what to reuse>
 
-### Тесты
-<Существующее покрытие, что дотестировать>
+### Tests
+<Existing coverage, what to cover next>
 
 ## Requirements
 
-1. <Конкретное, верифицируемое требование>
+1. <Concrete, verifiable requirement>
 2. ...
 
 ## Constraints
 
-- <Что НЕ менять>
-- <Какие подходы избегать>
-- <Что не ломать>
+- <What NOT to change>
+- <Which approaches to avoid>
+- <What not to break>
 
 ## Verification
 
-- `<команда>` → <ожидаемый результат>
-- <ожидаемое поведение>
+- `<command>` → <expected result>
+- <expected behavior>
 - <edge cases>
 
-## Материалы
+## Materials
 
-- [Описание](url)
+- [Description](url)
 - `path/to/file`
 ```
 
-**4.** Dispatch subagent для copyedit task-файла:
+**4.** Dispatch a subagent to copyedit the task file:
 
-- Передай путь к записанному файлу и `reference/elements-of-style-rules.md`
-- Subagent правит прозу: активный залог, конкретный язык, убирает лишние слова
-- Subagent перезаписывает файл с правками
+- Pass the path to the written file and `reference/elements-of-style-rules.md`
+- The subagent edits prose: active voice, concrete language, drop needless words
+- The subagent overwrites the file with the edits
 
-**Переход →** Фаза 5.
+**Transition →** Phase 5.
 
 ---
 
-### Фаза 5 — Commit Artifact
+### Phase 5 — Commit Artifact
 
-Автоматический коммит артефакта задачи.
+Auto-commit the task artifact.
 
-**1.** Проверь: `docs/ai/` в `.gitignore`? Если да -- сообщи пользователю, коммит пропусти.
+**1.** Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
 
-**2.** Если нет -- закоммить артефакт по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+**2.** If not — commit the artifact per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 
-Формат коммита: `TICKET docs(SLUG): add task definition` (БЕЗ двоеточия после ticket).
+Commit format: `TICKET docs(SLUG): add task definition` (NO colon after ticket).
 
 ```bash
 git add docs/ai/<task-slug>/<task-slug>-task.md
 git commit -m "TICKET docs(SLUG): add task definition"
 ```
 
-Пример: `#86 docs(86-black-jack-page): add task definition`
+Example: `#86 docs(86-black-jack-page): add task definition`
 
-Коммить только артефакт задачи, без других файлов.
-
----
-
-### Фаза 6 — Complete
-
-Сообщи путь к файлу и task-slug, запусти цикл завершения.
-
-Отправь нотификацию:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill task --phase Complete --slug "$TASK_SLUG" --title "Task готов" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-task.md"`
-
-**Цикл:**
-
-Через AskUserQuestion предложи 3 варианта:
-
-1. **Запустить /sp:plan (Recommended)** — автоматический переход к планированию
-2. **Ревью через plannotator** — интерактивная проверка task-файла
-3. **Завершить** — выход
-
-**Обработка выбора:**
-
-- **Запустить /sp:plan:** вызови Skill tool с `/sp:plan` и аргументом `docs/ai/<task-slug>/<task-slug>-task.md`. Выход.
-- **Ревью через plannotator:** вызови Skill tool с `/plannotator-annotate` и путём к task-файлу. Примени полученные аннотации, перезапиши файл. Вернись к началу цикла.
-- **Завершить:** сообщи путь к файлу. Выход.
+Commit only the task artifact, no other files.
 
 ---
 
-## Правила
+### Phase 6 — Complete
 
-- Язык контента — язык оригинального тикета
-- task-slug — английский kebab-case
-- Одна задача — один файл, без декомпозиции
-- Пиши активным залогом. Опускай лишние слова. Называй файлы и строки вместо абстракций.
+Report the file path and task slug, then run the finishing loop.
+
+Send a notification:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill task --phase Complete --slug "$TASK_SLUG" --title "Task ready" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-task.md"`
+
+**Loop:**
+
+Offer 3 options through AskUserQuestion:
+
+1. **Run /sp:plan (Recommended)** — auto-handoff to planning
+2. **Review via plannotator** — interactive review of the task file
+3. **Finish** — exit
+
+**Handle the choice:**
+
+- **Run /sp:plan:** call the Skill tool with `/sp:plan` and the argument `docs/ai/<task-slug>/<task-slug>-task.md`. Exit.
+- **Review via plannotator:** call the Skill tool with `/plannotator-annotate` and the path to the task file. Apply the returned annotations, overwrite the file. Loop back to the start.
+- **Finish:** report the file path. Exit.
+
+---
+
+## Rules
+
+- Content language — the language of the original ticket
+- task-slug — English kebab-case
+- One task — one file, no decomposition
+- Write in active voice. Omit needless words. Name files and lines instead of abstractions.

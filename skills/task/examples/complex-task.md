@@ -1,137 +1,137 @@
-# Пример: complex-задача
+# Example: complex task
 
-Полный one-shot пример. Показывает:
+A complete one-shot example. Shows:
 
-- работу параллельных агентов на сложной задаче
-- Context с data flow и `file:line` ссылками для сложности **complex**
-- Output Format «2 подхода с trade-offs» при конфликте паттернов от task-architect
-- Constraints из конкретных архитектурных рисков
-- Verification для многослойных изменений
+- parallel agents on a complex task
+- Context with data flow and `file:line` references for **complex** complexity
+- Output Format "2 approaches with trade-offs" when task-architect finds pattern conflicts
+- Constraints derived from concrete architectural risks
+- Verification for multi-layer changes
 
 ---
 
-## Вход — тикет
+## Input — ticket
 
 ```
 YouTrack RSA-44
-Заголовок: Добавить real-time уведомления о событиях игры на leaderboard-экране
+Title: Add real-time game-event notifications on the leaderboard screen
 
-Описание:
-Leaderboard обновляется только при перезагрузке страницы.
-Изменения рейтинга (новый рекорд, смена позиции) должны отображаться
-в реальном времени без перезагрузки.
+Description:
+The leaderboard only refreshes on page reload.
+Rating changes (new record, position swap) should appear in real time
+without a reload.
 
-Затронуто:
-- leaderboard-screen (React, клиент)
-- game-api (Node.js/Express, сервер)
-- player-station — источник событий
+Affected:
+- leaderboard-screen (React, client)
+- game-api (Node.js/Express, server)
+- player-station — event source
 
-Дизайн: анимация смены позиции описана в компоненте LeaderboardRow,
-но триггер для её вызова отсутствует.
+Design: the LeaderboardRow component describes the position-change animation,
+but the trigger that invokes it is missing.
 ```
 
 ---
 
-## Что нашли агенты (findings фазы Investigate)
+## What the agents found (Investigate findings)
 
-> Внутренние заметки оркестратора, в итоговый файл не попадают.
-> Три параллельных запуска: task-explorer x2, task-architect x2.
+> Internal orchestrator notes; they do not land in the final file.
+> Three parallel runs: task-explorer x2, task-architect x2.
 
-### task-explorer — архитектура leaderboard
+### task-explorer — leaderboard architecture
 
-**Клиент (`apps/leaderboard-screen/`):**
+**Client (`apps/leaderboard-screen/`):**
 
-- `src/components/Leaderboard.tsx:1–120` — главный компонент, данные через
+- `src/components/Leaderboard.tsx:1–120` — main component, data via
   `useLeaderboard()` hook (`src/hooks/useLeaderboard.ts:1–45`)
-- `useLeaderboard` делает `fetch('/api/leaderboard')` каждые 30 секунд (polling,
-  строка 23). Никакого WebSocket или SSE.
-- `src/components/LeaderboardRow.tsx:67–89` — анимация смены позиции реализована:
-  `positionChanged` prop триггерит CSS transition. Всегда `false`, не используется.
-- Стейт: локальный `useState` в `useLeaderboard`, нет глобального стора.
+- `useLeaderboard` calls `fetch('/api/leaderboard')` every 30 seconds (polling,
+  line 23). No WebSocket or SSE.
+- `src/components/LeaderboardRow.tsx:67–89` — position-change animation implemented:
+  `positionChanged` prop triggers the CSS transition. Always `false`, unused.
+- State: local `useState` in `useLeaderboard`, no global store.
 
-**Сервер (`apps/game-api/`):**
+**Server (`apps/game-api/`):**
 
-- `src/routes/leaderboard.ts:1–55` — `GET /api/leaderboard` → читает из PostgreSQL
+- `src/routes/leaderboard.ts:1–55` — `GET /api/leaderboard` → reads from PostgreSQL
 - `src/routes/game-events.ts:1–88` — `POST /api/game-events` — player-station
-  отправляет сюда события (`score_update`, `player_join`, `player_leave`)
-- Событие записывается в БД (`src/services/leaderboard.service.ts:34–67`),
-  push отсутствует — клиент узнает при следующем polling.
+  posts events here (`score_update`, `player_join`, `player_leave`)
+- Events are written to the DB (`src/services/leaderboard.service.ts:34–67`),
+  no push — the client only learns on the next poll.
 
 **Essential files:**
 `src/hooks/useLeaderboard.ts`, `src/components/Leaderboard.tsx`,
 `src/routes/game-events.ts`, `src/services/leaderboard.service.ts`,
 `src/routes/leaderboard.ts`
 
-### task-explorer — похожие паттерны в проекте
+### task-explorer — similar patterns in the project
 
-- `apps/player-station/src/services/ws.service.ts:1–112` — **WebSocket есть**
-  в player-station для связи с game-api. Паттерн: `ws://`, reconnect-логика,
-  JSON-сообщения с полем `type`.
-- `apps/game-api/src/services/ws.server.ts:1–78` — WS-сервер на game-api стороне,
-  обслуживает player-station соединения. Broadcast метод есть: `broadcast(type, payload)`
-  (строка 61), но используется только для player-station клиентов.
-- **Конфликт:** player-station использует `ws` пакет напрямую. В `package.json` game-api Socket.IO отсутствует — только нативный `ws`.
+- `apps/player-station/src/services/ws.service.ts:1–112` — **WebSocket already exists**
+  in player-station for talking to game-api. Pattern: `ws://`, reconnect logic,
+  JSON messages with a `type` field.
+- `apps/game-api/src/services/ws.server.ts:1–78` — the WS server on the game-api side,
+  serving player-station connections. A broadcast method is there: `broadcast(type, payload)`
+  (line 61), but it's used only for player-station clients.
+- **Conflict:** player-station uses the `ws` package directly. Socket.IO is not in game-api's `package.json` — only the native `ws`.
 
-### task-architect — анализ архитектуры (запуск 1: minimal changes)
+### task-architect — architecture analysis (run 1: minimal changes)
 
-**Подход A — расширить существующий WS-сервер:**
-`ws.server.ts` умеет broadcast. Добавить leaderboard-screen как второй тип клиента.
-При `POST /api/game-events` → `leaderboard.service` вызывает `ws.server.broadcast('leaderboard_update', newState)`.
-Клиент: заменить polling в `useLeaderboard` на WS-соединение.
+**Approach A — extend the existing WS server:**
+`ws.server.ts` already supports broadcast. Add leaderboard-screen as a second client type.
+On `POST /api/game-events` → `leaderboard.service` calls `ws.server.broadcast('leaderboard_update', newState)`.
+Client: replace polling in `useLeaderboard` with a WS connection.
 
-Риски: ws.server.ts написан под player-station протокол (строки 23–45 — хардкод типов сообщений). Второй тип клиента потребует рефакторинга connection management.
+Risks: `ws.server.ts` is written for the player-station protocol (lines 23–45 hardcode message types). A second client type will force a refactor of connection management.
 
-### task-architect — анализ архитектуры (запуск 2: clean architecture)
+### task-architect — architecture analysis (run 2: clean architecture)
 
-**Подход B — SSE (Server-Sent Events):**
-Leaderboard — read-only поток данных сервер → клиент.
-SSE проще WebSocket: нативный `EventSource`,
-без handshake, без бинарного протокола, через стандартный HTTP.
+**Approach B — SSE (Server-Sent Events):**
+The leaderboard is a read-only server → client stream.
+SSE is simpler than WebSocket: native `EventSource`,
+no handshake, no binary protocol, over standard HTTP.
 
-Новый endpoint `GET /api/leaderboard/stream` — SSE. При событии в
-`leaderboard.service` — push в открытые SSE-соединения.
-Клиент: `useLeaderboard` добавляет `EventSource`, polling оставить как fallback.
+New endpoint `GET /api/leaderboard/stream` — SSE. On an event in
+`leaderboard.service` — push to open SSE connections.
+Client: `useLeaderboard` adds `EventSource`, keeps polling as a fallback.
 
-Риски: управление списком активных SSE-соединений в `leaderboard.service`
-(memory leak при незакрытых соединениях). Лимит 6 соединений HTTP/1.1 на домен — leaderboard-screen всегда один таб, не проблема.
+Risks: managing the active SSE connection list in `leaderboard.service`
+(memory leak if connections aren't closed). HTTP/1.1 6-connection-per-domain limit — the leaderboard screen is always a single tab, not an issue.
 
-**Вывод task-architect:** оба подхода валидны. Подход A быстрее (меньше новых файлов).
-Подход B чище архитектурно, player-station протокол не затрагивает.
-
----
-
-## Итоговый task-файл
-
-> Записывается в `docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md`
+**task-architect verdict:** both approaches are valid. Approach A is faster (fewer new files).
+Approach B is architecturally cleaner and leaves the player-station protocol alone.
 
 ---
 
-# Real-time обновление leaderboard
+## Final task file
 
-**Тикет:** https://youtrack.example.com/issue/RSA-44
-**Сложность:** complex
+> Written to `docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md`
+
+---
+
+# Real-time leaderboard updates
+
+**Ticket:** https://youtrack.example.com/issue/RSA-44
+**Complexity:** complex
 
 ## Task
 
-Доставить события изменения рейтинга от game-api к leaderboard-screen
-в реальном времени — без polling, с триггером анимации в `LeaderboardRow`.
+Deliver rating-change events from game-api to leaderboard-screen
+in real time — no polling, with the animation trigger in `LeaderboardRow`.
 
-Предложи 2 подхода с trade-offs (см. Requirements). После выбора
-напиши план файлов и порядок изменений, жди подтверждения перед кодом.
+Offer 2 approaches with trade-offs (see Requirements). After the choice
+write the plan of files and change order, wait for confirmation before coding.
 
 ## Context
 
-### Data flow сейчас
+### Data flow today
 
 ```
-player-station → POST /api/game-events → leaderboard.service (пишет в БД)
-                                                    ↓ (ничего)
-leaderboard-screen → GET /api/leaderboard (polling каждые 30 сек)
+player-station → POST /api/game-events → leaderboard.service (writes to DB)
+                                                    ↓ (nothing)
+leaderboard-screen → GET /api/leaderboard (polling every 30s)
                      ↑
               useLeaderboard.ts:23
 ```
 
-### Data flow после
+### Data flow after
 
 ```
 player-station → POST /api/game-events → leaderboard.service
@@ -139,80 +139,80 @@ player-station → POST /api/game-events → leaderboard.service
 leaderboard-screen ←————————————————————————————————
 ```
 
-### Клиент
+### Client
 
-`apps/leaderboard-screen/src/hooks/useLeaderboard.ts:23` — polling каждые 30 сек,
-точка замены на real-time соединение.
+`apps/leaderboard-screen/src/hooks/useLeaderboard.ts:23` — polling every 30s,
+the replacement point for a real-time connection.
 
-`apps/leaderboard-screen/src/components/LeaderboardRow.tsx:67–89` — анимация
-смены позиции реализована, prop `positionChanged` всегда `false`. Передай `true`
-при получении обновления.
+`apps/leaderboard-screen/src/components/LeaderboardRow.tsx:67–89` — position-change
+animation implemented, prop `positionChanged` always `false`. Pass `true`
+when an update arrives.
 
-Стейт локальный в `useLeaderboard` (`useState`, строка 12) — достаточно вызвать
-`setLeaderboard(newData)` при получении события.
+State is local in `useLeaderboard` (`useState`, line 12) — it's enough to call
+`setLeaderboard(newData)` on event.
 
-### Сервер
+### Server
 
-`apps/game-api/src/routes/game-events.ts:1–88` — точка входа событий от player-station.
-После записи в БД вызывает `leaderboard.service.processEvent()` (строка 71) —
-точка добавления push.
+`apps/game-api/src/routes/game-events.ts:1–88` — entry point for player-station events.
+After the DB write it calls `leaderboard.service.processEvent()` (line 71) —
+the point to add push.
 
-`apps/game-api/src/services/leaderboard.service.ts:34–67` — `processEvent()` обновляет
-рейтинг и возвращает новый leaderboard state. Добавь push-логику здесь.
+`apps/game-api/src/services/leaderboard.service.ts:34–67` — `processEvent()` updates
+the rating and returns the new leaderboard state. Add push logic here.
 
-**Существующий WS:** `apps/game-api/src/services/ws.server.ts:61` — метод `broadcast(type, payload)`
-обслуживает только player-station клиентов. Протокол хардкодирован (строки 23–45).
+**Existing WS:** `apps/game-api/src/services/ws.server.ts:61` — method `broadcast(type, payload)`
+serves only player-station clients. Protocol hardcoded (lines 23–45).
 
-Зависимости: `ws` пакет есть в game-api. Socket.IO отсутствует.
+Dependencies: `ws` is in game-api. Socket.IO is absent.
 
-### Тесты
+### Tests
 
-`apps/game-api/src/routes/__tests__/game-events.test.ts` — integration тесты,
-моки для `leaderboard.service`. Паттерн для новых тестов.
+`apps/game-api/src/routes/__tests__/game-events.test.ts` — integration tests,
+mocks for `leaderboard.service`. Pattern for new tests.
 
-`apps/leaderboard-screen/src/hooks/__tests__/` — директория существует, пуста.
+`apps/leaderboard-screen/src/hooks/__tests__/` — directory exists, empty.
 
 ## Requirements
 
-Реализуй один из двух подходов — выбери после ответа на уточняющий вопрос #1.
+Implement one of two approaches — pick after answering clarifying question #1.
 
-**Подход A — расширить WebSocket:**
+**Approach A — extend WebSocket:**
 
-1. Рефакторить `ws.server.ts` — добавить типизацию клиентов (`player-station` vs `leaderboard`), сохранив обратную совместимость с player-station протоколом.
-2. При `processEvent()` в `leaderboard.service` — вызвать `ws.server.broadcast('leaderboard_update', newState)` только для leaderboard-клиентов.
-3. В `useLeaderboard.ts` — заменить polling на WS-соединение, при `leaderboard_update` вызвать `setLeaderboard`.
-4. Написать тесты: broadcast вызывается при processEvent, клиент обновляет стейт.
+1. Refactor `ws.server.ts` — add client typing (`player-station` vs `leaderboard`), keeping the player-station protocol backward-compatible.
+2. In `processEvent()` in `leaderboard.service` — call `ws.server.broadcast('leaderboard_update', newState)` for leaderboard clients only.
+3. In `useLeaderboard.ts` — replace polling with a WS connection; on `leaderboard_update` call `setLeaderboard`.
+4. Write tests: broadcast fires on processEvent, client updates state.
 
-**Подход B — SSE:**
+**Approach B — SSE:**
 
-1. Добавить `GET /api/leaderboard/stream` — SSE endpoint, регистрирует соединение в `leaderboard.service`.
-2. `leaderboard.service` хранит список активных SSE-клиентов, при `processEvent()` — push всем.
-3. Закрытие соединения (`req.on('close')`) — удалять из списка (предотвратить memory leak).
-4. В `useLeaderboard.ts` — добавить `EventSource('/api/leaderboard/stream')`, polling оставить как fallback при ошибке соединения.
-5. Написать тесты: SSE endpoint отправляет событие, fallback на polling при обрыве.
+1. Add `GET /api/leaderboard/stream` — SSE endpoint, registers the connection in `leaderboard.service`.
+2. `leaderboard.service` keeps a list of active SSE clients; on `processEvent()` push to all.
+3. On close (`req.on('close')`) — remove from the list (prevent memory leak).
+4. In `useLeaderboard.ts` — add `EventSource('/api/leaderboard/stream')`, keep polling as fallback on connection error.
+5. Write tests: SSE endpoint emits the event, polling fallback kicks in on disconnect.
 
 ## Constraints
 
-- Протокол player-station <-> game-api WS — `ws.server.ts:23–45` (хардкод типов) менять только при Подходе A, с сохранением обратной совместимости.
-- `LeaderboardRow.tsx` не изменять — передавай `positionChanged` prop из родителя.
-- Socket.IO не добавлять — в проекте только нативный `ws`.
-- Polling в `useLeaderboard.ts:23` убрать (Подход A) или оставить как fallback (Подход B) — два параллельных источника данных без fallback-логики недопустимы.
-- `apps/player-station/` не трогать — изменения только в `game-api` и `leaderboard-screen`.
+- The player-station ↔ game-api WS protocol — `ws.server.ts:23–45` (hardcoded types) — change only in Approach A, preserving backward compatibility.
+- Do not change `LeaderboardRow.tsx` — pass `positionChanged` from the parent.
+- Do not add Socket.IO — only the native `ws` is in the project.
+- Remove polling in `useLeaderboard.ts:23` (Approach A) or keep as fallback (Approach B) — two parallel data sources without fallback logic are not allowed.
+- Do not touch `apps/player-station/` — changes are limited to `game-api` and `leaderboard-screen`.
 
 ## Verification
 
-- `npm test --workspace=apps/game-api` — все тесты зелёные
-- `npm test --workspace=apps/leaderboard-screen` — все тесты зелёные
-- player-station отправляет `score_update` → leaderboard-screen обновляется без перезагрузки, анимация смены позиции срабатывает
-- Обрыв соединения leaderboard-screen → реконнект без потери данных
-- player-station соединение (WS) после деплоя работает без изменений
-- Открыть 3 leaderboard-screen одновременно → все получают обновление
-- `processEvent()` вызван → push отправлен до ответа на `POST /api/game-events`
+- `npm test --workspace=apps/game-api` — all tests green
+- `npm test --workspace=apps/leaderboard-screen` — all tests green
+- player-station emits `score_update` → leaderboard-screen updates without reload, position-change animation fires
+- leaderboard-screen connection drop → reconnect with no data loss
+- player-station connection (WS) works unchanged after deploy
+- Open 3 leaderboard-screens at once → all receive updates
+- `processEvent()` fires → push sent before the response to `POST /api/game-events`
 
-## Материалы
+## Materials
 
-- `apps/leaderboard-screen/src/hooks/useLeaderboard.ts` — polling строка 23
-- `apps/leaderboard-screen/src/components/LeaderboardRow.tsx:67–89` — анимация positionChanged
-- `apps/game-api/src/services/ws.server.ts:61` — метод broadcast()
+- `apps/leaderboard-screen/src/hooks/useLeaderboard.ts` — polling on line 23
+- `apps/leaderboard-screen/src/components/LeaderboardRow.tsx:67–89` — positionChanged animation
+- `apps/game-api/src/services/ws.server.ts:61` — method broadcast()
 - `apps/game-api/src/services/leaderboard.service.ts:34–67` — processEvent()
-- `apps/game-api/src/routes/game-events.ts:71` — точка входа событий
+- `apps/game-api/src/routes/game-events.ts:71` — event entry point

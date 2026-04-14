@@ -1,187 +1,187 @@
 ---
 name: review
 description: >-
-  Ищет проблемы в коде, исправляет их и формирует отчёт.
-  Используется когда пользователь пишет "review", "ревью", "code review",
-  "найди проблемы", "найди баги", "проверь код", "анализ кода", "check code",
-  "подготовь отчёт", "что не так с кодом", или после /do для анализа изменений.
+  Finds problems in code, fixes them and produces a report.
+  Used when the user writes "review", "code review",
+  "find issues", "find bugs", "check code", "code analysis",
+  "prepare a report", "what's wrong with the code", or after /do to analyze changes.
 ---
 
-# Code review с автоматическим исправлением
+# Code review with automatic fixing
 
-Ты — оркестратор. Общаешься с пользователем и координируешь sub-agent'ов.
+You are the orchestrator. You communicate with the user and coordinate sub-agents.
 
-Агенты:
+Agents:
 
-- Анализ → `agents/code-reviewer.md`
-- Исправления → `agents/issue-fixer.md` (→ `agents/single-fix-agent.md`)
-- Отчёт → `agents/review-report-writer.md`
-- Валидация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
-- Форматирование → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
+- Analysis → `agents/code-reviewer.md`
+- Fixes → `agents/issue-fixer.md` (→ `agents/single-fix-agent.md`)
+- Report → `agents/review-report-writer.md`
+- Validation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
+- Formatting → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
 
-Работай непрерывно. Две паузы: выбор scope фиксов и финальное действие.
+Work continuously. Two pauses: fix scope selection and final action.
 
 ---
 
-## Вход
+## Input
 
-`$ARGUMENTS` — task-slug или путь к task-файлу.
+`$ARGUMENTS` — task-slug or path to task-file.
 
-Без аргумента — определи slug из текущей ветки или последнего каталога `docs/ai/*/`.
+No argument — determine slug from the current branch or the latest `docs/ai/*/` directory.
 
 ---
 
 ## Pipeline
 
-6 фаз. Каждую отмечай в TodoWrite.
+6 phases. Track each in TodoWrite.
 
 ```
-1. Parse     → определить SLUG, собрать контекст
+1. Parse     → determine SLUG, collect context
 2. Analyze   → dispatch code-reviewer
-3. Select    → показать проблемы, выбрать scope фиксов
+3. Select    → show issues, choose fix scope
 4. Fix       → dispatch issue-fixer + validator + formatter
-5. Finalize  → dispatch report-writer + PR-комментарии + commit
-6. Complete  → нотификация + выбор действия
+5. Finalize  → dispatch report-writer + PR comments + commit
+6. Complete  → notification + action choice
 ```
 
 ---
 
-### Фаза 1 — Parse
+### Phase 1 — Parse
 
-**1.** Определи `SLUG`:
+**1.** Determine `SLUG`:
 
-- Из `$ARGUMENTS` (если slug)
-- Из пути к task-файлу: `docs/ai/<slug>/<slug>-task.md`
-- Из текущей ветки или последнего каталога `docs/ai/*/`
+- From `$ARGUMENTS` (if slug)
+- From path to task-file: `docs/ai/<slug>/<slug>-task.md`
+- From the current branch or the latest `docs/ai/*/` directory
 
-**2.** Путь к task-файлу: `docs/ai/<SLUG>/<SLUG>-task.md`.
-Файла нет — передай `—` в sub-agent.
+**2.** Path to task-file: `docs/ai/<SLUG>/<SLUG>-task.md`.
+If file is absent — pass `—` to sub-agent.
 
-**3.** Извлеки `TICKET_ID` из SLUG (по `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
+**3.** Extract `TICKET_ID` from SLUG (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
-**4.** Post-flow awareness — проверь артефакты:
+**4.** Post-flow awareness — check artifacts:
 
-- `docs/ai/<SLUG>/<SLUG>-report.md` — собери KNOWN_ISSUES из секций Concerns и quality review results
-- `docs/ai/<SLUG>/<SLUG>-fixes.md` — добавь к KNOWN_ISSUES список исправлений
-- Артефактов нет — KNOWN_ISSUES = `—`
+- `docs/ai/<SLUG>/<SLUG>-report.md` — collect KNOWN_ISSUES from Concerns sections and quality review results
+- `docs/ai/<SLUG>/<SLUG>-fixes.md` — append the list of fixes to KNOWN_ISSUES
+- No artifacts — KNOWN_ISSUES = `—`
 
-**Переход:** SLUG, TICKET_ID, KNOWN_ISSUES определены → Фаза 2.
-
----
-
-### Фаза 2 — Analyze
-
-Dispatch code-reviewer через Agent tool. Прочитай `agents/code-reviewer.md`, подставь {{SLUG}}, {{TASK_FILE_PATH}}, {{KNOWN_ISSUES}}.
-
-Получи SUMMARY + ISSUES + ISSUES_COUNT.
-
-Если ISSUES_COUNT = 0 → пропусти Фазы 3-4, перейди к Фазе 5 (отчёт без фиксов).
-
-**Переход:** SUMMARY и ISSUES получены → Фаза 3.
+**Transition:** SLUG, TICKET_ID, KNOWN_ISSUES determined → Phase 2.
 
 ---
 
-### Фаза 3 — Select
+### Phase 2 — Analyze
 
-**1.** Отправь нотификацию:
+Dispatch code-reviewer via the Agent tool. Read `agents/code-reviewer.md`, substitute {{SLUG}}, {{TASK_FILE_PATH}}, {{KNOWN_ISSUES}}.
+
+Receive SUMMARY + ISSUES + ISSUES_COUNT.
+
+If ISSUES_COUNT = 0 → skip Phases 3-4, move to Phase 5 (report without fixes).
+
+**Transition:** SUMMARY and ISSUES received → Phase 3.
+
+---
+
+### Phase 3 — Select
+
+**1.** Send notification:
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review --phase Select --slug "$SLUG" --title "Найдено N проблем" --body "Critical: X, Important: Y, Minor: Z"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review --phase Select --slug "$SLUG" --title "Found N issues" --body "Critical: X, Important: Y, Minor: Z"
 ```
 
-**2.** Покажи пользователю все issues (кратко: severity, category, file:line, description).
+**2.** Show the user all issues (briefly: severity, category, file:line, description).
 
-**3.** Через AskUserQuestion предложи scope:
+**3.** Via AskUserQuestion propose a scope:
 
-- **"Fix Critical + Important (Recommended)"** — исключить Minor
-- **"Fix only Critical"** — только score >= 80
-- **"Fix all"** — все issues
-- **"Skip fixes"** — только отчёт, без исправлений
+- **"Fix Critical + Important (Recommended)"** — exclude Minor
+- **"Fix only Critical"** — only score >= 80
+- **"Fix all"** — all issues
+- **"Skip fixes"** — report only, no fixes
 
-**4.** Отфильтруй issues по выбору → ISSUES_TO_FIX, ISSUES_TO_SKIP.
+**4.** Filter issues by choice → ISSUES_TO_FIX, ISSUES_TO_SKIP.
 
-**Переход:** scope выбран → Фаза 4.
-
----
-
-### Фаза 4 — Fix
-
-Если ISSUES_TO_FIX содержит issues:
-
-**a)** Dispatch issue-fixer через Agent tool. Прочитай `agents/issue-fixer.md`, подставь {{ISSUES_TO_FIX}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
-Issue-fixer сам dispatch'ит параллельные single-fix-agent'ы.
-
-**b)** Получи FIXED_ISSUES, SKIPPED_ISSUES, FILES_CHANGED.
-
-**c)** Добавь issues из ISSUES_TO_SKIP к SKIPPED_ISSUES (причина "Excluded by user").
-
-**d)** Dispatch validator из /do:
-Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, подставь {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
-
-**e)** Dispatch formatter из /do:
-Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, подставь {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}.
-
-Пользователь выбрал "Skip fixes" → все issues в SKIPPED_ISSUES, причина "Skipped by user choice".
-
-**Переход:** фиксы завершены → Фаза 5.
+**Transition:** scope chosen → Phase 4.
 
 ---
 
-### Фаза 5 — Finalize
+### Phase 4 — Fix
 
-**a)** Dispatch review-report-writer через Agent tool. Прочитай `agents/review-report-writer.md`, подставь {{SLUG}}, {{SUMMARY}}, {{ALL_ISSUES}} (полный список из Фазы 2), {{FIXED_ISSUES}}, {{SKIPPED_ISSUES}}, {{COMMIT_HASHES}}.
+If ISSUES_TO_FIX contains issues:
 
-**b)** PR-комментарии:
+**a)** Dispatch issue-fixer via the Agent tool. Read `agents/issue-fixer.md`, substitute {{ISSUES_TO_FIX}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
+Issue-fixer itself dispatches parallel single-fix-agents.
 
-Проверь PR: `gh pr view --json number 2>/dev/null`
+**b)** Receive FIXED_ISSUES, SKIPPED_ISSUES, FILES_CHANGED.
 
-PR существует и SKIPPED_ISSUES непуст — опубликуй каждый issue как PR-комментарий:
+**c)** Append issues from ISSUES_TO_SKIP to SKIPPED_ISSUES (reason "Excluded by user").
+
+**d)** Dispatch validator from /do:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
+
+**e)** Dispatch formatter from /do:
+Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}.
+
+If the user chose "Skip fixes" — all issues go to SKIPPED_ISSUES, reason "Skipped by user choice".
+
+**Transition:** fixes complete → Phase 5.
+
+---
+
+### Phase 5 — Finalize
+
+**a)** Dispatch review-report-writer via the Agent tool. Read `agents/review-report-writer.md`, substitute {{SLUG}}, {{SUMMARY}}, {{ALL_ISSUES}} (full list from Phase 2), {{FIXED_ISSUES}}, {{SKIPPED_ISSUES}}, {{COMMIT_HASHES}}.
+
+**b)** PR comments:
+
+Check PR: `gh pr view --json number 2>/dev/null`
+
+PR exists and SKIPPED_ISSUES is non-empty — publish each issue as a PR comment:
 
 ```bash
 gh api --method POST repos/{owner}/{repo}/issues/{number}/comments -f body="[severity] category: file:line — description"
 ```
 
-Без PR — пропусти.
+No PR — skip.
 
 **c)** Commit report artifact:
 
-Убедись что `.gitignore` пропускает `docs/ai/`. Если пропускает:
+Make sure `.gitignore` allows `docs/ai/`. If it does:
 
 ```bash
 git add docs/ai/<SLUG>/<SLUG>-review.md
 git commit -m "TICKET docs(SLUG): add review report"
 ```
 
-Пример: `#44 docs(44-review-with-fixes): add review report`
+Example: `#44 docs(44-review-with-fixes): add review report`
 
-**Переход:** отчёт записан → Фаза 6.
+**Transition:** report written → Phase 6.
 
 ---
 
-### Фаза 6 — Complete
+### Phase 6 — Complete
 
-**1.** Нотификация:
+**1.** Notification:
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --phase Complete --slug "$SLUG" --title "Review завершён" --body "docs/ai/$SLUG/$SLUG-review.md"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --phase Complete --slug "$SLUG" --title "Review complete" --body "docs/ai/$SLUG/$SLUG-review.md"
 ```
 
-**2.** Сообщи результат: количество найденных / исправленных / пропущенных, путь к review-файлу.
+**2.** Report the result: number found / fixed / skipped, path to the review file.
 
-**3.** AskUserQuestion — что дальше:
+**3.** AskUserQuestion — what next:
 
-- **"Push (/sp:gp) (Recommended)"** — вызови Skill tool с `/sp:gp`
-- **"Create PR (/sp:pr)"** — вызови Skill tool с `/sp:pr`
-- **"Завершить"** — выйди
+- **"Push (/sp:gp) (Recommended)"** — invoke the Skill tool with `/sp:gp`
+- **"Create PR (/sp:pr)"** — invoke the Skill tool with `/sp:pr`
+- **"Finish"** — exit
 
 ---
 
-## Правила
+## Rules
 
-- **Непрерывная работа.** Паузы: scope selection (Фаза 3) и финальное действие (Фаза 6).
-- **Делегирование.** Файловые операции и bash передавай sub-agent'ам.
-- **Коммиты по конвенции.** Формат и ticket ID из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
-- **Context isolation.** Sub-agent получает только свои данные, не весь pipeline.
-- **Обратная совместимость.** $ARGUMENTS = SLUG. Вызов из /do и /fix без изменений.
-- **Длинный вывод CLI.** Запускай с `2>&1 | tail -20`.
-- **Язык контента** — русский. Язык коммитов — английский.
+- **Continuous work.** Pauses: scope selection (Phase 3) and final action (Phase 6).
+- **Delegation.** Delegate file operations and bash to sub-agents.
+- **Commits by convention.** Format and ticket ID from `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
+- **Context isolation.** A sub-agent receives only its data, not the whole pipeline.
+- **Backward compatibility.** $ARGUMENTS = SLUG. Invocation from /do and /fix unchanged.
+- **Long CLI output.** Run with `2>&1 | tail -20`.
+- Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

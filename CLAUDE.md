@@ -4,41 +4,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**sp** — маркетплейс скиллов и команд для Claude Code, вдохновлённый [obra/superpowers](https://github.com/obra/superpowers). Распространяется как Claude Code plugin через `.claude-plugin/marketplace.json`.
+**sp** — a marketplace of skills and commands for Claude Code, inspired by [obra/superpowers](https://github.com/obra/superpowers). Distributed as a Claude Code plugin via `.claude-plugin/marketplace.json`.
 
 ## Architecture
 
 ```
 .claude/
-  skills/              # локальные скиллы для разработки плагина (sp-create, sp-release)
+  skills/              # local skills for plugin development (sp-create, sp-release)
 .claude-plugin/
-  plugin.json          # манифест плагина (name, version, author)
-  marketplace.json     # реестр маркетплейса (name, owner, plugins[])
-skills/                # скиллы — auto-discovered по SKILL.md в поддиректориях
-commands/              # slash-команды — auto-discovered по .md файлам
-hooks/                 # хуки — auto-discovered по hooks.json (Telegram notifications)
-lib/                   # shared-скрипты для вызова из скиллов (notify.sh)
-docs/                  # справочная документация по plugin system
-_skills/               # черновики — НЕ часть плагина, не трогать
+  plugin.json          # plugin manifest (name, version, author)
+  marketplace.json     # marketplace registry (name, owner, plugins[])
+skills/                # skills — auto-discovered by SKILL.md in subdirectories
+commands/              # slash commands — auto-discovered by .md files
+hooks/                 # hooks — auto-discovered by hooks.json (Telegram notifications)
+lib/                   # shared scripts called from skills (notify.sh)
+docs/                  # reference documentation for the plugin system
+_skills/               # drafts — NOT part of the plugin, don't touch
 ```
 
-Компоненты (`skills/`, `commands/`) располагаются в корне репозитория, НЕ внутри `.claude-plugin/`.
+Components (`skills/`, `commands/`) live at the repository root, NOT inside `.claude-plugin/`.
 
 ## Plugin System
 
-- **Скиллы** (`skills/<name>/SKILL.md`): model-invoked, активируются автоматически по `description` в YAML frontmatter
-- **Команды** (`commands/<name>.md`): user-invoked через `/sp:<name>`, YAML frontmatter с `name` и `description`
-- **Namespace**: все компоненты доступны как `/sp:<name>` после установки
-- **`$ARGUMENTS`**: плейсхолдер для пользовательского ввода в командах
-- **`${CLAUDE_PLUGIN_ROOT}`**: для путей внутри плагина в хуках и MCP конфигах
+- **Skills** (`skills/<name>/SKILL.md`): model-invoked, activated automatically by `description` in YAML frontmatter
+- **Commands** (`commands/<name>.md`): user-invoked via `/sp:<name>`, YAML frontmatter with `name` and `description`
+- **Namespace**: all components are available as `/sp:<name>` after installation
+- **`$ARGUMENTS`**: placeholder for user input in commands
+- **`${CLAUDE_PLUGIN_ROOT}`**: for paths inside the plugin in hooks and MCP configs
 
 ## Validation
 
 ```bash
-# Проверить JSON манифесты
+# Validate JSON manifests
 python3 -c "import json; json.load(open('.claude-plugin/plugin.json')); json.load(open('.claude-plugin/marketplace.json')); print('OK')"
 
-# Проверить YAML frontmatter в скиллах/командах — первая строка должна быть ---
+# Validate YAML frontmatter in skills/commands — first line must be ---
 head -1 skills/*/SKILL.md commands/*.md
 ```
 
@@ -50,32 +50,32 @@ claude --plugin-dir .
 
 ## Conventions
 
-- **Язык контента**: русский (скиллы, команды, документация)
-- **Файлы и директории**: kebab-case
-- **Версионирование**: semver в `plugin.json` (source of truth для версии)
-- **marketplace.json**: обязательные поля верхнего уровня — `name`, `owner` (object с `name`), `plugins[]`
-- **Plugin source**: `"./"` для self-contained (плагин в корне маркетплейса), `{ "source": "github", "repo": "owner/repo" }` для внешних
-- **SKILL.md frontmatter**: `name` (идентификатор), `description` (когда активировать)
+- **Content language**: English by default. Skills adapt to the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
+- **Files and directories**: kebab-case
+- **Versioning**: semver in `plugin.json` (source of truth for the version)
+- **marketplace.json**: required top-level fields — `name`, `owner` (object with `name`), `plugins[]`
+- **Plugin source**: `"./"` for self-contained (plugin at the marketplace root), `{ "source": "github", "repo": "owner/repo" }` for external
+- **SKILL.md frontmatter**: `name` (identifier), `description` (when to activate)
 
 ## Implemented skills
 
-- `/task` — формирование задач для AI-реализации
-- `/plan` — построение плана реализации по task-файлу
-- `/do` — выполнение задачи по плану
-- `/review` — подготовка отчёта для code review
-- `/gca` — git commit с умной группировкой и единым commit-convention
-- `/gp` — git push с проверками и отчётом
-- `/pr` — создание и обновление GitHub Pull Request
-- `/gst` — статус разработки: ветка, изменения, diff, горячие файлы
-- `/fix` — быстрый фикс или доработка (1-3 файла, opus на code-фазах)
-- `/hi` — приветствие и объяснение доступных скиллов
-- `/explore` — исследование кодовой базы: read-only Q&A loop с summary chain
-- `/bootstrap` — подготовка проекта к sp flow: детекция стека, генерация CLAUDE.md, создание .claude/sp-context.md
+- `/task` — define tasks for AI implementation
+- `/plan` — build an implementation plan from a task file
+- `/do` — execute a task per the plan
+- `/review` — prepare a code review report
+- `/gca` — git commit with smart grouping and a unified commit convention
+- `/gp` — git push with checks and a report
+- `/pr` — create and update GitHub pull requests
+- `/gst` — development status: branch, changes, diff, hot files
+- `/fix` — quick fix or follow-up (1–3 files, opus on code phases)
+- `/hi` — welcome and overview of available skills
+- `/explore` — codebase exploration: read-only Q&A loop with a summary chain
+- `/bootstrap` — prepare a project for sp flow: stack detection, CLAUDE.md generation, `.claude/sp-context.md` creation
 
 ## Local skills (development)
 
-- `/sp-create` — фабрика скиллов: анализ, проектирование, реализация, валидация, интеграция
-- `/sp-release` — публикация плагина: проверки качества, bump версии, tag, push, GitHub release
+- `/sp-create` — skill factory: analysis, design, implementation, validation, integration
+- `/sp-release` — plugin release: quality checks, version bump, tag, push, GitHub release
 
 ## Planned skills
 
@@ -83,14 +83,14 @@ claude --plugin-dir .
 
 ## Reference docs
 
-- `docs/notify.md` — Telegram-нотификации: настройка, типы, карта точек
+- `docs/notify.md` — Telegram notifications: setup, types, map of trigger points
 
 ## Formatting
 
 ```bash
-pnpm run format          # отформатировать все *.{md,json}
-pnpm run format:check    # проверить форматирование (CI-ready)
+pnpm run format          # format all *.{md,json}
+pnpm run format:check    # check formatting (CI-ready)
 ```
 
-Конфигурация: `.prettierrc.json` (proseWrap: preserve, printWidth: 120).
-Pre-commit хук через Husky форматирует staged файлы автоматически.
+Config: `.prettierrc.json` (proseWrap: preserve, printWidth: 120).
+A pre-commit hook via Husky formats staged files automatically.

@@ -1,12 +1,12 @@
-# Скилл /review
+# Skill /review
 
-Готовит отчёт для code review. Анализирует изменения относительно origin/main
-через субагент, формирует отчёт с ключевыми участками, сложными решениями, рисками и вопросами к ревьюеру.
+Prepares a code review report. Analyzes changes against origin/main via a sub-agent
+and produces a report with key areas, complex decisions, risks, and questions for the reviewer.
 
-## Вход
+## Input
 
-`$ARGUMENTS` — task-slug или путь к task-файлу. Без аргументов определяет slug автоматически из ветки
-или последнего каталога в `docs/ai/`.
+`$ARGUMENTS` — task slug or path to a task file. Without arguments, the slug is determined automatically
+from the branch or the latest directory under `docs/ai/`.
 
 ```
 /sp:review 86-black-jack-page
@@ -14,45 +14,45 @@
 /sp:review
 ```
 
-## Фазы
+## Phases
 
-| Фаза | Название     | Что происходит                                                                         |
-| ---- | ------------ | -------------------------------------------------------------------------------------- |
-| 1    | **Parse**    | Определение SLUG и TICKET_ID из аргументов, пути к task-файлу или имени ветки          |
-| 2    | **Analyze**  | Субагент `review-analyzer` собирает git-данные и анализирует изменения по 7 измерениям |
-| 3    | **Commit**   | Автоматический коммит артефакта: `TICKET docs(SLUG): add review report`                |
-| 4    | **Complete** | Вывод пути к review-файлу                                                              |
+| Phase | Name         | What happens                                                                             |
+| ----- | ------------ | ---------------------------------------------------------------------------------------- |
+| 1     | **Parse**    | Resolve SLUG and TICKET_ID from arguments, task file path, or branch name                |
+| 2     | **Analyze**  | Sub-agent `review-analyzer` collects git data and analyzes changes across 7 dimensions   |
+| 3     | **Commit**   | Auto-commit the artifact: `TICKET docs(SLUG): add review report`                         |
+| 4     | **Complete** | Output the path to the review file                                                       |
 
-## Выход
+## Output
 
-Файл `docs/ai/<slug>/<slug>-review.md` с 7 секциями:
+File `docs/ai/<slug>/<slug>-review.md` with 7 sections:
 
-- **Контекст и цель** — задача, что реализовано
-- **Коммиты и файлы** — список коммитов, затронутые файлы со статистикой
-- **Ключевые участки** — код, требующий пристального внимания
-- **Сложные решения** — архитектурные и технические решения с обоснованием
-- **Вопросы к ревьюеру** — пункты, требующие обсуждения
-- **Риски** — потенциальные проблемы, регрессии, edge cases
-- **Тесты и проверки** — покрытие, ручные сценарии проверки
+- **Context and goal** — the task, what was implemented
+- **Commits and files** — commit list, affected files with stats
+- **Key areas** — code that needs close attention
+- **Complex decisions** — architectural and technical decisions with rationale
+- **Questions for the reviewer** — items that require discussion
+- **Risks** — potential problems, regressions, edge cases
+- **Tests and checks** — coverage, manual verification scenarios
 
-## Субагенты
+## Sub-agents
 
-| Агент             | Модель | Роль                                                                     |
-| ----------------- | ------ | ------------------------------------------------------------------------ |
-| `review-analyzer` | sonnet | Сбор git-данных, анализ diff, формирование review-отчёта по 7 измерениям |
+| Agent             | Model  | Role                                                                        |
+| ----------------- | ------ | --------------------------------------------------------------------------- |
+| `review-analyzer` | sonnet | Collects git data, analyzes diff, writes a 7-dimension review report        |
 
-## Пример
+## Example
 
 ```
 /sp:review 86-black-jack-page
 ```
 
-Результат: `docs/ai/86-black-jack-page/86-black-jack-page-review.md`
+Result: `docs/ai/86-black-jack-page/86-black-jack-page-review.md`
 
-## Связи
+## Connections
 
 ```
 /sp:task → /sp:plan → /sp:do → /sp:review
 ```
 
-`/review` завершает цикл разработки. Анализирует артефакты `/task`, `/plan`, `/do` и изменения в коде.
+`/review` closes the development cycle. Analyzes the `/task`, `/plan`, `/do` artifacts and the code changes.

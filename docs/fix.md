@@ -1,63 +1,63 @@
-# Скилл /fix
+# Skill /fix
 
-Compressed pipeline для доработок и фиксов (1-3 файла). Заменяет неструктурированный
-"просто поправь в чат" полноценным flow: исследование, реализация (opus), post-processing, артефакт.
-Два режима: post-flow (после task/plan/do) и standalone. Поддерживает цепочки фиксов и fix from PR comment URL.
+Compressed pipeline for small changes and fixes (1–3 files). Replaces the unstructured
+"just fix it in chat" with a real flow: investigation, implementation (opus), post-processing, artifact.
+Two modes: post-flow (after task/plan/do) and standalone. Supports chains of fixes and "fix from PR comment URL".
 
-## Вход
+## Input
 
-`$ARGUMENTS` — описание фикса или URL PR-комментария.
+`$ARGUMENTS` — fix description or PR comment URL.
 
 ```
-/sp:fix поправить валидацию email — не обрабатывает пустую строку
-/sp:fix увеличить таймаут reconnect с 5s до 15s
+/sp:fix fix email validation — it doesn't handle empty strings
+/sp:fix bump reconnect timeout from 5s to 15s
 /sp:fix https://github.com/owner/repo/pull/42#discussion_r123456
 ```
 
-## Фазы
+## Phases
 
-| Фаза | Название         | Что происходит                                                         |
-| ---- | ---------------- | ---------------------------------------------------------------------- |
-| 1    | **Collect**      | Субагент определяет mode, slug, fix number, пути артефактов, ветку     |
-| 2    | **Investigate**  | Субагент находит файлы, паттерны, constraints, оценивает сложность     |
-| 3    | **Decide**       | Оркестратор: scope guard, уточнения, подготовка промта для implementer |
-| 4    | **Implement**    | Субагент (opus) реализует фикс и коммитит                              |
-| 5    | **Post-process** | Субагенты: polish (opus), validate, docs, format                       |
-| 6    | **Artifact**     | Субагент записывает fix-log                                            |
-| 7    | **Complete**     | Оркестратор: итог, AskUserQuestion (ещё fix / review / выход)          |
+| Phase | Name             | What happens                                                              |
+| ----- | ---------------- | ------------------------------------------------------------------------- |
+| 1     | **Collect**      | Sub-agent determines mode, slug, fix number, artifact paths, branch       |
+| 2     | **Investigate**  | Sub-agent finds files, patterns, constraints, and estimates complexity    |
+| 3     | **Decide**       | Orchestrator: scope guard, clarifications, prepare the implementer prompt |
+| 4     | **Implement**    | Sub-agent (opus) implements the fix and commits                           |
+| 5     | **Post-process** | Sub-agents: polish (opus), validate, docs, format                         |
+| 6     | **Artifact**     | Sub-agent writes the fix log                                              |
+| 7     | **Complete**     | Orchestrator: summary, AskUserQuestion (another fix / review / exit)      |
 
-## Выход
+## Output
 
-Реализованный код + запись в `docs/ai/<slug>/<slug>-fixes.md`.
+Implemented code + an entry in `docs/ai/<slug>/<slug>-fixes.md`.
 
-Fix-log содержит: описание, статус, изменённые файлы, validation results, коммиты.
+The fix log contains: description, status, changed files, validation results, commits.
 
-## Субагенты
+## Sub-agents
 
-| Агент                   | Модель | Роль                                                                |
-| ----------------------- | ------ | ------------------------------------------------------------------- |
-| `fix-context-collector` | haiku  | Сбор контекста: mode, slug, ticket ID, fix number, пути артефактов  |
-| `fix-investigator`      | sonnet | Исследование кодовой базы: файлы, паттерны, constraints, complexity |
-| `task-executor` (/do)   | opus   | Реализация фикса, self-review, коммит                               |
-| `code-polisher` (/do)   | opus   | Упрощение и чистка кода                                             |
-| `validator` (/do)       | haiku  | Lint, type-check, tests, build + авто-фикс                          |
-| `doc-updater` (/do)     | sonnet | Обновление README, CHANGELOG, JSDoc                                 |
-| `formatter` (/do)       | haiku  | Форматирование кода                                                 |
-| `fix-log-writer`        | haiku  | Запись/дополнение fix-log артефакта                                 |
+| Agent                   | Model  | Role                                                                    |
+| ----------------------- | ------ | ----------------------------------------------------------------------- |
+| `fix-context-collector` | haiku  | Collects context: mode, slug, ticket ID, fix number, artifact paths     |
+| `fix-investigator`      | sonnet | Codebase exploration: files, patterns, constraints, complexity          |
+| `task-executor` (/do)   | opus   | Implements the fix, self-review, commit                                 |
+| `code-polisher` (/do)   | opus   | Simplifies and cleans up code                                           |
+| `validator` (/do)       | haiku  | Lint, type-check, tests, build + auto-fix                               |
+| `doc-updater` (/do)     | sonnet | Updates README, CHANGELOG, JSDoc                                        |
+| `formatter` (/do)       | haiku  | Formats code                                                            |
+| `fix-log-writer`        | haiku  | Writes / appends to the fix log artifact                                |
 
-## Пример
+## Example
 
 ```
-/sp:fix поправить валидацию email
+/sp:fix fix email validation
 ```
 
-Результат: фикс реализован (opus), отполирован, провалидирован, запись добавлена в `docs/ai/<slug>/<slug>-fixes.md`.
+Result: the fix is implemented (opus), polished, validated; an entry is added to `docs/ai/<slug>/<slug>-fixes.md`.
 
-## Связи
+## Connections
 
 ```
 /sp:task → /sp:plan → /sp:do → /sp:fix → /sp:review
 ```
 
-`/fix` дополняет `/do` точечными исправлениями. При scope guard (4+ файлов) escalate в `/sp:task`.
-Переиспользует 5 агентов из `/do` (task-executor, code-polisher, validator, doc-updater, formatter).
+`/fix` complements `/do` with targeted changes. On scope guard (4+ files), escalate to `/sp:task`.
+Reuses 5 agents from `/do` (task-executor, code-polisher, validator, doc-updater, formatter).

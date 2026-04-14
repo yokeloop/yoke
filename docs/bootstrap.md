@@ -1,40 +1,40 @@
-# Скилл /bootstrap
+# Skill /bootstrap
 
-Подготовка проекта к работе с sp flow. Детектирует стек, анализирует архитектуру, сканирует конвенции,
-генерирует CLAUDE.md и `.claude/sp-context.md`.
+Prepares a project for sp flow. Detects the stack, analyzes the architecture, scans conventions,
+and generates CLAUDE.md and `.claude/sp-context.md`.
 
-## Вход
+## Input
 
-Срабатывает при фразах: «bootstrap», «настрой sp», «подготовь проект», «инициализация sp»,
-«setup sp», «первый запуск». Параметров не принимает.
+Fires on prompts like: "bootstrap", "configure sp", "prepare the project", "init sp",
+"setup sp", "first run". No parameters.
 
 ```
 /sp:bootstrap
 ```
 
-## Выход
+## Output
 
-- `CLAUDE.md` — инструкции для Claude Code, сгенерированные на основе стека и конвенций проекта
-- `.claude/sp-context.md` — контекст проекта для sp flow
+- `CLAUDE.md` — instructions for Claude Code, generated from the project's stack and conventions
+- `.claude/sp-context.md` — project context for sp flow
 
-## Фазы
+## Phases
 
-1. **Детекция стека** — определяет языки, фреймворки, инструменты сборки
-2. **Анализ архитектуры** — маппинг директорий, слоёв, зависимостей
-3. **Сканирование конвенций** — код-стиль, именование, паттерны
-4. **Детекция существующих правил** — линтеры, CI, конфиги
-5. **Валидация** — проверка собранных данных
-6. **Генерация CLAUDE.md** — формирование инструкций
-7. **Генерация sp-context.md** — формирование контекста
-8. **Рекомендации по автоматизации** — предложения по хукам и скриптам
-9. **Верификация** — финальная проверка результатов
+1. **Stack detection** — identify languages, frameworks, build tools
+2. **Architecture analysis** — map directories, layers, dependencies
+3. **Convention scanning** — code style, naming, patterns
+4. **Existing rules detection** — linters, CI, configs
+5. **Validation** — check collected data
+6. **CLAUDE.md generation** — build the instructions
+7. **sp-context.md generation** — build the context
+8. **Automation recommendations** — suggestions for hooks and scripts
+9. **Verification** — final check of the results
 
-## Особенности
+## Notes
 
-- Оркестратор с 9 субагентами
-- Интерактивный: задаёт уточняющие вопросы через AskUserQuestion
-- Точка входа для нового проекта в sp
+- Orchestrator with 9 sub-agents
+- Interactive: asks clarifying questions via AskUserQuestion
+- Entry point for a new project in sp
 
-## Связи
+## Connections
 
-Первый шаг перед использованием sp flow. После bootstrap используй полный цикл: `/task` → `/plan` → `/do`.
+The first step before using sp flow. After bootstrap, use the full cycle: `/task` → `/plan` → `/do`.

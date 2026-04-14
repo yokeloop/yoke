@@ -1,12 +1,12 @@
-# Скилл /pr
+# Skill /pr
 
-Создаёт или обновляет GitHub Pull Request. Формирует description из артефактов sp flow
-(review + report), с акцентом на "что проверить при ревью". Без артефактов — fallback
-на коммиты и diff. Поддерживает PR template, auto-labels и маркеры для обновления.
+Creates or updates a GitHub Pull Request. Builds the description from sp flow artifacts
+(review + report), with a focus on "what to check during review". Without artifacts, falls back
+to commits and diff. Supports PR templates, auto-labels, and update markers.
 
-## Вход
+## Input
 
-`$ARGUMENTS` (опциональный) — флаги: `--draft`, `--base <branch>`.
+`$ARGUMENTS` (optional) — flags: `--draft`, `--base <branch>`.
 
 ```
 /sp:pr
@@ -14,55 +14,55 @@
 /sp:pr --base develop
 ```
 
-## Фазы
+## Phases
 
-| Фаза | Название     | Что происходит                                                                     |
-| ---- | ------------ | ---------------------------------------------------------------------------------- |
-| 1    | **Collect**  | Субагент собирает: ветка, slug, PR, review/report файлы, template, коммиты, labels |
-| 2    | **Decide**   | Оркестратор: блокирующие ошибки, create vs update, draft, DATA_SOURCE              |
-| 3    | **Generate** | Субагент синтезирует PR body из review/report или fallback                         |
-| 4    | **Execute**  | Оркестратор: `gh pr create` или `gh pr edit`, labels                               |
-| 5    | **Next**     | Оркестратор: завершение                                                            |
+| Phase | Name         | What happens                                                                         |
+| ----- | ------------ | ------------------------------------------------------------------------------------ |
+| 1     | **Collect**  | Sub-agent collects: branch, slug, PR, review/report files, template, commits, labels |
+| 2     | **Decide**   | Orchestrator: blocking errors, create vs update, draft, DATA_SOURCE                  |
+| 3     | **Generate** | Sub-agent synthesizes the PR body from review/report or fallback                     |
+| 4     | **Execute**  | Orchestrator: `gh pr create` or `gh pr edit`, labels                                 |
+| 5     | **Next**     | Orchestrator: completion                                                             |
 
-## Источники данных (DATA_SOURCE)
+## Data sources (DATA_SOURCE)
 
-| Источник     | Условие                 | Содержимое PR body                                                |
-| ------------ | ----------------------- | ----------------------------------------------------------------- |
-| `sp_full`    | review + report найдены | Summary, Attention, Design decisions, Questions, Risks, Test plan |
-| `sp_partial` | только report           | Summary, Test plan, Changes, Commits                              |
-| `fallback`   | нет артефактов sp       | Summary из коммитов, Changes, Commits, generic Test plan          |
+| Source       | Condition                 | PR body contents                                                   |
+| ------------ | ------------------------- | ------------------------------------------------------------------ |
+| `sp_full`    | review + report found     | Summary, Attention, Design decisions, Questions, Risks, Test plan  |
+| `sp_partial` | report only               | Summary, Test plan, Changes, Commits                               |
+| `fallback`   | no sp artifacts           | Summary from commits, Changes, Commits, generic Test plan          |
 
 ## PR body
 
-Генерируемый контент оборачивается в `<!-- sp:start -->` / `<!-- sp:end -->` маркеры.
-При update — заменяется только содержимое между маркерами, текст пользователя сохраняется.
+Generated content is wrapped in `<!-- sp:start -->` / `<!-- sp:end -->` markers.
+On update, only the content between the markers is replaced — the user's text is preserved.
 
-Принцип: description отвечает на "что проверить при ревью".
+Principle: the description answers "what to check during review".
 
-## Auto-link и auto-labels
+## Auto-link and auto-labels
 
-Ticket ID из slug: `86-feature` → `Closes #86`, `R2-208-feature` → `Ticket: R2-208`.
+Ticket ID from slug: `86-feature` → `Closes #86`, `R2-208-feature` → `Ticket: R2-208`.
 
-Labels из типа коммитов: `feat` → `enhancement`, `fix` → `bug`, `refactor` → `maintenance`.
-Назначаются только существующие в репозитории labels.
+Labels from commit types: `feat` → `enhancement`, `fix` → `bug`, `refactor` → `maintenance`.
+Only labels that exist in the repository are applied.
 
-## Субагенты
+## Sub-agents
 
-| Агент               | Модель | Роль                                                      |
-| ------------------- | ------ | --------------------------------------------------------- |
-| `pr-data-collector` | haiku  | Сбор данных: PR, review/report, template, коммиты, labels |
-| `pr-body-generator` | sonnet | Синтез PR body из артефактов (reasoning-задача)           |
+| Agent               | Model  | Role                                                        |
+| ------------------- | ------ | ----------------------------------------------------------- |
+| `pr-data-collector` | haiku  | Collects data: PR, review/report, template, commits, labels |
+| `pr-body-generator` | sonnet | Synthesizes the PR body from artifacts (reasoning task)     |
 
-## Пример
+## Example
 
 ```
 /sp:pr
 ```
 
-Результат: PR на GitHub со структурированным description из review и report.
+Result: a PR on GitHub with a structured description from review and report.
 
-## Связи
+## Connections
 
-Типичный flow: `/task` → `/plan` → `/do` → `/review` → `/gca` → `/gp` → `/pr`.
-Работает standalone — создаёт PR из коммитов без артефактов sp.
-Использует `reference/pr-body-format.md` для формата body и маппинга секций.
+Typical flow: `/task` → `/plan` → `/do` → `/review` → `/gca` → `/gp` → `/pr`.
+Works standalone — creates a PR from commits without sp artifacts.
+Uses `reference/pr-body-format.md` for body format and section mapping.

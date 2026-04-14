@@ -1,51 +1,51 @@
-# Скилл /gst
+# Skill /gst
 
-Показывает статус разработки в репозитории: ветка, незакоммиченные изменения, коммиты относительно
-default branch, горячие файлы и семантическую сводку. Делегирует сбор данных субагенту.
+Shows development status in the repository: branch, uncommitted changes, commits relative to the
+default branch, hot files, and a semantic summary. Delegates data collection to a sub-agent.
 
-## Вход
+## Input
 
-Срабатывает автоматически при запросах: «статус», «gst», «git status», «что происходит»,
-«состояние репо», «покажи изменения». Параметров не принимает.
-
-```
-/sp:gst
-```
-
-## Фазы
-
-| Фаза | Название           | Что происходит                                                                     |
-| ---- | ------------------ | ---------------------------------------------------------------------------------- |
-| 1    | **Запуск агента**  | Делегирование сбора данных субагенту `git-data-collector`                          |
-| 2    | **Сбор данных**    | Текущая ветка, ahead/behind, staged/unstaged/untracked, diff vs default branch     |
-| 3    | **Форматирование** | Группировка файлов по директориям, относительные таймстемпы, горячие файлы (top-3) |
-
-## Выход
-
-Текстовый отчёт:
-
-- **Ветка** — текущая ветка, upstream tracking, ahead/behind
-- **Изменения** — staged, unstaged, untracked с количеством строк
-- **Файлы** — структурированный список с статусами (M/A/D/R)
-- **Горячие файлы** — top-3 по объёму изменений
-- **Коммиты** — до 20 коммитов от merge-base с хешем, сообщением, временем
-- **Stash** — записи (если есть)
-- **Сводка** — 2-3 предложения с семантическим описанием работы
-
-## Субагенты
-
-| Агент                | Модель | Роль                                               |
-| -------------------- | ------ | -------------------------------------------------- |
-| `git-data-collector` | haiku  | Сбор git-данных (read-only), форматирование отчёта |
-
-## Пример
+Fires automatically on prompts like: "status", "gst", "git status", "what's going on",
+"repo state", "show changes". No parameters.
 
 ```
 /sp:gst
 ```
 
-Результат: отчёт о состоянии репозитория в текстовом формате.
+## Phases
 
-## Связи
+| Phase | Name                 | What happens                                                                          |
+| ----- | -------------------- | ------------------------------------------------------------------------------------- |
+| 1     | **Launch agent**     | Delegate data collection to sub-agent `git-data-collector`                            |
+| 2     | **Collect data**     | Current branch, ahead/behind, staged/unstaged/untracked, diff vs default branch       |
+| 3     | **Format output**    | Group files by directory, relative timestamps, hot files (top-3)                      |
 
-Независимый скилл. Полезен перед `/gca` (проверить изменения) и после `/do` (оценить результат).
+## Output
+
+A text report:
+
+- **Branch** — current branch, upstream tracking, ahead/behind
+- **Changes** — staged, unstaged, untracked with line counts
+- **Files** — structured list with statuses (M/A/D/R)
+- **Hot files** — top-3 by volume of changes
+- **Commits** — up to 20 commits from merge-base with hash, message, time
+- **Stash** — entries (if any)
+- **Summary** — 2–3 sentences describing the work semantically
+
+## Sub-agents
+
+| Agent                | Model  | Role                                                   |
+| -------------------- | ------ | ------------------------------------------------------ |
+| `git-data-collector` | haiku  | Collects git data (read-only), formats the report      |
+
+## Example
+
+```
+/sp:gst
+```
+
+Result: a text report on the repository state.
+
+## Connections
+
+Independent skill. Useful before `/gca` (verify changes) and after `/do` (assess the result).

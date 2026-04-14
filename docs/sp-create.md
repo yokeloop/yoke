@@ -1,76 +1,76 @@
-# Скилл /sp-create
+# Skill /sp-create
 
-Фабрика скиллов для плагина sp. Принимает описание нового скилла и проводит через полный pipeline: анализ задачи, проектирование с mermaid-диаграммой, реализация, валидация качества, интеграция в документацию.
+Skill factory for the sp plugin. Takes a description of a new skill and runs the full pipeline: task analysis, design with a mermaid diagram, implementation, quality validation, documentation integration.
 
-Локальный скилл — работает при разработке в репозитории sp (`.claude/skills/sp-create/`), не входит в публикуемый плагин.
+A local skill — works when developing in the sp repository (`.claude/skills/sp-create/`), not part of the published plugin.
 
-## Вход
+## Input
 
-`$ARGUMENTS` — описание скилла: что он должен делать, примеры использования, URL тикета или путь к файлу.
+`$ARGUMENTS` — description of the skill: what it should do, usage examples, ticket URL, or file path.
 
 ```
-/sp:sp-create скилл для автоматического code review с поиском багов
+/sp:sp-create a skill for automated code review with bug hunting
 /sp:sp-create https://github.com/projectory-com/sp/issues/44
 ```
 
-Если аргумент пуст — скилл запросит описание через AskUserQuestion.
+If the argument is empty, the skill asks for a description via AskUserQuestion.
 
-## Фазы
+## Phases
 
-| Фаза | Название      | Что происходит                                                        |
-| ---- | ------------- | --------------------------------------------------------------------- |
-| 0    | **Preflight** | Проверка что запуск из корня проекта sp                               |
-| 1    | **Analyze**   | 2 параллельных агента: анализ задачи + анализ существующих скиллов    |
-| 2    | **Design**    | Название (kebab-case), архитектура, mermaid flow-диаграмма, план      |
-| 3    | **Confirm**   | Согласование плана с пользователем (max 3 цикла доработки)            |
-| 4    | **Implement** | Создание SKILL.md, агентов, reference-файлов                          |
-| 5    | **Validate**  | 2 параллельных агента: проверка прозы (elements-of-style) + структуры |
-| 6    | **Integrate** | Документация docs/, обновление README.md и CLAUDE.md, format          |
-| 7    | **Complete**  | Итоговая сводка + предложение закоммитить через `/sp:gca`             |
+| Phase | Name          | What happens                                                            |
+| ----- | ------------- | ----------------------------------------------------------------------- |
+| 0     | **Preflight** | Verify the run is from the sp project root                              |
+| 1     | **Analyze**   | 2 parallel agents: task analysis + analysis of existing skills          |
+| 2     | **Design**    | Name (kebab-case), architecture, mermaid flow diagram, plan             |
+| 3     | **Confirm**   | Align the plan with the user (max 3 revision cycles)                    |
+| 4     | **Implement** | Create SKILL.md, agents, reference files                                |
+| 5     | **Validate**  | 2 parallel agents: prose check (elements-of-style) + structure check    |
+| 6     | **Integrate** | Documentation in docs/, update README.md and CLAUDE.md, format          |
+| 7     | **Complete**  | Final summary + offer to commit via `/sp:gca`                           |
 
-## Выход
+## Output
 
-Полный набор файлов нового скилла:
+Full set of files for the new skill:
 
 ```
 skills/<name>/
-├── SKILL.md                # основной файл скилла
-├── agents/                 # субагенты (если нужны)
+├── SKILL.md                # the main skill file
+├── agents/                 # sub-agents (if needed)
 │   └── <agent-name>.md
-└── reference/              # шаблоны и форматы (если нужны)
+└── reference/              # templates and formats (if needed)
     └── <topic>.md
-docs/<name>.md              # документация скилла
+docs/<name>.md              # skill documentation
 ```
 
-Обновлённые README.md и CLAUDE.md с записью о новом скилле.
+Updated README.md and CLAUDE.md with an entry for the new skill.
 
-## Субагенты
+## Sub-agents
 
-Агенты создаются inline (промты в SKILL.md), запускаются через Agent tool с `subagent_type: general-purpose`.
+Agents are created inline (prompts in SKILL.md) and launched via the Agent tool with `subagent_type: general-purpose`.
 
-| Агент              | Модель | Роль                                                       |
-| ------------------ | ------ | ---------------------------------------------------------- |
-| Agent 1 (Analyze)  | sonnet | Анализ задачи: цель, триггеры, вход/выход, фазы, сложность |
-| Agent 2 (Analyze)  | sonnet | Анализ существующих скиллов: паттерны, конвенции, шаблоны  |
-| Agent 3 (Validate) | sonnet | Проверка прозы по правилам elements-of-style               |
-| Agent 4 (Validate) | sonnet | Валидация структуры по best practices skill-development    |
+| Agent              | Model  | Role                                                         |
+| ------------------ | ------ | ------------------------------------------------------------ |
+| Agent 1 (Analyze)  | sonnet | Task analysis: goal, triggers, input/output, phases, complexity |
+| Agent 2 (Analyze)  | sonnet | Analysis of existing skills: patterns, conventions, templates |
+| Agent 3 (Validate) | sonnet | Prose check against elements-of-style rules                  |
+| Agent 4 (Validate) | sonnet | Structure validation against skill-development best practices |
 
-## Пример
-
-```
-/sp:sp-create скилл для автоматического мержа PR после прохождения CI
-```
-
-Результат: скилл `/merge` создан в `skills/merge/`, документация в `docs/merge.md`, записи добавлены в README.md и CLAUDE.md.
-
-## Связи
-
-Локальный скилл для разработки sp. Создаёт скиллы, которые становятся частью pipeline:
+## Example
 
 ```
-/sp:sp-create → новый скилл в skills/
+/sp:sp-create a skill for auto-merging PRs after CI passes
+```
+
+Result: skill `/merge` is created in `skills/merge/`, documentation in `docs/merge.md`, entries added to README.md and CLAUDE.md.
+
+## Connections
+
+Local skill for sp development. Creates skills that become part of the pipeline:
+
+```
+/sp:sp-create → new skill in skills/
                 ↓
 /sp:gca → /sp:gp → /sp:pr → /sp:sp-release
 ```
 
-`/sp:sp-create` создаёт скиллы, `/sp:sp-release` публикует — вместе образуют цикл разработки плагина.
+`/sp:sp-create` creates skills; `/sp:sp-release` publishes them — together they form the plugin development cycle.

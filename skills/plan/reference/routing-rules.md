@@ -1,12 +1,12 @@
 # Routing Rules
 
-Правила выбора стратегии выполнения для Фазы 3 (Route).
+Rules for picking the execution strategy in Phase 3 (Route).
 
 ---
 
-## Таблица решений
+## Decision table
 
-Применяй сверху вниз — первое совпадение побеждает.
+Apply top to bottom — first match wins.
 
 | #   | Complexity | Tasks | File intersections  | Cross-layer | → Mode       | → Parallel |
 | --- | ---------- | ----- | ------------------- | ----------- | ------------ | ---------- |
@@ -20,98 +20,98 @@
 | 8   | complex    | any   | any                 | yes         | `agent-team` | true       |
 | 9   | complex    | any   | heavy               | any         | `agent-team` | false      |
 
-\*mixed = параллельные группы где нет пересечений, sequential между группами с общими файлами.
+\*mixed = parallel groups where there are no intersections, sequential between groups that share files.
 
 ---
 
-## Определения
+## Definitions
 
-**File intersection** — два task'а изменяют один и тот же файл.
+**File intersection** — two tasks modify the same file.
 
-- `none` = ни одна пара tasks общих файлов не имеет
-- `some` = пересечения есть, но независимые группы выделить можно
-- `heavy` = большинство tasks изменяют общие файлы
+- `none` = no task pair shares files
+- `some` = intersections exist, but independent groups can be carved out
+- `heavy` = most tasks share files
 
-**Cross-layer** — план содержит tasks из разных слоёв:
+**Cross-layer** — the plan contains tasks from different layers:
 
-- frontend (React, Vue, CSS, компоненты)
-- backend (API, сервисы, БД)
-- infrastructure (конфиг, CI, деплой)
-- tests (отдельный test-task, не тесты внутри feature-task)
+- frontend (React, Vue, CSS, components)
+- backend (API, services, DB)
+- infrastructure (config, CI, deploy)
+- tests (a standalone test task, not tests bundled into a feature task)
 
-2+ слоёв и _в каждом 2+ tasks_ → cross-layer = yes.
-Один backend-task + один test-task → cross-layer = no (тесты при feature — норма).
+2+ layers _and 2+ tasks in each_ → cross-layer = yes.
+One backend task + one test task → cross-layer = no (tests alongside a feature are normal).
 
 ---
 
 ## Mode: inline
 
-Последовательное выполнение в текущем треде без sub-agents.
+Sequential execution in the current thread without sub-agents.
 
-**Когда:** простые задачи, 1-3 файла, один модуль.
-**Преимущество:** минимум overhead, полный контекст в одном окне.
-**Риск:** блокировка сессии.
+**When:** simple tasks, 1–3 files, one module.
+**Upside:** minimal overhead, full context in one window.
+**Risk:** session blocked.
 
 ---
 
 ## Mode: sub-agents
 
-Каждый task запускает отдельный sub-agent через Task tool.
-При parallel=true параллельные tasks стартуют одновременно.
+Each task launches a dedicated sub-agent via the Task tool.
+When parallel=true, parallel tasks start simultaneously.
 
-**Когда:** 3+ tasks, есть независимые группы, одна кодовая база.
-**Преимущество:** параллелизм, context isolation, каждый agent фокусирован.
-**Риск:** merge conflicts при параллельных изменениях общих файлов.
+**When:** 3+ tasks, independent groups exist, single codebase.
+**Upside:** parallelism, context isolation, every agent focused.
+**Risk:** merge conflicts on parallel edits of shared files.
 
-Для sub-agents:
+For sub-agents:
 
-- `isolation: worktree` если parallel=true
-- `isolation: none` если parallel=false (sequential)
+- `isolation: worktree` when parallel=true
+- `isolation: none` when parallel=false (sequential)
 
 ---
 
 ## Mode: agent-team
 
-Полноценная команда агентов с координацией через TeamCreate.
-Требует `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+A full agent team coordinated via TeamCreate.
+Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 
-**Когда:** cross-layer задачи, нужна координация между частями.
-**Преимущество:** agents общаются друг с другом, разделяют находки.
-**Риск:** высокий token cost, coordination overhead.
+**When:** cross-layer tasks, coordination between parts is required.
+**Upside:** agents talk to each other, share findings.
+**Risk:** high token cost, coordination overhead.
 
-Структура team:
+Team structure:
 
-- **Lead** — координатор (текущая сессия)
-- **Teammates** — по одному на слой (frontend, backend, tests)
-- Shared task list для координации
+- **Lead** — coordinator (the current session)
+- **Teammates** — one per layer (frontend, backend, tests)
+- Shared task list for coordination
 
-**Fallback:** agent-team недоступен (нет feature flag) → degrade до sub-agents.
+**Fallback:** agent-team unavailable (no feature flag) → degrade to sub-agents.
 
 ---
 
 ## Parallel groups
 
-Если mode=sub-agents и parallel=true, определи группы:
+When mode=sub-agents and parallel=true, define the groups:
 
 ```
-Group 1 (parallel): Task 1, Task 2    # нет общих файлов
-Group 2 (parallel): Task 3, Task 4    # нет общих файлов
+Group 1 (parallel): Task 1, Task 2    # no shared files
+Group 2 (parallel): Task 3, Task 4    # no shared files
 ─── barrier ───
-Group 3 (sequential): Task 5          # зависит от Group 1 + 2
+Group 3 (sequential): Task 5          # depends on Group 1 + 2
 ```
 
-Barrier = следующая группа стартует после завершения всех tasks текущей.
+Barrier = the next group starts after every task in the current one finishes.
 
 ---
 
-## Как записать routing в plan-файл
+## How to record routing in the plan file
 
 ```markdown
 ## Execution
 
 - **Mode:** sub-agents
 - **Parallel:** true
-- **Reasoning:** 5 tasks, 2 параллельные группы без пересечений, все в одной кодовой базе
+- **Reasoning:** 5 tasks, 2 parallel groups with no intersections, all in one codebase
 - **Order:**
   Group 1 (parallel): Task 1, Task 2
   Group 2 (sequential): Task 3 → Task 4

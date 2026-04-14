@@ -1,73 +1,73 @@
-# Скилл /gp
+# Skill /gp
 
-Git push с pre-push проверками и post-push отчётом. Проверяет состояние репозитория, обрабатывает
-edge cases (detached HEAD, нет remote, uncommitted changes, default branch protection), пушит в remote
-и выводит отчёт с отправленными коммитами, diff stat, ссылкой на ветку и статусом PR.
+Git push with pre-push checks and a post-push report. Inspects the repository state, handles edge
+cases (detached HEAD, no remote, uncommitted changes, default branch protection), pushes to the remote,
+and prints a report with pushed commits, diff stat, branch link, and PR status.
 
-## Вход
+## Input
 
-`$ARGUMENTS` (опциональный) — флаги push (`--force-with-lease`).
+`$ARGUMENTS` (optional) — push flags (`--force-with-lease`).
 
 ```
 /sp:gp
 /sp:gp --force-with-lease
 ```
 
-## Фазы
+## Phases
 
-| Фаза | Название      | Что происходит                                                                    |
-| ---- | ------------- | --------------------------------------------------------------------------------- |
-| 1    | **Pre-check** | Субагент собирает данные: ветка, upstream, unpushed коммиты, uncommitted, gh auth |
-| 2    | **Decide**    | Оркестратор обрабатывает блокирующие ошибки и интерактивные решения               |
-| 3    | **Push**      | Субагент выполняет push, собирает pushed коммиты, diff stat, branch URL, PR       |
-| 4    | **Report**    | Оркестратор выводит отчёт пользователю                                            |
+| Phase | Name          | What happens                                                                      |
+| ----- | ------------- | --------------------------------------------------------------------------------- |
+| 1     | **Pre-check** | Sub-agent collects data: branch, upstream, unpushed commits, uncommitted, gh auth |
+| 2     | **Decide**    | Orchestrator handles blocking errors and interactive decisions                    |
+| 3     | **Push**      | Sub-agent runs push, collects pushed commits, diff stat, branch URL, PR           |
+| 4     | **Report**    | Orchestrator shows the report to the user                                         |
 
-## Проверки (Фаза 2)
+## Checks (Phase 2)
 
-Порядок строгий — от блокирующих к интерактивным:
+Strict order — from blocking to interactive:
 
-| Проверка            | Условие                                  | Действие                                       |
-| ------------------- | ---------------------------------------- | ---------------------------------------------- |
-| Detached HEAD       | Ветка не определена                      | Ошибка: checkout ветку                         |
-| gh CLI              | Не установлен или не авторизован         | Ошибка с инструкцией                           |
-| Нет remote          | `origin` отсутствует                     | Ошибка: добавь remote                          |
-| Nothing to push     | 0 unpushed, есть upstream, 0 uncommitted | Сообщение и выход                              |
-| Default branch      | Push в main/master                       | AskUserQuestion: продолжить?                   |
-| Uncommitted changes | Есть незакоммиченные файлы               | AskUserQuestion: коммитить / пушить / отменить |
+| Check               | Condition                                  | Action                                  |
+| ------------------- | ------------------------------------------ | --------------------------------------- |
+| Detached HEAD       | Branch not determined                      | Error: check out a branch               |
+| gh CLI              | Not installed or not authenticated         | Error with instructions                 |
+| No remote           | `origin` missing                           | Error: add a remote                     |
+| Nothing to push     | 0 unpushed, upstream exists, 0 uncommitted | Message and exit                        |
+| Default branch      | Push to main/master                        | AskUserQuestion: continue?              |
+| Uncommitted changes | Uncommitted files present                  | AskUserQuestion: commit / push / cancel |
 
-## Режимы push
+## Push modes
 
-| Режим            | Когда                        | Команда                       |
-| ---------------- | ---------------------------- | ----------------------------- |
-| normal           | Upstream существует          | `git push`                    |
-| set-upstream     | Новая ветка без upstream     | `git push -u origin <branch>` |
-| force-with-lease | Передан `--force-with-lease` | `git push --force-with-lease` |
+| Mode             | When                        | Command                       |
+| ---------------- | --------------------------- | ----------------------------- |
+| normal           | Upstream exists             | `git push`                    |
+| set-upstream     | New branch without upstream | `git push -u origin <branch>` |
+| force-with-lease | `--force-with-lease` passed | `git push --force-with-lease` |
 
-## Выход
+## Output
 
-Текстовый отчёт:
+A text report:
 
-- **Pushed коммиты** — до 20 коммитов с хешем и сообщением
-- **Статистика** — файлов изменено, insertions, deletions
-- **Ссылка** — URL ветки на GitHub
-- **PR** — существующий PR (URL, title) или «PR не найден»
+- **Pushed commits** — up to 20 commits with hash and message
+- **Stats** — files changed, insertions, deletions
+- **Link** — branch URL on GitHub
+- **PR** — existing PR (URL, title) or "PR not found"
 
-## Субагенты
+## Sub-agents
 
-| Агент             | Модель | Роль                                                |
-| ----------------- | ------ | --------------------------------------------------- |
-| `git-pre-checker` | haiku  | Сбор данных перед push (read-only)                  |
-| `git-pusher`      | haiku  | Выполнение push, сбор отчёта (единственная мутация) |
+| Agent             | Model | Role                                               |
+| ----------------- | ----- | -------------------------------------------------- |
+| `git-pre-checker` | haiku | Collects data before push (read-only)              |
+| `git-pusher`      | haiku | Runs the push, collects the report (only mutation) |
 
-## Пример
+## Example
 
 ```
 /sp:gp
 ```
 
-Результат: push текущей ветки в origin, отчёт с коммитами и статистикой.
+Result: push the current branch to origin, report with commits and stats.
 
-## Связи
+## Connections
 
-Типичный flow: `/task` → `/plan` → `/do` → `/review` → `/gca` → `/gp` → `/pr`.
-Работает и standalone — для любого push вне SP flow.
+Typical flow: `/task` → `/plan` → `/do` → `/review` → `/gca` → `/gp` → `/pr`.
+Also works standalone — for any push outside SP flow.

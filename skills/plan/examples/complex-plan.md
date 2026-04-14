@@ -1,42 +1,42 @@
-# Пример: complex-план
+# Example: complex plan
 
-Показывает:
+Shows:
 
-- sub-agents mode с параллельными группами
-- Design decisions: два подхода → зафиксированный выбор
+- sub-agents mode with parallel groups
+- Design decisions: two approaches → committed choice
 - Cross-file intersection matrix
-- DAG с barrier между группами
+- DAG with a barrier between groups
 - Context isolation per task
 
 ---
 
-## Вход — task-файл
+## Input — task file
 
 ```
 docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
-Сложность: complex
+Complexity: complex
 ```
 
 ---
 
-## Что нашли агенты
+## What the agents found
 
-> plan-explorer нашёл: SSE проще для read-only потока, WS-сервер уже есть но
-> хардкодирован под player-station. File intersection: leaderboard.service.ts
-> изменяется и серверным task'ом и тестами, но тесты зависят от реализации → sequential.
+> plan-explorer found: SSE is simpler for a read-only stream; the WS server exists
+> but is hardcoded for player-station. File intersection: leaderboard.service.ts
+> changes in the server task and the tests, but tests depend on implementation → sequential.
 >
-> plan-designer: выбрал SSE (подход B из task-файла), декомпозировал на 5 tasks,
-> нашёл 2 параллельные группы (сервер и клиент независимы до интеграции).
+> plan-designer: picked SSE (approach B from the task file), decomposed into 5 tasks,
+> found 2 parallel groups (server and client independent until integration).
 
 ---
 
-## Итоговый plan-файл
+## Final plan file
 
-> Записывается в `docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-plan.md`
+> Written to `docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-plan.md`
 
 ---
 
-# Real-time обновление leaderboard — план реализации
+# Real-time leaderboard updates — implementation plan
 
 **Task:** docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
 **Complexity:** complex
@@ -45,85 +45,85 @@ docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
 
 ## Design decisions
 
-### DD-1: Транспорт — SSE вместо WebSocket
+### DD-1: Transport — SSE instead of WebSocket
 
-**Решение:** Server-Sent Events через новый endpoint `GET /api/leaderboard/stream`.
-**Обоснование:** Leaderboard — read-only поток (сервер → клиент). SSE: нативный `EventSource`, без handshake, через стандартный HTTP. `ws.server.ts` и player-station протокол остаются нетронутыми.
-**Альтернатива:** Расширить WS-сервер (подход A) — рефакторинг `ws.server.ts:23-45` (хардкод типов), ломает isolation player-station.
+**Decision:** Server-Sent Events through a new endpoint `GET /api/leaderboard/stream`.
+**Rationale:** The leaderboard is a read-only stream (server → client). SSE: native `EventSource`, no handshake, over standard HTTP. `ws.server.ts` and the player-station protocol stay untouched.
+**Alternative:** Extend the WS server (approach A) — refactor of `ws.server.ts:23-45` (hardcoded types), breaks player-station isolation.
 
-### DD-2: Push payload — полный state, не diff
+### DD-2: Push payload — full state, not diff
 
-**Решение:** При событии отправлять полный leaderboard state (массив до 20 записей).
-**Обоснование:** Payload ~2KB. Diff-подход сложнее (мерж на клиенте), выигрыш при таком объёме минимален.
-**Альтернатива:** Только изменившиеся строки — экономия ~1.5KB, сложнее реализация.
+**Decision:** On event, push the full leaderboard state (up to 20 entries).
+**Rationale:** Payload is ~2KB. A diff approach is more complex (client merge), and the gain at this size is minimal.
+**Alternative:** Only changed rows — ~1.5KB saved, more complex implementation.
 
-### DD-3: Fallback — polling как degradation
+### DD-3: Fallback — polling as degradation
 
-**Решение:** `useLeaderboard.ts` подключает EventSource, при ошибке/обрыве — fallback на polling 30 сек. Индикатор "live" / "offline" в UI.
-**Обоснование:** Leaderboard на выставке, сеть нестабильна. Polling уже работает — оставить как safety net.
-**Альтернатива:** SSE без fallback — при обрыве пользователь видит устаревшие данные.
+**Decision:** `useLeaderboard.ts` opens an EventSource; on error/disconnect — fall back to 30-second polling. A "live" / "offline" indicator in the UI.
+**Rationale:** The leaderboard runs at a live event, network is unstable. Polling already works — keep it as a safety net.
+**Alternative:** SSE without fallback — on disconnect the user sees stale data.
 
 ## Tasks
 
-### Task 1: SSE endpoint на сервере
+### Task 1: SSE endpoint on the server
 
-- **Files:** `apps/game-api/src/routes/leaderboard-stream.ts` (create), `apps/game-api/src/routes/index.ts` (edit — зарегистрировать)
+- **Files:** `apps/game-api/src/routes/leaderboard-stream.ts` (create), `apps/game-api/src/routes/index.ts` (edit — register)
 - **Depends on:** none
 - **Scope:** M
-- **What:** Создать GET /api/leaderboard/stream — SSE endpoint. При подключении отправить текущий state, зарегистрировать connection в leaderboard.service. Удалить при req.on('close').
-- **Context:** `apps/game-api/src/routes/leaderboard.ts:1-55` (паттерн route), `apps/game-api/src/services/leaderboard.service.ts:34-67` (processEvent)
-- **Verify:** `curl -N http://localhost:3000/api/leaderboard/stream` — получает `data:` с JSON
+- **What:** Create GET /api/leaderboard/stream — SSE endpoint. On connect, send the current state and register the connection in leaderboard.service. Remove on req.on('close').
+- **Context:** `apps/game-api/src/routes/leaderboard.ts:1-55` (route pattern), `apps/game-api/src/services/leaderboard.service.ts:34-67` (processEvent)
+- **Verify:** `curl -N http://localhost:3000/api/leaderboard/stream` — receives `data:` with JSON
 
-### Task 2: Push logic в leaderboard.service
+### Task 2: Push logic in leaderboard.service
 
-- **Files:** `apps/game-api/src/services/leaderboard.service.ts` (edit — добавить SSE push)
+- **Files:** `apps/game-api/src/services/leaderboard.service.ts` (edit — add SSE push)
 - **Depends on:** none
 - **Scope:** M
-- **What:** Добавить массив SSE-клиентов. Метод `addClient(res)`, `removeClient(res)`. В `processEvent()` после записи в БД — push newState всем клиентам через `res.write()`.
-- **Context:** `apps/game-api/src/services/leaderboard.service.ts:34-67` (текущий processEvent), `apps/game-api/src/routes/leaderboard-stream.ts` (Task 1 — как подключается)
-- **Verify:** unit test: processEvent() вызывает write() на всех зарегистрированных клиентах
+- **What:** Add an SSE-client array. Methods `addClient(res)`, `removeClient(res)`. In `processEvent()`, after the DB write — push newState to every client via `res.write()`.
+- **Context:** `apps/game-api/src/services/leaderboard.service.ts:34-67` (current processEvent), `apps/game-api/src/routes/leaderboard-stream.ts` (Task 1 — how clients connect)
+- **Verify:** unit test: processEvent() calls write() on every registered client
 
-### Task 3: Клиент — EventSource + fallback
+### Task 3: Client — EventSource + fallback
 
 - **Files:** `apps/leaderboard-screen/src/hooks/useLeaderboard.ts` (edit)
 - **Depends on:** none
 - **Scope:** M
-- **What:** Добавить EventSource('/api/leaderboard/stream'). При message — `setLeaderboard(data)`. При error — fallback на polling. Добавить state `isLive: boolean`.
-- **Context:** `apps/leaderboard-screen/src/hooks/useLeaderboard.ts:1-45` (текущий hook, polling на строке 23), `apps/leaderboard-screen/src/components/Leaderboard.tsx:1-120` (как hook используется)
-- **Verify:** Компонент получает обновления без перезагрузки. При kill SSE → fallback polling.
+- **What:** Add EventSource('/api/leaderboard/stream'). On message — `setLeaderboard(data)`. On error — fall back to polling. Add state `isLive: boolean`.
+- **Context:** `apps/leaderboard-screen/src/hooks/useLeaderboard.ts:1-45` (current hook, polling at line 23), `apps/leaderboard-screen/src/components/Leaderboard.tsx:1-120` (how the hook is used)
+- **Verify:** The component receives updates without reload. On kill-SSE → fallback polling.
 
-### Task 4: Анимация positionChanged
+### Task 4: positionChanged animation
 
-- **Files:** `apps/leaderboard-screen/src/components/Leaderboard.tsx` (edit — передать prop)
+- **Files:** `apps/leaderboard-screen/src/components/Leaderboard.tsx` (edit — pass the prop)
 - **Depends on:** Task 3
 - **Scope:** S
-- **What:** Сравнить предыдущий и новый leaderboard state. Для строк с изменённой позицией передать `positionChanged={true}` в LeaderboardRow. LeaderboardRow.tsx не изменять.
-- **Context:** `apps/leaderboard-screen/src/components/LeaderboardRow.tsx:67-89` (анимация, prop positionChanged), `apps/leaderboard-screen/src/hooks/useLeaderboard.ts` (Task 3 — как state обновляется)
-- **Verify:** При изменении позиции в рейтинге — CSS transition срабатывает
+- **What:** Compare previous and new leaderboard state. For rows with a changed position pass `positionChanged={true}` to LeaderboardRow. Do not change LeaderboardRow.tsx.
+- **Context:** `apps/leaderboard-screen/src/components/LeaderboardRow.tsx:67-89` (animation, prop positionChanged), `apps/leaderboard-screen/src/hooks/useLeaderboard.ts` (Task 3 — how state updates)
+- **Verify:** On rank change — the CSS transition fires
 
-### Task 5: Тесты
+### Task 5: Tests
 
 - **Files:** `apps/game-api/src/routes/__tests__/leaderboard-stream.test.ts` (create), `apps/leaderboard-screen/src/hooks/__tests__/useLeaderboard.test.ts` (create)
 - **Depends on:** Task 1, Task 2, Task 3
 - **Scope:** M
-- **What:** Server: SSE endpoint отправляет event при processEvent(), connection cleanup при close. Client: hook переключается на EventSource, fallback на polling при ошибке.
-- **Context:** `apps/game-api/src/routes/__tests__/game-events.test.ts` (паттерн тестов), Task 1-3 файлы
-- **Verify:** `npm test --workspace=apps/game-api && npm test --workspace=apps/leaderboard-screen` — зелёные
+- **What:** Server: SSE endpoint emits an event on processEvent(), connection cleanup on close. Client: hook switches to EventSource, falls back to polling on error.
+- **Context:** `apps/game-api/src/routes/__tests__/game-events.test.ts` (test pattern), Task 1–3 files
+- **Verify:** `npm test --workspace=apps/game-api && npm test --workspace=apps/leaderboard-screen` — green
 
 ### Task 6: Validation
 
 - **Files:** —
 - **Depends on:** all
 - **Scope:** S
-- **What:** Полный validation: lint, types, tests обоих workspace'ов.
+- **What:** Full validation: lint, types, tests in both workspaces.
 - **Context:** —
-- **Verify:** `npm test --workspace=apps/game-api && npm test --workspace=apps/leaderboard-screen && npm run lint` — всё зелёное
+- **Verify:** `npm test --workspace=apps/game-api && npm test --workspace=apps/leaderboard-screen && npm run lint` — all green
 
 ## Execution
 
 - **Mode:** sub-agents
 - **Parallel:** true
-- **Reasoning:** 5 tasks + validation. Task 1, 2 (server) и Task 3 (client) общих файлов не имеют — параллелятся. Task 4 зависит от 3, Task 5 от 1-3. Одна кодовая база, координация server/client нужна только на этапе интеграции.
+- **Reasoning:** 5 tasks + validation. Task 1, 2 (server) and Task 3 (client) share no files — they parallelize. Task 4 depends on 3, Task 5 on 1–3. Single codebase; server/client coordination is needed only at integration.
 - **Order:**
   ```
   Group 1 (parallel):
@@ -132,25 +132,25 @@ docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
     Task 3: Client EventSource
   ─── barrier ───
   Group 2 (sequential):
-    Task 4: Анимация (depends on Task 3)
+    Task 4: Animation (depends on Task 3)
   ─── barrier ───
   Group 3 (sequential):
-    Task 5: Тесты (depends on 1, 2, 3)
+    Task 5: Tests (depends on 1, 2, 3)
     Task 6: Validation (depends on all)
   ```
 
 ## Verification
 
-- `npm test --workspace=apps/game-api` — все тесты зелёные
-- `npm test --workspace=apps/leaderboard-screen` — все тесты зелёные
-- player-station отправляет score_update → leaderboard обновляется без перезагрузки
-- Анимация смены позиции срабатывает
-- Обрыв SSE → fallback на polling без потери данных
-- 3 leaderboard-screen одновременно → все получают обновления
+- `npm test --workspace=apps/game-api` — all tests green
+- `npm test --workspace=apps/leaderboard-screen` — all tests green
+- player-station emits score_update → leaderboard updates without reload
+- Position-change animation fires
+- SSE drop → fallback to polling with no data loss
+- 3 leaderboard-screens at once → all receive updates
 
 ## Materials
 
 - `apps/leaderboard-screen/src/hooks/useLeaderboard.ts:23` — polling
-- `apps/leaderboard-screen/src/components/LeaderboardRow.tsx:67-89` — анимация
+- `apps/leaderboard-screen/src/components/LeaderboardRow.tsx:67-89` — animation
 - `apps/game-api/src/services/leaderboard.service.ts:34-67` — processEvent()
-- `apps/game-api/src/routes/game-events.ts:71` — точка входа событий
+- `apps/game-api/src/routes/game-events.ts:71` — event entry point

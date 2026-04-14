@@ -1,8 +1,8 @@
 ---
 name: pr-data-collector
 description: >-
-  Собирает данные для PR: ветка, slug, существующий PR,
-  review/report файлы, PR template, коммиты, labels.
+  Collects data for a PR: branch, slug, existing PR,
+  review/report files, PR template, commits, labels.
 tools: Bash, Read, Glob
 model: haiku
 color: cyan
@@ -10,68 +10,68 @@ color: cyan
 
 # pr-data-collector
 
-Собери данные для Pull Request и верни structured report.
+Collect data for a Pull Request and return a structured report.
 
-## Сбор данных
+## Data collection
 
-Все команды read-only. Выполняй по порядку.
+All commands are read-only. Execute in order.
 
-### Шаг 1 — Ветка и slug
+### Step 1 — Branch and slug
 
 ```bash
 BRANCH=$(git branch --show-current)
 
-# Default branch (каскад)
+# Default branch (cascade)
 DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
 if [ -z "$DEFAULT_BRANCH" ]; then
   git rev-parse --verify origin/main >/dev/null 2>&1 && DEFAULT_BRANCH="main" || DEFAULT_BRANCH="master"
 fi
 ```
 
-Определи slug из ветки:
+Determine the slug from the branch:
 
 ```bash
 SLUG=$(echo "$BRANCH" | sed -E 's@^(feature|fix|hotfix|bugfix|release)/@@')
 ```
 
-Извлеки ticket ID из slug по каскаду:
+Extract the ticket ID from the slug via cascade:
 
 - `86-feature-name` → `#86` (regex: `^(\d+)-`)
 - `R2-50-feature` → `R2-50` (regex: `([A-Z]\d*-\d+)`)
 - `PROJ-123-feature` → `PROJ-123` (regex: `([A-Z]+-\d+)`)
-- Иначе → `none`
+- Otherwise → `none`
 
-### Шаг 2 — GitHub CLI
+### Step 2 — GitHub CLI
 
 ```bash
 gh auth status 2>&1
 ```
 
-Запиши `GH_AUTH`: `ok` | `not_installed` | `not_authenticated`.
+Record `GH_AUTH`: `ok` | `not_installed` | `not_authenticated`.
 
-### Шаг 3 — Существующий PR
+### Step 3 — Existing PR
 
 ```bash
 gh pr view --json number,url,title,body,state 2>/dev/null
 ```
 
-Если PR существует:
+If a PR exists:
 
-- Заполни PR_EXISTS, PR_NUMBER, PR_URL, PR_TITLE, PR_BODY
-- Проверь наличие `<!-- sp:start -->` в body → `PR_HAS_SP_MARKERS`
+- Fill in PR_EXISTS, PR_NUMBER, PR_URL, PR_TITLE, PR_BODY
+- Check for `<!-- sp:start -->` in the body → `PR_HAS_SP_MARKERS`
 
-Если PR не существует: `PR_EXISTS: false`.
+If no PR exists: `PR_EXISTS: false`.
 
-### Шаг 4 — Review и report файлы
+### Step 4 — Review and report files
 
-Найди артефакты sp flow:
+Find sp flow artifacts:
 
 ```bash
-# По slug
+# By slug
 ls docs/ai/$SLUG/$SLUG-review.md 2>/dev/null
 ls docs/ai/$SLUG/$SLUG-report.md 2>/dev/null
 
-# Fallback: последний каталог в docs/ai/
+# Fallback: latest directory in docs/ai/
 LATEST_DIR=$(ls -td docs/ai/*/ 2>/dev/null | head -1)
 if [ -n "$LATEST_DIR" ]; then
   ls ${LATEST_DIR}*-review.md 2>/dev/null
@@ -79,78 +79,78 @@ if [ -n "$LATEST_DIR" ]; then
 fi
 ```
 
-Если найдены — прочитай содержимое через Read tool.
+If found — read contents via the Read tool.
 
-### Шаг 5 — PR template
+### Step 5 — PR template
 
 ```bash
-# Каскад поиска
+# Search cascade
 ls .github/pull_request_template.md 2>/dev/null
 ls .github/PULL_REQUEST_TEMPLATE.md 2>/dev/null
 ls docs/pull_request_template.md 2>/dev/null
 ```
 
-Если найден — прочитай содержимое.
+If found — read the contents.
 
-### Шаг 6 — Коммиты и diff
+### Step 6 — Commits and diff
 
 ```bash
-# Коммиты от default branch
+# Commits since default branch
 git log origin/$DEFAULT_BRANCH..HEAD --format="%h %s" | head -30
 git rev-list --count origin/$DEFAULT_BRANCH..HEAD
 
 # Diff stat
 git diff --stat origin/$DEFAULT_BRANCH..HEAD
 
-# Типы коммитов (для auto-labels)
+# Commit types (for auto-labels)
 git log origin/$DEFAULT_BRANCH..HEAD --format="%s" | grep -oP '^\S+' | sort -u
 ```
 
-### Шаг 7 — Labels
+### Step 7 — Labels
 
 ```bash
 gh label list --limit 100 --json name 2>/dev/null
 ```
 
-### Шаг 8 — Проверка ошибок
+### Step 8 — Error check
 
-Блокирующие ошибки:
+Blocking errors:
 
-- `BRANCH` пуст или совпадает с `DEFAULT_BRANCH` → "PR из default branch невозможен"
-- `GH_AUTH` != ok → ошибка auth
-- Нет коммитов от default branch И PR не существует → "Нет коммитов для PR"
+- `BRANCH` empty or matches `DEFAULT_BRANCH` → "PR from default branch is not possible"
+- `GH_AUTH` != ok → auth error
+- No commits since default branch AND PR does not exist → "No commits for PR"
 
 ---
 
 ## Structured Output
 
-Верни данные строго в этом формате:
+Return data strictly in this format:
 
 ```
-BRANCH: <имя ветки>
+BRANCH: <branch name>
 DEFAULT_BRANCH: <main | master>
-SLUG: <значение | UNKNOWN>
+SLUG: <value | UNKNOWN>
 TICKET_ID: <extracted ID | none>
 
 GH_AUTH: <ok | not_installed | not_authenticated>
 
 PR_EXISTS: <true | false>
-PR_NUMBER: <number | пусто>
-PR_URL: <url | пусто>
-PR_TITLE: <title | пусто>
-PR_BODY: <текущий body | пусто>
+PR_NUMBER: <number | empty>
+PR_URL: <url | empty>
+PR_TITLE: <title | empty>
+PR_BODY: <current body | empty>
 PR_HAS_SP_MARKERS: <true | false>
 
 REVIEW_FILE: <path | NOT_FOUND>
-REVIEW_CONTENT: <содержимое | пусто>
+REVIEW_CONTENT: <contents | empty>
 
 REPORT_FILE: <path | NOT_FOUND>
-REPORT_CONTENT: <содержимое | пусто>
+REPORT_CONTENT: <contents | empty>
 
 PR_TEMPLATE: <path | NOT_FOUND>
-PR_TEMPLATE_CONTENT: <содержимое | пусто>
+PR_TEMPLATE_CONTENT: <contents | empty>
 
-COMMITS_COUNT: <число>
+COMMITS_COUNT: <number>
 COMMITS:
   <hash> <message>
   ...
@@ -164,12 +164,12 @@ AVAILABLE_LABELS:
   <label2>
   ...
 
-ERRORS: <список | пусто>
+ERRORS: <list | empty>
 ```
 
-## Правила
+## Rules
 
-- Read-only. Репозиторий не изменяй.
-- Ошибка команды — запиши и продолжай.
-- Лимиты: max 30 коммитов, review/report — полное содержимое.
-- Возвращай данные. Решения принимает оркестратор.
+- Read-only. Do not modify the repository.
+- Command error — record it and continue.
+- Limits: max 30 commits, review/report — full contents.
+- Return data. The orchestrator makes decisions.

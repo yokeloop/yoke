@@ -1,12 +1,12 @@
-# Скилл /gca
+# Skill /gca
 
-Создаёт атомарные коммиты с автоматической привязкой к тикету. Определяет ticket ID из аргументов, ветки
-или SP flow, классифицирует файлы по группам, формирует сообщения по Conventional Commits.
-Работает в двух режимах: SP flow (коммит артефакта) и standalone (группировка файлов).
+Creates atomic commits with automatic ticket binding. Resolves the ticket ID from arguments, the branch,
+or SP flow; classifies files into groups; and formats messages per Conventional Commits.
+Works in two modes: SP flow (commit an artifact) and standalone (group files).
 
-## Вход
+## Input
 
-`$ARGUMENTS` (опциональный) — ticket ID, URL тикета или slug.
+`$ARGUMENTS` (optional) — ticket ID, ticket URL, or slug.
 
 ```
 /sp:gca
@@ -14,57 +14,57 @@
 /sp:gca https://github.com/owner/repo/issues/86
 ```
 
-## Фазы
+## Phases
 
-| Фаза | Название           | Что происходит                                                                            |
-| ---- | ------------------ | ----------------------------------------------------------------------------------------- |
-| 1    | **Сбор контекста** | Параллельный запрос: git status, diff, branch, ls-files                                   |
-| 2    | **Режим**          | Определение SP flow (артефакт task/plan/do/review) или standalone                         |
-| 3    | **Ticket ID**      | Каскад: аргументы → slug (SP) → ветка (standalone) → спросить пользователя                |
-| 4    | **Стейджинг**      | SP flow: только артефакт. Standalone: классификация по 6 группам, план атомарных коммитов |
-| 5    | **Commit message** | Формат: `TICKET type(SCOPE): description` — английский, imperative mood                   |
-| 6    | **Коммит**         | Стейджинг конкретных файлов, коммит, показ результата                                     |
+| Phase | Name                | What happens                                                                    |
+| ----- | ------------------- | ------------------------------------------------------------------------------- |
+| 1     | **Collect context** | Parallel queries: git status, diff, branch, ls-files                            |
+| 2     | **Mode**            | Detect SP flow (task/plan/do/review artifact) or standalone                     |
+| 3     | **Ticket ID**       | Cascade: arguments → slug (SP) → branch (standalone) → ask the user             |
+| 4     | **Staging**         | SP flow: artifact only. Standalone: classify into 6 groups, plan atomic commits |
+| 5     | **Commit message**  | Format: `TICKET type(SCOPE): description` — English, imperative mood            |
+| 6     | **Commit**          | Stage specific files, commit, display the result                                |
 
-## Формат коммита
+## Commit format
 
 ```
 TICKET type(SCOPE): description
 ```
 
-- **TICKET** — первым: `#86` для GitHub, `R2-50` для YouTrack. Без тикета — опускается
+- **TICKET** — first: `#86` for GitHub, `R2-50` for YouTrack. Omitted when no ticket
 - **type** — feat, fix, refactor, docs, test, chore, style, perf
-- **SCOPE** — область изменений (опционально)
-- **description** — английский, imperative mood
+- **SCOPE** — area of changes (optional)
+- **description** — English, imperative mood
 
-Примеры: `#86 feat(pages): add blackjack page`, `R2-50 fix: save user ID to database`
+Examples: `#86 feat(pages): add blackjack page`, `R2-50 fix: save user ID to database`
 
-## Режимы
+## Modes
 
-| Режим          | Когда                            | Поведение                                                         |
-| -------------- | -------------------------------- | ----------------------------------------------------------------- |
-| **SP flow**    | Вызов из `/task`, `/plan`, `/do` | Коммит только артефакта текущего этапа, без классификации         |
-| **Standalone** | Прямой вызов пользователем       | Классификация файлов по 6 группам, определение атомарных коммитов |
+| Mode           | When                                 | Behavior                                                  |
+| -------------- | ------------------------------------ | --------------------------------------------------------- |
+| **SP flow**    | Invoked from `/task`, `/plan`, `/do` | Commit only the current stage artifact, no classification |
+| **Standalone** | Direct user invocation               | Classify files into 6 groups, determine atomic commits    |
 
-## Группы файлов (standalone)
+## File groups (standalone)
 
-| Группа       | Файлы                                          |
-| ------------ | ---------------------------------------------- |
-| feature      | Основной код (src/, lib/, app/)                |
-| test         | Тесты (\*.test.\*, \*.spec.\*, \_\_tests\_\_/) |
-| docs         | Документация (README, CHANGELOG, \*.md, JSDoc) |
-| style        | Форматирование без логических изменений        |
-| chore        | Конфиги, CI, зависимости                       |
-| sp-artifacts | Файлы в docs/ai/                               |
+| Group        | Files                                           |
+| ------------ | ----------------------------------------------- |
+| feature      | Main code (src/, lib/, app/)                    |
+| test         | Tests (\*.test.\*, \*.spec.\*, \_\_tests\_\_/)  |
+| docs         | Documentation (README, CHANGELOG, \*.md, JSDoc) |
+| style        | Formatting without logical changes              |
+| chore        | Configs, CI, dependencies                       |
+| sp-artifacts | Files under docs/ai/                            |
 
-## Пример
+## Example
 
 ```
 /sp:gca #86
 ```
 
-Результат: один или несколько атомарных коммитов с привязкой к тикету #86.
+Result: one or more atomic commits bound to ticket #86.
 
-## Связи
+## Connections
 
-Используется в конце каждого скилла: `/task` → `/gca`, `/plan` → `/gca`, `/do` → `/gca`, `/review` → `/gca`.
-Standalone — для обычных коммитов без SP flow.
+Used at the end of each skill: `/task` → `/gca`, `/plan` → `/gca`, `/do` → `/gca`, `/review` → `/gca`.
+Standalone — for regular commits outside SP flow.

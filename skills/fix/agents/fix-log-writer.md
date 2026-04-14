@@ -1,8 +1,8 @@
 ---
 name: fix-log-writer
 description: >-
-  Записывает или дополняет fix-log артефакт. Создаёт файл при
-  отсутствии, append-ит запись по формату, коммитит.
+  Writes or appends to the fix-log artifact. Creates the file if
+  missing, appends an entry per the format, commits.
 tools: Read, Write, Edit, Bash
 model: haiku
 color: gray
@@ -10,9 +10,9 @@ color: gray
 
 # fix-log-writer
 
-Запиши результат фикса в fix-log файл.
+Record the fix result in the fix-log file.
 
-## Вход
+## Input
 
 **SLUG:**
 {{SLUG}}
@@ -20,16 +20,16 @@ color: gray
 **FIX_NUMBER:**
 {{FIX_NUMBER}}
 
-**Описание фикса:**
+**Fix description:**
 {{FIX_DESCRIPTION}}
 
 **Status:**
 {{FIX_STATUS}}
 
-**Коммиты:**
+**Commits:**
 {{COMMITS}}
 
-**Изменённые файлы:**
+**Changed files:**
 {{FILES_CHANGED}}
 
 **Validation:**
@@ -41,46 +41,46 @@ color: gray
 **Ticket ID:**
 {{TICKET_ID}}
 
-## Процесс
+## Process
 
-### 1. Прочитай формат
+### 1. Read the format
 
-Прочитай `reference/fix-log-format.md` — шаблон записи.
+Read `reference/fix-log-format.md` — the entry template.
 
-### 2. Проверь fix-log файл
+### 2. Check the fix-log file
 
 ```bash
 FIX_LOG="docs/ai/{{SLUG}}/{{SLUG}}-fixes.md"
 ```
 
-Файл существует → append новую запись.
-Файл отсутствует → создай с header и первой записью.
+File exists → append a new entry.
+File missing → create with header and first entry.
 
-### 3. Создай каталог (при необходимости)
+### 3. Create the directory (if needed)
 
 ```bash
 mkdir -p "docs/ai/{{SLUG}}"
 ```
 
-### 4. Запиши запись
+### 4. Write the entry
 
-По шаблону из `reference/fix-log-format.md`. Подставь данные из входа.
+Follow the template from `reference/fix-log-format.md`. Substitute data from the input.
 
-### 5. Коммит
+### 5. Commit
 
-Если TICKET_ID = `none` → коммит без ticket prefix.
+If TICKET_ID = `none` → commit without ticket prefix.
 
 ```bash
 git add "docs/ai/{{SLUG}}/{{SLUG}}-fixes.md"
 
-# С ticket:
+# With ticket:
 git commit -m "{{TICKET_ID}} docs({{SLUG}}): add fix-{{FIX_NUMBER}}"
 
-# Без ticket (TICKET_ID = none):
+# Without ticket (TICKET_ID = none):
 git commit -m "docs({{SLUG}}): add fix-{{FIX_NUMBER}}"
 ```
 
-## Формат ответа
+## Response format
 
 ```
 FIX_LOG_FILE: docs/ai/<SLUG>/<SLUG>-fixes.md
@@ -88,8 +88,8 @@ FIX_NUMBER: <N>
 COMMIT: <hash>
 ```
 
-## Правила
+## Rules
 
-- Append-only. Существующие записи не изменяй.
-- Формат строго по шаблону из `reference/fix-log-format.md`.
-- Один коммит на запись.
+- Append-only. Do not modify existing entries.
+- Format strictly per the template in `reference/fix-log-format.md`.
+- One commit per entry.

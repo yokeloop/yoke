@@ -1,236 +1,234 @@
 # Frontend Guide
 
-Читай этот файл при `TASK_TYPE = frontend` — в дополнение к `synthesize-guide.md`.
+Read this file when `TASK_TYPE = frontend` — in addition to `synthesize-guide.md`.
 
-Цель: сформулировать Requirements, Constraints и Verification для frontend-задач так,
-чтобы реализатор не принимал визуальных решений самостоятельно.
-
----
-
-## Принцип
-
-Frontend-задачи проваливаются, когда task-файл не отвечает на вопросы:
-
-- Какой конкретно font-family использовать?
-- Какой easing у transition?
-- Что происходит на mobile breakpoint?
-- Что считать «правильным» визуально?
-
-Задача промт-инженера — перевести тикет и Figma-ссылку в конкретные визуальные требования с проверяемыми значениями.
+Goal: write Requirements, Constraints, and Verification for frontend tasks so that the implementer never makes visual decisions on their own.
 
 ---
 
-## Шаг 1 — Design context: что найти в Investigate
+## Principle
 
-Перед Synthesize получи ответы на эти вопросы.
-Если task-explorer не нашёл — добавь в уточняющие вопросы.
+Frontend tasks fail when the task file doesn't answer:
+
+- Which exact font-family?
+- Which easing on the transition?
+- What happens at the mobile breakpoint?
+- What counts as "correct" visually?
+
+The prompt engineer's job is to translate the ticket and the Figma link into concrete visual requirements with verifiable values.
+
+---
+
+## Step 1 — Design context: what to find during Investigate
+
+Answer these questions before Synthesize.
+If task-explorer did not find the answers — add them to the clarifying questions.
 
 **Typography:**
 
-- Какие font-family в проекте? (CSS variables, tailwind config, globals)
-- Есть ли type scale? (`typography.ts`, `tailwind.config.js`, CSS)
+- Which font-family is in the project? (CSS variables, tailwind config, globals)
+- Is there a type scale? (`typography.ts`, `tailwind.config.js`, CSS)
 
 **Color system:**
 
-- Как определены цвета — CSS variables, Tailwind tokens, JS theme object?
-- Имена токенов для primary, surface, border, text (из файлов)
+- How are colors defined — CSS variables, Tailwind tokens, JS theme object?
+- Token names for primary, surface, border, text (from the files)
 
 **Spacing:**
 
-- 4px или 8px grid? (tailwind config или дизайн-система)
+- 4px or 8px grid? (tailwind config or the design system)
 
 **Animation:**
 
-- Библиотека анимаций? (Framer Motion, GSAP, CSS-only)
-- Стандартные easings/durations в проекте? (`animations.ts` или CSS vars)
+- Animation library? (Framer Motion, GSAP, CSS-only)
+- Standard easings/durations in the project? (`animations.ts` or CSS vars)
 
 **Breakpoints:**
 
-- Breakpoints? (tailwind config или CSS media queries)
-- Mobile-first или desktop-first подход?
+- Breakpoints? (tailwind config or CSS media queries)
+- Mobile-first or desktop-first?
 
 **Component patterns:**
 
-- Структура похожих компонентов? (пути + структура из findings)
+- Structure of similar components? (paths + structure from findings)
 
 ---
 
-## Шаг 2 — Requirements: как писать визуальные требования
+## Step 2 — Requirements: how to write visual requirements
 
-### Правило: каждое визуальное требование содержит конкретное значение
+### Rule: every visual requirement carries a concrete value
 
-Исключи пространство для интерпретации визуальных деталей.
+Remove room to interpret visual details.
 
 **Before / After:**
 
 ```
-# Плохо — реализатор будет гадать
-- Добавить анимацию появления карточек
-- Карточка должна выглядеть интерактивной при hover
-- Использовать цвета из дизайн-системы
+# Bad — the implementer will guess
+- Add a card mount animation
+- The card should look interactive on hover
+- Use colors from the design system
 ```
 
 ```
-# Хорошо — все значения конкретны
-- При mount: карточки появляются с staggered fade-in, задержка 60ms между элементами,
-  длительность 300ms, easing: ease-out. Использовать Framer Motion (уже в проекте).
-- Hover state: box-shadow переходит к `--shadow-md` за 180ms ease-out,
-  translateY(-2px) за то же время. Одна transition, не два отдельных.
-- Цвета строго из CSS variables: background → `--color-surface`,
+# Good — every value is concrete
+- On mount: cards appear with a staggered fade-in, 60ms delay between items,
+  duration 300ms, easing: ease-out. Use Framer Motion (already in the project).
+- Hover state: box-shadow transitions to `--shadow-md` over 180ms ease-out,
+  translateY(-2px) over the same time. One transition, not two separate ones.
+- Colors strictly from CSS variables: background → `--color-surface`,
   border → `--color-border`, text → `--color-text-primary`.
 ```
 
-### Чеклист для frontend Requirements
+### Frontend Requirements checklist
 
-Для каждого визуального элемента пройдись по чеклисту:
+For each visual element walk through the checklist:
 
-**Typography** (если задача касается текста):
+**Typography** (if the task touches text):
 
-- [ ] font-family — конкретное значение или токен из проекта
-- [ ] font-size — значение или scale step (`text-sm`, `--font-size-body`)
-- [ ] font-weight — число или токен (`font-medium`, `500`)
-- [ ] line-height — значение (`leading-relaxed`, `1.6`)
-- [ ] letter-spacing — если нестандартный
+- [ ] font-family — concrete value or project token
+- [ ] font-size — value or scale step (`text-sm`, `--font-size-body`)
+- [ ] font-weight — number or token (`font-medium`, `500`)
+- [ ] line-height — value (`leading-relaxed`, `1.6`)
+- [ ] letter-spacing — if non-standard
 
-**Color** (если задача касается цвета):
+**Color** (if the task touches color):
 
-- [ ] Конкретные CSS variables или Tailwind tokens для каждого цвета
-- [ ] Цвет в разных состояниях: default, hover, active, disabled, focus
-- [ ] Dark mode — нужен ли, как переключается в проекте
+- [ ] Concrete CSS variables or Tailwind tokens for each color
+- [ ] Color across states: default, hover, active, disabled, focus
+- [ ] Dark mode — is it required, how does the project switch it?
 
 **Spacing & Layout**:
 
-- [ ] Конкретные padding/margin значения или tokens (`p-4`, `gap-6`, `--space-md`)
-- [ ] Breakpoints — как меняется layout на mobile/tablet/desktop
-- [ ] Alignment и distribution — flex/grid конфигурация
+- [ ] Concrete padding/margin values or tokens (`p-4`, `gap-6`, `--space-md`)
+- [ ] Breakpoints — how layout changes on mobile/tablet/desktop
+- [ ] Alignment and distribution — flex/grid config
 
 **Animation & Motion**:
 
-- [ ] Trigger — когда запускается (mount, hover, scroll, click)
-- [ ] Property — что анимируется (opacity, transform, height)
-- [ ] Duration — миллисекунды
-- [ ] Easing — функция (`ease-out`, `cubic-bezier(0.4, 0, 0.2, 1)`)
-- [ ] Delay — если staggered
-- [ ] Библиотека — CSS transition, Framer Motion, GSAP
+- [ ] Trigger — when it fires (mount, hover, scroll, click)
+- [ ] Property — what animates (opacity, transform, height)
+- [ ] Duration — milliseconds
+- [ ] Easing — function (`ease-out`, `cubic-bezier(0.4, 0, 0.2, 1)`)
+- [ ] Delay — if staggered
+- [ ] Library — CSS transition, Framer Motion, GSAP
 
 **Interactive states**:
 
-- [ ] hover — визуальное изменение + transition
-- [ ] focus-visible — ring/outline для accessibility
-- [ ] active/pressed — тактильный отклик
+- [ ] hover — visual change + transition
+- [ ] focus-visible — ring/outline for accessibility
+- [ ] active/pressed — tactile feedback
 - [ ] disabled — opacity + cursor
-- [ ] loading — skeleton или spinner
+- [ ] loading — skeleton or spinner
 
 ---
 
-## Шаг 3 — Constraints: что защищать в frontend-задачах
+## Step 3 — Constraints: what to protect in frontend tasks
 
-### Что всегда добавлять в Constraints для frontend:
+### Always add these Constraints for frontend:
 
-**Шрифты — защити от замены:**
-
-```
-- Не заменять font-family — использовать только то что уже в проекте
-  (найдено: [конкретные значения из Investigate])
-- Не подключать новые шрифты через Google Fonts или @import
-```
-
-**Токены — защити от хардкода:**
+**Fonts — protect from replacement:**
 
 ```
-- Все цвета только через CSS variables / Tailwind tokens — не хардкодить hex
-- Все размеры через токены — не хардкодить px значения вне дизайн-системы
+- Do not replace font-family — use only what's already in the project
+  (found: [concrete values from Investigate])
+- Do not pull in new fonts via Google Fonts or @import
 ```
 
-**Анимации — защити от избыточности:**
+**Tokens — protect from hardcoded values:**
 
 ```
-- Не добавлять анимации, которых нет в тикете
-- prefers-reduced-motion: все motion-эффекты должны отключаться через media query
+- All colors via CSS variables / Tailwind tokens only — no hardcoded hex
+- All sizes via tokens — no hardcoded px outside the design system
 ```
 
-**Существующие компоненты — защити от дублирования:**
+**Animations — protect from excess:**
 
 ```
-- Использовать существующий [ComponentName] из [path] — не создавать дубль
-- Не изменять props interface существующих компонентов
+- Do not add animations that aren't in the ticket
+- prefers-reduced-motion: every motion effect disables via the media query
 ```
 
-**Anti-convergence (из frontend-design скилла):**
+**Existing components — protect from duplication:**
 
 ```
-- Не использовать Inter/Roboto/Arial, если их нет в проекте
-- Не добавлять purple gradient — дизайн-система проекта его не содержит
-- Следовать установленному visual style, новую эстетику не вводить
+- Use the existing [ComponentName] from [path] — do not create a duplicate
+- Do not change the props interface of existing components
+```
+
+**Anti-convergence (from the frontend-design skill):**
+
+```
+- Do not use Inter/Roboto/Arial if they aren't in the project
+- Do not add a purple gradient — the project's design system doesn't contain one
+- Follow the established visual style, do not introduce a new aesthetic
 ```
 
 ---
 
-## Шаг 4 — Verification: как проверять frontend-задачи
+## Step 4 — Verification: how to verify frontend tasks
 
-### Проблема с frontend Verification
+### The frontend Verification problem
 
-`curl` для проверки «выглядит правильно» не подходит.
-Зато работают конкретные поведенческие проверки.
+`curl` can't verify "looks right".
+Concrete behavioral checks can.
 
-**Уровни Verification для frontend:**
+**Verification levels for frontend:**
 
-**1. Автоматические (если есть тесты в проекте):**
-
-```
-- `npm test src/components/Card.test.tsx` — все тесты зелёные
-- `npm run type-check` — нет TypeScript ошибок
-- `npm run lint` — нет eslint ошибок
-```
-
-**2. Визуальные чеклисты (ручная проверка, но конкретная):**
+**1. Automated (when the project has tests):**
 
 ```
-- Открыть компонент на desktop (1440px): карточки в 3 колонки с gap 24px
-- Открыть на mobile (375px): карточки в 1 колонку, padding 16px с боков
-- Hover на карточку: shadow появляется за 180ms, нет рывков
-- Tab через элементы: focus ring виден на каждом интерактивном элементе
-- Включить prefers-reduced-motion в OS: все анимации отсутствуют
-- Dark mode (если есть): все цвета переключаются через CSS variables
+- `npm test src/components/Card.test.tsx` — all tests green
+- `npm run type-check` — no TypeScript errors
+- `npm run lint` — no eslint errors
+```
+
+**2. Visual checklists (manual but concrete):**
+
+```
+- Open the component on desktop (1440px): cards in 3 columns with 24px gap
+- Open on mobile (375px): cards in 1 column, 16px side padding
+- Hover on a card: shadow appears in 180ms, no jitter
+- Tab through elements: focus ring visible on every interactive element
+- Enable prefers-reduced-motion in the OS: all animations gone
+- Dark mode (if supported): all colors switch via CSS variables
 ```
 
 **3. Accessibility:**
 
 ```
-- Изображения имеют alt текст
-- Интерактивные элементы доступны с клавиатуры
-- Contrast ratio текста ≥ 4.5:1 (можно проверить в Chrome DevTools)
+- Images have alt text
+- Interactive elements are keyboard-accessible
+- Text contrast ratio ≥ 4.5:1 (check in Chrome DevTools)
 ```
 
-### Before / After для Verification:
+### Before / After for Verification:
 
 ```
-# Плохо — непроверяемо
-- Анимация работает корректно
-- Выглядит хорошо на мобильных
-- Hover state есть
+# Bad — unverifiable
+- The animation works correctly
+- Looks good on mobile
+- Hover state exists
 ```
 
 ```
-# Хорошо — конкретные проверки
-- `npm run type-check` — 0 ошибок
-- Resize до 375px: layout переключается в 1 колонку, текст не обрезается
-- Hover на кнопку: translateY(-2px) + shadow за 180ms, без рывков
-- Tab к кнопке: focus ring 2px solid var(--color-focus) виден
-- System dark mode ON: все поверхности используют --color-surface-dark
-- prefers-reduced-motion ON в OS: открыть страницу, анимации отсутствуют
+# Good — concrete checks
+- `npm run type-check` — 0 errors
+- Resize to 375px: layout switches to 1 column, text doesn't clip
+- Hover on the button: translateY(-2px) + shadow over 180ms, no jitter
+- Tab to the button: focus ring 2px solid var(--color-focus) visible
+- System dark mode ON: all surfaces use --color-surface-dark
+- prefers-reduced-motion ON in the OS: open the page, no animations
 ```
 
 ---
 
-## Уточняющие вопросы для frontend-задач
+## Clarifying questions for frontend tasks
 
-Перед добавлением вопросов проверь, дал ли пользователь ответ в промте (synthesize-guide.md, «Валидация против входа пользователя»).
+Before adding a question, check whether the user already answered it in the prompt (synthesize-guide.md, "Validate against the user's input").
 
-Если Investigate не дал ответы на ключевые вопросы — добавь в список
-для AskUserQuestion (задавай интерактивно, в файл не записывай):
+If Investigate didn't answer the key questions — add them to the AskUserQuestion list (ask interactively, don't write them to the file):
 
-- «Нужен ли dark mode для этого компонента?» → Да, CSS variables (паттерн в проекте) / Нет, только light
-- «Как обрабатывать анимации при prefers-reduced-motion?» → Полностью отключить / Оставить opacity-only
-- «Какой breakpoint считать переходом mobile → desktop?» → md 768px (стандарт Tailwind) / lg 1024px (сложный компонент)
-- «Нужны ли skeleton-состояния при загрузке данных?» → Да, по паттерну из [компонент] / Нет, spinner
+- "Do we need dark mode for this component?" → Yes, CSS variables (project pattern) / No, light only
+- "How to handle animations under prefers-reduced-motion?" → Disable entirely / Keep opacity-only
+- "Which breakpoint splits mobile → desktop?" → md 768px (Tailwind standard) / lg 1024px (complex component)
+- "Do we need skeleton loading states?" → Yes, following [component] pattern / No, spinner

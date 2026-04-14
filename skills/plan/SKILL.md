@@ -1,311 +1,311 @@
 ---
 name: plan
 description: >-
-  Построение плана реализации по task-файлу. Используется когда пользователь пишет
-  "построй план", "сделай план", "plan", "спланируй реализацию", "подготовь план",
-  или передаёт путь к task-файлу и просит спланировать выполнение.
+  Build an implementation plan from a task file. Triggered when the user writes
+  "build a plan", "make a plan", "plan", "plan the implementation", "prepare a plan",
+  or passes a path to a task file and asks to plan execution.
 ---
 
-# Построение плана реализации
+# Build an implementation plan
 
-Ты — оркестратор. Координируешь работу sub-agent'ов и общаешься с пользователем.
+You are the orchestrator. Coordinate sub-agents and talk to the user.
 
-Делегируй исследование кодовой базы и проектирование через Agent tool:
+Delegate codebase investigation and design through the Agent tool:
 
-- Исследование → `agents/plan-explorer.md`
-- Проектирование → `agents/plan-designer.md`
-- Ревью плана → `agents/plan-reviewer.md`
+- Exploration → `agents/plan-explorer.md`
+- Design → `agents/plan-designer.md`
+- Plan review → `agents/plan-reviewer.md`
 
-Результат — plan-файл, по которому `/sp:do` выполнит реализацию автономно.
-
----
-
-## Вход
-
-`$ARGUMENTS` — путь к task-файлу, например `docs/ai/86-black-jack-page/86-black-jack-page-task.md`
-
-Если пути нет — запроси у пользователя.
+The output is a plan file that `/sp:do` can execute autonomously.
 
 ---
 
-## Фазы
+## Input
 
-### Фаза 1 — Load
+`$ARGUMENTS` — path to a task file, for example `docs/ai/86-black-jack-page/86-black-jack-page-task.md`
 
-**1.** Прочитай task-файл целиком.
-
-**2.** Извлеки:
-
-- `TASK_TITLE` — заголовок
-- `TASK_SLUG` — из поля `Slug` в task-файле
-- `TASK_COMPLEXITY` — из поля «Сложность»
-- `TASK_TYPE` — frontend / general (если не указан — определи по содержимому)
-- `REQUIREMENTS` — список требований
-- `CONSTRAINTS` — ограничения
-- `VERIFICATION` — критерии проверки
-- `MATERIALS` — ссылки и пути
-
-**3.** Проверь наличие секций Task, Context, Requirements.
-Если критичная секция отсутствует — сообщи пользователю и остановись.
-
-**4.** Извлеки `TICKET_ID` из TASK_SLUG (по `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
-
-**Переход:** task-файл загружен, TICKET_ID определён → Фаза 2.
+If the path is missing — request it from the user.
 
 ---
 
-### Фаза 2 — Explore
+## Phases
 
-Цель: определить _как именно_ реализовать задачу. Task-файл описывает _что_ и _где_.
-Plan-explorer ищет _how_: какие файлы создать, какие паттерны повторить,
-какие интеграционные точки задействовать.
+### Phase 1 — Load
 
-**Запусти plan-explorer через Agent tool:**
+**1.** Read the task file in full.
 
-Задача агенту:
+**2.** Extract:
+
+- `TASK_TITLE` — title
+- `TASK_SLUG` — from the `Slug` field in the task file
+- `TASK_COMPLEXITY` — from the `Complexity` field
+- `TASK_TYPE` — frontend / general (if not stated — infer from content)
+- `REQUIREMENTS` — list of requirements
+- `CONSTRAINTS` — constraints
+- `VERIFICATION` — verification criteria
+- `MATERIALS` — links and paths
+
+**3.** Check that Task, Context, and Requirements sections are present.
+If a critical section is missing — tell the user and stop.
+
+**4.** Extract `TICKET_ID` from TASK_SLUG (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
+
+**Transition:** task file loaded, TICKET_ID determined → Phase 2.
+
+---
+
+### Phase 2 — Explore
+
+Goal: determine _how exactly_ to implement the task. The task file describes _what_ and _where_.
+plan-explorer looks for _how_: which files to create, which patterns to reuse,
+which integration points to touch.
+
+**Launch plan-explorer through the Agent tool:**
+
+Prompt to the agent:
 
 ```
-На основе task-файла: [вставить TASK_TITLE и полную секцию Context из task-файла]
+Based on the task file: [paste TASK_TITLE and the full Context section from the task file]
 
 Requirements:
-[вставить REQUIREMENTS]
+[paste REQUIREMENTS]
 
 Constraints:
-[вставить CONSTRAINTS]
+[paste CONSTRAINTS]
 
-Исследуй кодовую базу с фокусом на реализацию:
+Investigate the codebase with an implementation focus:
 
-1. Для каждого requirement — какие конкретно файлы нужно создать или изменить?
-   Путь + что именно менять/добавлять.
-2. Паттерны реализации: найди 1-2 похожих реализации в проекте.
-   Для каждой: путь, структура, что переиспользовать.
-3. Shared state и зависимости: какие файлы будут затронуты несколькими requirements?
-   Составь матрицу пересечений.
-4. Порядок: что должно быть готово раньше чего? Есть ли естественные фазы?
-5. Estimated scope: для каждого блока изменений — примерный объём (S/M/L).
+1. For each requirement — which files must be created or changed?
+   Path + what exactly to change/add.
+2. Implementation patterns: find 1–2 similar implementations in the project.
+   For each: path, structure, what to reuse.
+3. Shared state and dependencies: which files will several requirements touch?
+   Build an intersection matrix.
+4. Order: what must be ready before what? Are there natural phases?
+5. Estimated scope: for each change block — rough size (S/M/L).
 
-В конце — essential file list для design-фазы.
+At the end — the essential file list for the design phase.
 ```
 
-**Прочитай каждый файл из essential file list.**
+**Read every file from the essential file list.**
 
-**Переход:** findings получены, essential files прочитаны → Фаза 3.
+**Transition:** findings received, essential files read → Phase 3.
 
 ---
 
-### Фаза 3 — Design
+### Phase 3 — Design
 
-Цель: принять архитектурные решения и декомпозировать задачу на tasks.
+Goal: make architectural decisions and decompose the task into tasks.
 
-**Запусти plan-designer через Agent tool:**
+**Launch plan-designer through the Agent tool:**
 
-Задача агенту:
+Prompt to the agent:
 
 ```
 Task: [TASK_TITLE]
 Complexity: [TASK_COMPLEXITY]
 
-Findings от plan-explorer:
-[вставить findings целиком]
+plan-explorer findings:
+[paste findings in full]
 
-Requirements из task-файла:
-[вставить REQUIREMENTS]
+Requirements from the task file:
+[paste REQUIREMENTS]
 
-Constraints из task-файла:
-[вставить CONSTRAINTS]
+Constraints from the task file:
+[paste CONSTRAINTS]
 
-Спроектируй план реализации:
+Design the implementation plan:
 
-1. DESIGN DECISIONS — для каждого неочевидного выбора:
-   - Что решаем (одно предложение)
-   - Выбранный вариант + почему
-   - Отвергнутый вариант + почему нет
-   Принимай решения на основе паттернов кодовой базы.
-   Ответ есть в коде — используй его, а не спрашивай пользователя.
+1. DESIGN DECISIONS — for each non-obvious choice:
+   - What you are deciding (one sentence)
+   - Chosen option + why
+   - Rejected option + why not
+   Decide from codebase patterns.
+   If the answer is in the code — use it, don't ask the user.
 
-2. DECOMPOSITION — разбей на задачи:
-   - Каждая задача: название, файлы, depends_on, estimated scope (S/M/L)
-   - Задача = атомарный коммит. Один concern, тестируемый отдельно.
-   - Гранулярность: 2-10 минут работы агента на задачу.
+2. DECOMPOSITION — split into tasks:
+   - Each task: title, files, depends_on, estimated scope (S/M/L)
+   - A task = atomic commit. One concern, testable in isolation.
+   - Granularity: 2–10 minutes of agent work per task.
 
-3. FILE INTERSECTION MATRIX — для каждой пары задач:
-   - Есть ли общие файлы? Какие?
-   - Если да — пометить как sequential dependency.
+3. FILE INTERSECTION MATRIX — for each task pair:
+   - Any shared files? Which?
+   - If yes — mark as a sequential dependency.
 
-4. EXECUTION ORDER — в каком порядке выполнять:
-   - Какие задачи можно параллелить (нет общих файлов, нет depends_on)?
-   - Какие строго последовательны?
-   - Нарисуй текстовый DAG.
+4. EXECUTION ORDER — ordering:
+   - Which tasks can run in parallel (no shared files, no depends_on)?
+   - Which are strictly sequential?
+   - Sketch a text DAG.
 
-5. IMPLEMENTATION QUESTIONS — от 3 до 5. Только про HOW:
-   архитектура, паттерны, trade-offs реализации.
-   Исключай вопросы, уже решённые в task-файле.
+5. IMPLEMENTATION QUESTIONS — from 3 to 5. About HOW only:
+   architecture, patterns, implementation trade-offs.
+   Exclude questions already answered in the task file.
 
-   Хорошо: «Какой паттерн — Strategy или Template Method?»
-   Плохо: «Какие поля нужны в форме?» (это scope → task)
+   Good: "Which pattern — Strategy or Template Method?"
+   Bad: "What fields does the form need?" (that's scope → task)
 ```
 
-**Прочитай дополнительные файлы,** запрошенные designer'ом.
+**Read additional files** the designer requested.
 
-**Интерактивные уточнения:**
+**Interactive clarifications:**
 
-Если plan-designer сгенерировал вопросы — отправь нотификацию перед AskUserQuestion:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill plan --phase Design --slug "$TASK_SLUG" --title "Вопросы по реализации" --body "<краткий список тем>"`
+If plan-designer produced questions — send a notification before AskUserQuestion:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill plan --phase Design --slug "$TASK_SLUG" --title "Implementation questions" --body "<brief list of topics>"`
 
-Если plan-designer сгенерировал IMPLEMENTATION QUESTIONS — задай их
-пользователю через AskUserQuestion, по 1-4 вопроса за раз.
+If plan-designer produced IMPLEMENTATION QUESTIONS — ask the user
+via AskUserQuestion, 1–4 at a time.
 
-Для каждого вопроса:
+For each question:
 
-- 2-4 варианта ответа с пояснениями
-- Рекомендуемый вариант первым, с "(Recommended)" в label
-- Пользователь может выбрать "Other" для произвольного ввода
+- 2–4 answer options with explanations
+- Recommended option first, labeled `(Recommended)`
+- The user may pick "Other" for free-form input
 
-После получения ответов — обнови design decisions и decomposition
-с учётом выбранных вариантов. Вшей ответы в план.
+After the answers — update design decisions and decomposition
+with the chosen options. Fold the answers into the plan.
 
-Если вопросов нет — пропусти этот шаг.
+If there are no questions — skip this step.
 
-**Переход:** design decisions + decomposition + DAG готовы, вопросы решены → Фаза 4.
+**Transition:** design decisions + decomposition + DAG ready, questions resolved → Phase 4.
 
 ---
 
-### Фаза 4 — Route
+### Phase 4 — Route
 
-Определи стратегию выполнения по таблице из `reference/routing-rules.md`.
+Pick the execution strategy via the table in `reference/routing-rules.md`.
 
-**Входные данные для routing:**
+**Inputs for routing:**
 
-- `TASK_COMPLEXITY` из task-файла
-- Количество задач из decomposition
-- File intersection matrix из architect
-- Наличие cross-layer задач (frontend + backend + tests в разных tasks)
+- `TASK_COMPLEXITY` from the task file
+- Task count from decomposition
+- File intersection matrix from architect
+- Presence of cross-layer tasks (frontend + backend + tests in separate tasks)
 
-**Запиши результат:**
+**Record the result:**
 
 - `MODE` = inline | sub-agents | agent-team
 - `PARALLEL` = true | false
-- `PARALLEL_GROUPS` = какие задачи можно параллелить (если parallel=true)
-- `REASONING` = одно предложение почему именно этот mode
+- `PARALLEL_GROUPS` = which tasks can run in parallel (when parallel=true)
+- `REASONING` = one sentence explaining the mode
 
-**Перед записью — проверь согласованность:**
+**Before writing — check consistency:**
 
-- [ ] Каждый requirement покрыт хотя бы одним task
-- [ ] Каждый depends_on ссылается на существующий task
-- [ ] Циклических зависимостей нет
-- [ ] Последний task — Validation
-- [ ] Verification criteria из task-файла отражены в task-level Verify
+- [ ] Every requirement covered by at least one task
+- [ ] Every depends_on references an existing task
+- [ ] No circular dependencies
+- [ ] The last task is Validation
+- [ ] Verification criteria from the task file are reflected in task-level Verify
 
-**Переход:** routing определён, план согласован → Фаза 5.
+**Transition:** routing decided, plan consistent → Phase 5.
 
 ---
 
-### Фаза 5 — Review
+### Phase 5 — Review
 
-Запусти subagent для ревью плана.
+Launch a subagent to review the plan.
 
-**Запусти plan-reviewer через Agent tool:**
+**Launch plan-reviewer through the Agent tool:**
 
-Передай:
+Pass:
 
 - Design decisions
-- Decomposition (все tasks с What, How, Files, Context, Verify)
+- Decomposition (all tasks with What, How, Files, Context, Verify)
 - Execution order
-- Requirements и Constraints из task-файла
+- Requirements and Constraints from the task file
 
-Агент определён в `agents/plan-reviewer.md`.
+The agent is defined in `agents/plan-reviewer.md`.
 
-**Обработка результата:**
+**Handle the result:**
 
-- ✅ Approved → Фаза 6 (Write)
-- ❌ Issues → исправь проблемы, re-dispatch (макс 5 итераций)
-- 5 итераций без approve → запиши план как есть, добавь нерешённые issues отдельной секцией
+- Approved → Phase 6 (Write)
+- Issues → fix them, re-dispatch (max 5 iterations)
+- 5 iterations without approval → write the plan as is, add unresolved issues as a separate section
 
-**Переход:** план прошёл ревью → Фаза 6.
+**Transition:** plan passed review → Phase 6.
 
 ---
 
-### Фаза 6 — Write
+### Phase 6 — Write
 
-**1.** Прочитай `reference/plan-format.md` — формат выходного файла.
+**1.** Read `reference/plan-format.md` — the output file format.
 
-**2.** Прочитай пример для калибровки:
+**2.** Read the example to calibrate:
 
 - trivial / simple → `examples/simple-plan.md`
 - medium / complex → `examples/complex-plan.md`
 
-**3.** Запиши файл: `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`
+**3.** Write the file: `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`
 
-Используй формат из plan-format.md. Включи:
+Use the format from plan-format.md. Include:
 
-- Все design decisions с reasoning
-- Все задачи с файлами, зависимостями, scope
+- Every design decision with reasoning
+- Every task with files, dependencies, scope
 - Routing decision
 - Execution order (DAG)
-- Verification criteria из task-файла
+- Verification criteria from the task file
 
-**4.** Запусти subagent для copyedit плана:
+**4.** Launch a subagent to copyedit the plan:
 
-- Передай путь к plan-файлу и `reference/elements-of-style-rules.md`
-- Subagent правит прозу: активный залог, конкретный язык, убирает лишние слова
-- Subagent перезаписывает файл
+- Pass the plan file path and `reference/elements-of-style-rules.md`
+- The subagent edits prose: active voice, concrete language, drop needless words
+- The subagent overwrites the file
 
-**5.** Сообщи пользователю путь к файлу.
+**5.** Tell the user the file path.
 
-**Переход →** Фаза 7.
+**Transition →** Phase 7.
 
 ---
 
-### Фаза 7 — Commit Artifact
+### Phase 7 — Commit Artifact
 
-Автоматический коммит артефакта плана.
+Auto-commit the plan artifact.
 
-**1.** Проверь: `docs/ai/` в `.gitignore`? Если да — сообщи пользователю, коммит пропусти.
+**1.** Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
 
-**2.** Если не в gitignore — закоммить артефакт по конвенции из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+**2.** If not in gitignore — commit the artifact per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 
-Формат коммита: `TICKET docs(SLUG): add implementation plan` (БЕЗ двоеточия после ticket).
+Commit format: `TICKET docs(SLUG): add implementation plan` (NO colon after ticket).
 
 ```bash
 git add docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md
 git commit -m "TICKET docs(SLUG): add implementation plan"
 ```
 
-Пример: `#86 docs(86-black-jack-page): add implementation plan`
+Example: `#86 docs(86-black-jack-page): add implementation plan`
 
-Коммить только артефакт плана, без других файлов.
-
----
-
-### Фаза 8 — Complete
-
-Сообщи путь к plan-файлу и запусти цикл завершения.
-
-Отправь нотификацию:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill plan --phase Complete --slug "$TASK_SLUG" --title "План готов" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-plan.md"`
-
-**Цикл:**
-
-Через AskUserQuestion предложи 3 варианта:
-
-1. **Запустить /sp:do (Recommended)** — автоматический переход к выполнению
-2. **Ревью через plannotator** — интерактивная проверка plan-файла
-3. **Завершить** — выход
-
-**Обработка выбора:**
-
-- **Запустить /sp:do:** вызови Skill tool с `/sp:do` и аргументом `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Выход из цикла.
-- **Ревью через plannotator:** вызови Skill tool с `/plannotator-annotate` и путём к plan-файлу. После получения аннотаций — примени правки к plan-файлу, перезапиши его. Вернись к началу цикла.
-- **Завершить:** сообщи путь к файлу. Выход из цикла.
+Commit only the plan artifact, no other files.
 
 ---
 
-## Правила
+### Phase 8 — Complete
 
-- Язык контента — язык оригинального task-файла
-- Ответ есть в коде — принимай design decision и пиши план сразу.
-- Каждая задача — один атомарный коммит. Крупнее чем "создай файл" + "добавь импорт", мельче чем "сделай всё".
-- Context isolation: в каждой задаче — только файлы и контекст, нужные для неё.
-- Routing — на основе количества tasks и матрицы пересечений файлов.
-- Одна задача — один plan-файл, без под-планов.
-- Активный залог. Конкретные файлы и строки вместо абстракций.
+Report the plan file path and run the finishing loop.
+
+Send a notification:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill plan --phase Complete --slug "$TASK_SLUG" --title "Plan ready" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-plan.md"`
+
+**Loop:**
+
+Offer 3 options through AskUserQuestion:
+
+1. **Run /sp:do (Recommended)** — auto-handoff to execution
+2. **Review via plannotator** — interactive review of the plan file
+3. **Finish** — exit
+
+**Handle the choice:**
+
+- **Run /sp:do:** call the Skill tool with `/sp:do` and the argument `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit the loop.
+- **Review via plannotator:** call the Skill tool with `/plannotator-annotate` and the plan file path. When annotations come back — apply them to the plan file, overwrite it. Loop back to the start.
+- **Finish:** report the file path. Exit the loop.
+
+---
+
+## Rules
+
+- Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
+- Answer is in the code — decide and write the plan immediately.
+- Each task is one atomic commit. Larger than "create file" + "add import", smaller than "do everything".
+- Context isolation: each task contains only the files and context it needs.
+- Routing — based on task count and file-intersection matrix.
+- One task — one plan file, no sub-plans.
+- Active voice. Concrete files and lines instead of abstractions.

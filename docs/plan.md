@@ -1,72 +1,72 @@
-# Скилл /plan
+# Skill /plan
 
-Строит план реализации по task-файлу. Читает задачу, исследует кодовую базу через субагентов,
-принимает архитектурные решения, декомпозирует на атомарные задачи и определяет стратегию выполнения.
-Результат — plan-файл, по которому `/sp:do` выполнит реализацию автономно.
+Builds an implementation plan from a task file. Reads the task, explores the codebase via sub-agents,
+makes architectural decisions, decomposes the work into atomic tasks, and picks the execution strategy.
+The output is a plan file that `/sp:do` executes autonomously.
 
-## Вход
+## Input
 
-`$ARGUMENTS` — путь к task-файлу, созданному скиллом `/sp:task`.
+`$ARGUMENTS` — path to the task file produced by `/sp:task`.
 
 ```
 /sp:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
-## Фазы
+## Phases
 
-Скилл работает автономно через 6 последовательных фаз. Единственная точка взаимодействия — Checkpoint.
+The skill runs autonomously through 6 sequential phases. The only interaction point is Checkpoint.
 
-| Фаза | Название       | Что происходит                                                                                                      |
-| ---- | -------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 1    | **Load**       | Чтение task-файла, извлечение полей: title, slug, complexity, requirements, constraints                             |
-| 2    | **Explore**    | Субагент `plan-explorer` исследует кодовую базу: карта изменений, паттерны, матрица пересечений файлов              |
-| 3    | **Design**     | Субагент `plan-designer` принимает design decisions, декомпозирует на задачи, строит DAG зависимостей               |
-| 4    | **Route**      | Выбор стратегии выполнения (mode + parallel) по таблице routing rules                                               |
-| 5    | **Checkpoint** | Единственная точка одобрения: все решения, задачи и routing одним батчем. Пользователь правит или говорит `approve` |
-| 6    | **Write**      | Запись plan-файла в `docs/ai/<slug>/<slug>-plan.md`                                                                 |
+| Phase | Name           | What happens                                                                                                |
+| ----- | -------------- | ----------------------------------------------------------------------------------------------------------- |
+| 1     | **Load**       | Read the task file, extract fields: title, slug, complexity, requirements, constraints                      |
+| 2     | **Explore**    | Sub-agent `plan-explorer` explores the codebase: change map, patterns, file intersection matrix             |
+| 3     | **Design**     | Sub-agent `plan-designer` makes design decisions, decomposes into tasks, builds the dependency DAG          |
+| 4     | **Route**      | Pick the execution strategy (mode + parallel) from the routing rules table                                  |
+| 5     | **Checkpoint** | The single approval point: all decisions, tasks, and routing in one batch. The user edits or says `approve` |
+| 6     | **Write**      | Write the plan file to `docs/ai/<slug>/<slug>-plan.md`                                                      |
 
-## Выход
+## Output
 
-Файл `docs/ai/<slug>/<slug>-plan.md` со структурой:
+File `docs/ai/<slug>/<slug>-plan.md` with the following structure:
 
 - **Header** — Task, Complexity, Mode, Parallel
-- **Design decisions** — нумерованные (DD-1, DD-2...), с обоснованием и альтернативами
-- **Tasks** — атомарные задачи с файлами, зависимостями, scope (S/M/L), verify-командой
-- **Execution** — mode, parallel, order (текстовый DAG)
-- **Resolved questions** — закрытые вопросы с ответами
-- **Verification** — критерии из task-файла
+- **Design decisions** — numbered (DD-1, DD-2…), with rationale and alternatives
+- **Tasks** — atomic tasks with files, dependencies, scope (S/M/L), verify command
+- **Execution** — mode, parallel, order (text DAG)
+- **Resolved questions** — closed questions with answers
+- **Verification** — criteria from the task file
 
-Поля `Mode` и `Parallel` в header'е читаются `/sp:do` напрямую.
+`/sp:do` reads the `Mode` and `Parallel` header fields directly.
 
 ## Routing
 
-Три режима выполнения, выбираются по сложности, количеству задач и пересечениям файлов:
+Three execution modes, chosen by complexity, task count, and file intersections:
 
-| Mode         | Когда                                                       | Характеристика                                                                 |
-| ------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `inline`     | Простые задачи, 1-3 tasks, один модуль                      | Последовательно в текущем треде, минимум overhead                              |
-| `sub-agents` | 3+ tasks, есть независимые группы                           | Каждый task — отдельный субагент, параллельные группы запускаются одновременно |
-| `agent-team` | Cross-layer (frontend + backend + tests), нужна координация | Команда агентов с общим контекстом через TeamCreate                            |
+| Mode         | When                                                            | Characteristic                                                          |
+| ------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `inline`     | Simple tasks, 1–3 tasks, single module                          | Sequential in the current thread, minimum overhead                      |
+| `sub-agents` | 3+ tasks, independent groups exist                              | Each task is a separate sub-agent; parallel groups run at the same time |
+| `agent-team` | Cross-layer (frontend + backend + tests), coordination required | A team of agents with shared context via TeamCreate                     |
 
-Оркестратор принимает решение на основе матрицы пересечений файлов из фазы Design.
+The orchestrator decides based on the file intersection matrix from the Design phase.
 
-## Субагенты
+## Sub-agents
 
-| Агент           | Модель | Роль                                                                                 |
-| --------------- | ------ | ------------------------------------------------------------------------------------ |
-| `plan-explorer` | sonnet | Исследование кодовой базы: файлы для изменения, паттерны, пересечения, оценка объёма |
-| `plan-designer` | sonnet | Архитектура: design decisions, декомпозиция на tasks, DAG, routing recommendation    |
+| Agent           | Model  | Role                                                                                  |
+| --------------- | ------ | ------------------------------------------------------------------------------------- |
+| `plan-explorer` | sonnet | Codebase exploration: files to change, patterns, intersections, size estimate         |
+| `plan-designer` | sonnet | Architecture: design decisions, decomposition into tasks, DAG, routing recommendation |
 
-## Пример
+## Example
 
 ```
 /sp:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
-## Связи
+## Connections
 
 ```
 /sp:task → /sp:plan → /sp:do → /sp:review
 ```
 
-`/task` создаёт описание задачи. `/plan` строит план реализации. `/do` выполняет план.
+`/task` defines the task. `/plan` builds the implementation plan. `/do` executes the plan.

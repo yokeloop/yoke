@@ -1,101 +1,98 @@
 ---
 name: pr
-description: >-
-  Создание и обновление GitHub Pull Request. Используется когда пользователь пишет
-  "pr", "pull request", "создай pr", "обнови pr", "открой pr",
-  или после выполнения /gp для создания pull request.
+description: Create or update a GitHub Pull Request. Activated on "pr", "pull request", "create pr", "update pr", "open pr", or after /gp.
 ---
 
-# Создание и обновление Pull Request
+# Creating and updating Pull Requests
 
-Ты — оркестратор. Делегируй агентам через Agent tool:
+You are the orchestrator. Delegate to agents via the Agent tool:
 
-- Сбор данных → `agents/pr-data-collector.md`
-- Генерация body → `agents/pr-body-generator.md`
+- Data collection → `agents/pr-data-collector.md`
+- Body generation → `agents/pr-body-generator.md`
 
 ---
 
-## Вход
+## Input
 
-`$ARGUMENTS` — опциональные флаги (`--draft`, `--base <branch>`).
-
----
-
-## Фаза 1 — Collect
-
-Запусти `pr-data-collector` через Agent tool:
-
-- Агент: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-data-collector.md`
-- Промпт: «Собери данные для создания PR»
-
-Агент вернёт structured data. Переход → Фаза 2.
+`$ARGUMENTS` — optional flags (`--draft`, `--base <branch>`).
 
 ---
 
-## Фаза 2 — Decide
+## Phase 1 — Collect
 
-Обработай данные от collector строго по порядку.
+Run `pr-data-collector` via the Agent tool:
 
-### 1. Блокирующие ошибки — выход
+- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-data-collector.md`
+- Prompt: "Collect data for creating a PR"
 
-- `GH_AUTH = not_installed` → сообщи: «Установи gh CLI: https://cli.github.com», выйди
-- `GH_AUTH = not_authenticated` → сообщи: «Авторизуйся: `gh auth login`», выйди
-- `BRANCH` совпадает с `DEFAULT_BRANCH` → сообщи: «PR из default branch невозможен», выйди
-- `COMMITS_COUNT = 0` и `PR_EXISTS = false` → сообщи: «Нет коммитов. Сначала запушь: `/sp:gp`», выйди
+The agent returns structured data. Transition → Phase 2.
+
+---
+
+## Phase 2 — Decide
+
+Process the collector's data strictly in order.
+
+### 1. Blocking errors — exit
+
+- `GH_AUTH = not_installed` → report: "Install gh CLI: https://cli.github.com", exit
+- `GH_AUTH = not_authenticated` → report: "Authenticate: `gh auth login`", exit
+- `BRANCH` matches `DEFAULT_BRANCH` → report: "PR from default branch is not possible", exit
+- `COMMITS_COUNT = 0` and `PR_EXISTS = false` → report: "No commits. Push first: `/sp:gp`", exit
 
 ### 2. Create vs Update
 
 - `PR_EXISTS = true` → `MODE = UPDATE`
 - `PR_EXISTS = false` → `MODE = CREATE`
 
-### 3. Draft (только CREATE)
+### 3. Draft (CREATE only)
 
-Если `$ARGUMENTS` содержит `--draft` → `IS_DRAFT = true`, пропустить вопрос.
+If `$ARGUMENTS` contains `--draft` → `IS_DRAFT = true`, skip the question.
 
-Отправь нотификацию перед вопросом о типе PR:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill pr --phase Decide --slug "$TICKET_ID" --title "Выбор типа PR" --body "Ready for review или Draft?"`
+Send a notification before the PR type question:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill pr --phase Decide --slug "$TICKET_ID" --title "PR type selection" --body "Ready for review or Draft?"`
 
-Иначе → AskUserQuestion:
+Otherwise → AskUserQuestion:
 
-> Создать PR как...
+> Create PR as...
 
-Варианты:
+Options:
 
 - **Ready for review (Recommended)**
 - **Draft**
 
-### 4. Определить DATA_SOURCE
+### 4. Determine DATA_SOURCE
 
-- `REVIEW_FILE` найден → `DATA_SOURCE = sp_full`
-- Только `REPORT_FILE` найден → `DATA_SOURCE = sp_partial`
-- Ни того ни другого → `DATA_SOURCE = fallback`
+- `REVIEW_FILE` found → `DATA_SOURCE = sp_full`
+- Only `REPORT_FILE` found → `DATA_SOURCE = sp_partial`
+- Neither found → `DATA_SOURCE = fallback`
 
 ### 5. Base branch
 
-Если `$ARGUMENTS` содержит `--base <branch>` → `BASE_BRANCH = <branch>`.
-Иначе → `BASE_BRANCH = DEFAULT_BRANCH`.
+If `$ARGUMENTS` contains `--base <branch>` → `BASE_BRANCH = <branch>`.
+Otherwise → `BASE_BRANCH = DEFAULT_BRANCH`.
 
-Переход → Фаза 3.
-
----
-
-## Фаза 3 — Generate body
-
-Запусти `pr-body-generator` через Agent tool:
-
-- Агент: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-body-generator.md`
-- Передай: DATA_SOURCE, REVIEW_CONTENT, REPORT_CONTENT, PR_TEMPLATE_CONTENT, COMMITS, DIFF_STAT, TICKET_ID, PR_BODY (при update), PR_HAS_SP_MARKERS, MODE
-
-Агент вернёт готовый markdown. Переход → Фаза 4.
+Transition → Phase 3.
 
 ---
 
-## Фаза 4 — Execute
+## Phase 3 — Generate body
+
+Run `pr-body-generator` via the Agent tool:
+
+- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-body-generator.md`
+- Pass: DATA_SOURCE, REVIEW_CONTENT, REPORT_CONTENT, PR_TEMPLATE_CONTENT, COMMITS, DIFF_STAT, TICKET_ID, PR_BODY (on update), PR_HAS_SP_MARKERS, MODE
+
+The agent returns ready markdown. Transition → Phase 4.
+
+---
+
+## Phase 4 — Execute
 
 ### PR title
 
-Сформируй title: `<TICKET_ID> <краткое описание из summary>`.
-Если `MODE = UPDATE` — title не менять.
+Form the title: `<TICKET_ID> <short description from summary>`.
+If `MODE = UPDATE` — do not change the title.
 
 ### CREATE
 
@@ -103,10 +100,10 @@ description: >-
 gh pr create --title "$TITLE" --body "$BODY" --base "$BASE_BRANCH" [--draft]
 ```
 
-После создания — добавить labels:
+After creation — add labels:
 
 ```bash
-# Маппинг из COMMIT_TYPES → labels (только существующие в AVAILABLE_LABELS)
+# Mapping from COMMIT_TYPES → labels (only those existing in AVAILABLE_LABELS)
 gh pr edit <NUMBER> --add-label "<label>"
 ```
 
@@ -116,45 +113,45 @@ gh pr edit <NUMBER> --add-label "<label>"
 gh pr edit <PR_NUMBER> --body "$NEW_BODY"
 ```
 
-Добавить labels при необходимости.
+Add labels if needed.
 
-### Вывести результат
+### Print the result
 
 ```
-PR создан: <URL>              # или "PR обновлён: <URL>"
+PR created: <URL>              # or "PR updated: <URL>"
   Title: <title>
   Labels: <labels>
   Ticket: <ticket_id>
   Source: <DATA_SOURCE>
 ```
 
-Отправь нотификацию (с URL — финальный артефакт цикла):
+Send a notification (with URL — final artifact of the cycle):
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill pr --phase Complete --slug "$TICKET_ID" --title "PR $MODE" --body "$PR_URL"`
 
-Переход → Фаза 5.
+Transition → Phase 5.
 
 ---
 
-## Фаза 5 — Next step
+## Phase 5 — Next step
 
-AskUserQuestion — что дальше:
+AskUserQuestion — what's next:
 
-- **Завершить (Recommended)** → выйди
+- **Finish (Recommended)** → exit
 
-> Примечание: интеграция с `/code-review` появится в будущей версии.
-> До реализации — завершай без дополнительных предложений.
+> Note: integration with `/code-review` will appear in a future version.
+> Until implemented — finish without additional suggestions.
 
 ---
 
-## Правила
+## Rules
 
-- Делегируй bash-команды агентам. Исключение: `gh pr create/edit` в Фазе 4.
-- AskUserQuestion — только в оркестраторе.
-- Оборачивай PR body в маркеры `<!-- sp:start/end -->`.
-- При update — сохраняй текст пользователя вне маркеров.
-- Назначай только labels, существующие в репозитории.
-- Лимиты: max 30 коммитов.
+- Delegate bash commands to agents. Exception: `gh pr create/edit` in Phase 4.
+- AskUserQuestion — only in the orchestrator.
+- Wrap PR body in `<!-- sp:start/end -->` markers.
+- On update — preserve user text outside the markers.
+- Assign only labels that exist in the repository.
+- Limits: max 30 commits.
 
-## Справочные файлы
+## Reference files
 
-- **`reference/pr-body-format.md`** — формат PR body, маппинг секций review/report, маркеры, template интеграция, auto-link, auto-labels
+- **`reference/pr-body-format.md`** — PR body format, review/report section mapping, markers, template integration, auto-link, auto-labels

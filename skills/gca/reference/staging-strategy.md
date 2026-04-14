@@ -1,44 +1,44 @@
-# Стратегия стейджинга
+# Staging strategy
 
-Группировка файлов в атомарные коммиты. Применяется при standalone-вызове `/gca` (вне SP flow). `/do` использует собственную pipeline-модель с per-task-коммитами.
+Grouping files into atomic commits. Applied on standalone `/gca` invocations (outside SP flow). `/do` uses its own pipeline model with per-task commits.
 
 ---
 
-## Алгоритм
+## Algorithm
 
-### Шаг 1: Сбор и классификация
+### Step 1: Collection and classification
 
-Собери все изменённые/новые файлы через `git status --porcelain`. Классифицируй каждый файл:
+Collect all modified/new files via `git status --porcelain`. Classify each file:
 
-| Группа         | Критерий                                                                          | Тип коммита                 |
+| Group          | Criterion                                                                         | Commit type                 |
 | -------------- | --------------------------------------------------------------------------------- | --------------------------- |
-| `feature`      | Файлы основной задачи (src/, components/, pages/, lib/, app/)                     | `feat` / `fix` / `refactor` |
-| `test`         | Тестовые файлы (`*.test.*`, `*.spec.*`, `__tests__/`, `*.cy.*`)                   | `test`                      |
-| `docs`         | Документация (`.md`, `docs/`, README, CHANGELOG)                                  | `docs`                      |
-| `style`        | Только форматирование (результат prettier/eslint --fix, без логических изменений) | `style`                     |
-| `chore`        | Конфиги, зависимости (`package.json`, `*.config.*`, `.eslintrc`, CI)              | `chore`                     |
-| `sp-artifacts` | Файлы SP flow (`docs/ai/**/*-task.md`, `*-plan.md`, `*-report.md`, `*-review.md`) | `docs`                      |
+| `feature`      | Main task files (src/, components/, pages/, lib/, app/)                           | `feat` / `fix` / `refactor` |
+| `test`         | Test files (`*.test.*`, `*.spec.*`, `__tests__/`, `*.cy.*`)                       | `test`                      |
+| `docs`         | Documentation (`.md`, `docs/`, README, CHANGELOG)                                 | `docs`                      |
+| `style`        | Formatting only (result of prettier/eslint --fix, no logical changes)             | `style`                     |
+| `chore`        | Configs, dependencies (`package.json`, `*.config.*`, `.eslintrc`, CI)             | `chore`                     |
+| `sp-artifacts` | SP flow files (`docs/ai/**/*-task.md`, `*-plan.md`, `*-report.md`, `*-review.md`) | `docs`                      |
 
-### Шаг 2: Определение атомарных коммитов
+### Step 2: Determining atomic commits
 
-- Все файлы в одной группе -> один коммит
-- Файлы из разных групп -> отдельные коммиты по группам
-- `feature` + `test` к одной фиче -> объединить в один коммит (тесты идут вместе с кодом)
-- `style` (результат линтера) -> всегда отдельный коммит
-- `chore` (зависимости) -> всегда отдельный коммит
-- `sp-artifacts` -> отдельный коммит (или несколько, если разные этапы flow)
+- All files in one group -> one commit
+- Files from different groups -> separate commits by group
+- `feature` + `test` for the same feature -> combine into one commit (tests ship together with the code)
+- `style` (linter output) -> always a separate commit
+- `chore` (dependencies) -> always a separate commit
+- `sp-artifacts` -> a separate commit (or several, if they belong to different flow stages)
 
-### Шаг 3: Порядок коммитов
+### Step 3: Commit order
 
-1. `chore` (зависимости — база для остального)
-2. `feature`/`fix`/`refactor` + связанные `test` (основная работа)
-3. `style` (форматирование поверх)
-4. `docs` (документация)
-5. `sp-artifacts` (артефакты планирования — последними)
+1. `chore` (dependencies — base for everything else)
+2. `feature`/`fix`/`refactor` + related `test` (main work)
+3. `style` (formatting on top)
+4. `docs` (documentation)
+5. `sp-artifacts` (planning artifacts — last)
 
-### Шаг 4: Подтверждение
+### Step 4: Confirmation
 
-Перед выполнением покажи план коммитов пользователю:
+Before executing, show the commit plan to the user:
 
 ```
 Planned commits:
@@ -51,22 +51,22 @@ Planned commits:
 Proceed? [Y/n]
 ```
 
-Покажи через AskUserQuestion с вариантами:
+Show via AskUserQuestion with options:
 
-- **Proceed** — выполнить все запланированные коммиты
-- **Edit** — пользователь корректирует группировку или сообщения
-- **Cancel** — отмена
+- **Proceed** — run all planned commits
+- **Edit** — user adjusts the grouping or messages
+- **Cancel** — abort
 
 ---
 
-## Защиты
+## Safeguards
 
-Исключи из стейджинга:
+Exclude from staging:
 
-- `.env`, `.env.*` — секреты
-- Файлы с credentials, tokens, keys
-- Большие бинарные файлы (изображения, видео, архивы > 1MB)
+- `.env`, `.env.*` — secrets
+- Files containing credentials, tokens, keys
+- Large binary files (images, videos, archives > 1MB)
 
-Обнаружив такие файлы, перечисли их пользователю и спроси, включать ли в коммит.
+When such files are detected, list them to the user and ask whether to include them in the commit.
 
-Стейджи файлы по именам (не `git add -A` и не `git add .`).
+Stage files by name (not `git add -A` and not `git add .`).

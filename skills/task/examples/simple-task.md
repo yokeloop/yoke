@@ -1,20 +1,20 @@
-# Пример: simple-задача
+# Example: simple task
 
-Полный one-shot пример. Показывает:
+A complete one-shot example. Shows:
 
-- уровень детализации Context для сложности **simple**
-- Verification с конкретными командами
-- трансформацию findings агентов в секции файла
+- Context detail for **simple** complexity
+- Verification with concrete commands
+- How agent findings turn into file sections
 
 ---
 
-## Вход — тикет
+## Input — ticket
 
 ```
 GitHub Issue #112
-Заголовок: Add password reset via email
+Title: Add password reset via email
 
-Описание:
+Description:
 Users can't reset their password if they forget it.
 Need to add "Forgot password?" flow:
 1. User enters email on /forgot-password page
@@ -27,99 +27,101 @@ Figma: https://figma.com/file/aB3k.../forgot-password
 
 ---
 
-## Что нашли агенты (findings фазы Investigate)
+## What the agents found (Investigate findings)
 
-> Внутренние заметки оркестратора, в итоговый файл не попадают.
-> Показывают трансформацию findings агентов в секции Context / Constraints / Verification.
+> Internal orchestrator notes; they do not land in the final file.
+> They show how agent findings transform into Context / Constraints / Verification sections.
 
-**task-explorer нашёл:**
+**task-explorer found:**
 
-- Аутентификация: `src/auth/` — `login.ts`, `register.ts`, `middleware.ts`
-- User model: `src/models/User.ts:1–89`, поле `passwordHash` (bcrypt), поля `resetToken` и `resetTokenExpiry` **есть в схеме** (строки 34–35), но не используются
-- Email: `src/services/email.ts` — обёртка над nodemailer, метод `send(to, subject, html)` (строка 12)
-- Роутер: `src/routes/auth.ts` — регистрирует `/login` и `/register`, точка добавления маршрутов (строка 28)
-- Тесты: `src/auth/__tests__/login.test.ts`, `register.test.ts` — паттерн понятен, покрытие ~90%
-- Нет тестов на email.ts
+- Authentication: `src/auth/` — `login.ts`, `register.ts`, `middleware.ts`
+- User model: `src/models/User.ts:1–89`, field `passwordHash` (bcrypt); fields `resetToken` and `resetTokenExpiry` **already in the schema** (lines 34–35) but unused
+- Email: `src/services/email.ts` — nodemailer wrapper, method `send(to, subject, html)` (line 12)
+- Router: `src/routes/auth.ts` — registers `/login` and `/register`, route-registration point (line 28)
+- Tests: `src/auth/__tests__/login.test.ts`, `register.test.ts` — pattern clear, ~90% coverage
+- No tests on email.ts
 - Essential files: `src/models/User.ts`, `src/auth/login.ts`, `src/services/email.ts`, `src/routes/auth.ts`
 
-**task-architect нашёл:**
+**task-architect found:**
 
-- Паттерн handler: все auth-handlers — async функции `(req, res) => void`, валидация через `zod` (src/auth/login.ts:8–19), ошибки через `AppError` (src/utils/errors.ts:5)
-- Конфиг: `src/config/index.ts` — `APP_URL`, `EMAIL_FROM` уже есть
-- Токены в проекте генерируются через `crypto.randomBytes` (пример: src/auth/register.ts:31)
-- Срок жизни токена как константа не задан — уточни у пользователя
+- Handler pattern: every auth handler is an async `(req, res) => void`, validation via `zod` (src/auth/login.ts:8–19), errors via `AppError` (src/utils/errors.ts:5)
+- Config: `src/config/index.ts` — `APP_URL`, `EMAIL_FROM` already present
+- Tokens in the project are generated via `crypto.randomBytes` (example: src/auth/register.ts:31)
+- Token lifetime constant not defined — ask the user
 
 ---
 
-## Итоговый task-файл
+## Final task file
 
-> Этот файл записывается в `docs/ai/112-password-reset-email/112-password-reset-email-task.md`
+> This file is written to `docs/ai/112-password-reset-email/112-password-reset-email-task.md`
 
 ---
 
 # Add password reset via email
 
-**Тикет:** https://github.com/org/repo/issues/112
-**Сложность:** simple
+**Slug:** 112-password-reset-email
+**Ticket:** https://github.com/org/repo/issues/112
+**Complexity:** simple
+**Type:** general
 
 ## Task
 
-Реализовать flow сброса пароля через email: endpoint запроса сброса,
-отправка письма со ссылкой, endpoint установки нового пароля по токену.
-Напиши план (файлы + порядок), жди подтверждения перед реализацией.
+Implement the password-reset-via-email flow: an endpoint to request a reset,
+an email with a reset link, and an endpoint to set a new password by token.
+Write the plan (files + order), wait for confirmation before implementation.
 
 ## Context
 
-Аутентификация живёт в `src/auth/` — `login.ts`, `register.ts`, `middleware.ts`.
-Новые handlers добавляй туда же, маршруты регистрируй в `src/routes/auth.ts:28`.
+Authentication lives in `src/auth/` — `login.ts`, `register.ts`, `middleware.ts`.
+Add new handlers there; register routes in `src/routes/auth.ts:28`.
 
-Паттерн handler (повтори точно): async `(req, res) => void`, валидация через zod
-(пример: `src/auth/login.ts:8–19`), ошибки через `AppError` (`src/utils/errors.ts:5`).
+Handler pattern (copy exactly): async `(req, res) => void`, validation via zod
+(example: `src/auth/login.ts:8–19`), errors via `AppError` (`src/utils/errors.ts:5`).
 
-User model (`src/models/User.ts:34–35`) — поля `resetToken` и `resetTokenExpiry`
-есть в схеме, не используются. Миграция не нужна.
+User model (`src/models/User.ts:34–35`) — fields `resetToken` and `resetTokenExpiry`
+are in the schema but unused. No migration needed.
 
-Email: `src/services/email.ts:12` — метод `send(to, subject, html)`, готов к использованию.
-Токены генерируй через `crypto.randomBytes` (паттерн: `src/auth/register.ts:31`).
-Конфиг `APP_URL` и `EMAIL_FROM` — `src/config/index.ts`.
+Email: `src/services/email.ts:12` — method `send(to, subject, html)`, ready to use.
+Generate tokens via `crypto.randomBytes` (pattern: `src/auth/register.ts:31`).
+Config `APP_URL` and `EMAIL_FROM` — `src/config/index.ts`.
 
-Тесты: `src/auth/__tests__/` — образец структуры в `login.test.ts`.
+Tests: `src/auth/__tests__/` — structure example in `login.test.ts`.
 
 ## Requirements
 
-1. `POST /auth/forgot-password` — принимает `{ email }`, находит пользователя,
-   записывает `resetToken` и `resetTokenExpiry` в User, отправляет письмо со ссылкой
-   `APP_URL/reset-password?token=<token>`. Если email не найден — возвращает 200
-   (не раскрывать существование аккаунта).
-2. `POST /auth/reset-password` — принимает `{ token, newPassword }`, проверяет токен
-   и срок жизни, обновляет `passwordHash`, очищает `resetToken` и `resetTokenExpiry`.
-3. Невалидный или истёкший токен → 400 с сообщением об ошибке.
-4. Напиши тесты для обоих endpoints по образцу `src/auth/__tests__/login.test.ts`.
+1. `POST /auth/forgot-password` — accepts `{ email }`, finds the user,
+   writes `resetToken` and `resetTokenExpiry` on User, sends an email with the link
+   `APP_URL/reset-password?token=<token>`. If the email isn't found — return 200
+   (don't leak account existence).
+2. `POST /auth/reset-password` — accepts `{ token, newPassword }`, validates the token
+   and expiry, updates `passwordHash`, clears `resetToken` and `resetTokenExpiry`.
+3. Invalid or expired token → 400 with an error message.
+4. Write tests for both endpoints following `src/auth/__tests__/login.test.ts`.
 
 ## Constraints
 
-- Существующие auth-endpoints (`/login`, `/register`) и их тесты не изменять.
-- Схему User model не изменять — поля `resetToken` / `resetTokenExpiry` есть.
-- Новые зависимости не добавлять — использовать `src/services/email.ts` и `crypto`.
-- Email-шаблон — plain HTML без внешних шаблонизаторов.
+- Do not change existing auth endpoints (`/login`, `/register`) or their tests.
+- Do not change the User model schema — fields `resetToken` / `resetTokenExpiry` exist.
+- Do not add new dependencies — use `src/services/email.ts` and `crypto`.
+- Email template — plain HTML, no external templating engines.
 
 ## Verification
 
-- `npm test src/auth/__tests__/forgot-password.test.ts` — все тесты зелёные
-- `npm test` — общий suite без новых failures
-- `POST /auth/forgot-password` с существующим email → 200, письмо отправлено,
-  `resetToken` и `resetTokenExpiry` записаны в БД
-- `POST /auth/forgot-password` с несуществующим email → 200 (не 404)
-- `POST /auth/reset-password` с валидным токеном → 200, пароль обновлён,
-  `resetToken` и `resetTokenExpiry` очищены
-- `POST /auth/reset-password` с истёкшим токеном → 400
-- `POST /auth/reset-password` с несуществующим токеном → 400
-- Повторное использование токена после успешного сброса → 400
+- `npm test src/auth/__tests__/forgot-password.test.ts` — all tests green
+- `npm test` — full suite, no new failures
+- `POST /auth/forgot-password` with existing email → 200, email sent,
+  `resetToken` and `resetTokenExpiry` written to the DB
+- `POST /auth/forgot-password` with unknown email → 200 (not 404)
+- `POST /auth/reset-password` with valid token → 200, password updated,
+  `resetToken` and `resetTokenExpiry` cleared
+- `POST /auth/reset-password` with expired token → 400
+- `POST /auth/reset-password` with unknown token → 400
+- Token reuse after a successful reset → 400
 
-## Материалы
+## Materials
 
 - [Figma — forgot password flow](https://figma.com/file/aB3k.../forgot-password)
-- `src/models/User.ts` — поля resetToken / resetTokenExpiry (строки 34–35)
-- `src/services/email.ts` — метод send()
-- `src/auth/login.ts` — образец паттерна handler + zod валидация
-- `src/auth/__tests__/login.test.ts` — образец структуры тестов
+- `src/models/User.ts` — fields resetToken / resetTokenExpiry (lines 34–35)
+- `src/services/email.ts` — method send()
+- `src/auth/login.ts` — handler + zod validation example
+- `src/auth/__tests__/login.test.ts` — test structure example

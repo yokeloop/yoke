@@ -1,48 +1,48 @@
-# Скилл /explore
+# Skill /explore
 
-Исследование кодовой базы и брейнсторм в формате интерактивного Q&A. Делегирует исследование субагенту,
-накапливает выводы в summary chain, сохраняет exploration log по завершении.
+Codebase exploration and brainstorming in interactive Q&A format. Delegates research to a sub-agent,
+accumulates findings in a summary chain, and saves an exploration log when done.
 
-## Вход
+## Input
 
-`$ARGUMENTS` — первый вопрос или тема исследования. Если пуст — спросит через AskUserQuestion.
+`$ARGUMENTS` — the first question or topic. If empty, asks via AskUserQuestion.
 
 ```
-/sp:explore как устроена авторизация
-/sp:explore сравни подходы к кэшированию в проекте
-/sp:explore что если заменить REST на gRPC
+/sp:explore how does authorization work
+/sp:explore compare caching approaches in the project
+/sp:explore what if we replaced REST with gRPC
 ```
 
-## Фазы
+## Phases
 
-| Фаза | Название     | Что происходит                                                          |
-| ---- | ------------ | ----------------------------------------------------------------------- |
-| 1    | **Init**     | Выбор slug, инициализация summary chain и QA log                        |
-| 2    | **Loop**     | User-driven Q&A: enrichment промта контекстом, dispatch explore-agent   |
-| 3    | **Finalize** | Субагент записывает exploration log                                     |
-| 4    | **Complete** | AskUserQuestion: ещё вопрос / создать задачу через /sp:task / завершить |
+| Phase | Name         | What happens                                                            |
+| ----- | ------------ | ----------------------------------------------------------------------- |
+| 1     | **Init**     | Pick slug, initialize summary chain and QA log                          |
+| 2     | **Loop**     | User-driven Q&A: enrich the prompt with context, dispatch explore-agent |
+| 3     | **Finalize** | Sub-agent writes the exploration log                                    |
+| 4     | **Complete** | AskUserQuestion: another question / create a task via /sp:task / finish |
 
-## Выход
+## Output
 
 Exploration log: `docs/ai/<slug>/<slug>-exploration.md`.
 
-Каждая Q&A запись содержит structured секции: контекст вопроса, ответ, детали (file:line, фрагменты кода), варианты (brainstorm), ключевые файлы, источники. В конце — итоговая summary.
+Each Q&A entry contains structured sections: question context, answer, details (file:line, code snippets), alternatives (brainstorm), key files, sources. A final summary closes the log.
 
-## Субагенты
+## Sub-agents
 
-| Агент                | Модель | Роль                                                                       |
-| -------------------- | ------ | -------------------------------------------------------------------------- |
-| `explore-agent`      | sonnet | Исследование: поиск по коду, анализ, ответ с structured output             |
-| `explore-log-writer` | haiku  | Запись structured exploration log в `docs/ai/<slug>/<slug>-exploration.md` |
+| Agent                | Model  | Role                                                                          |
+| -------------------- | ------ | ----------------------------------------------------------------------------- |
+| `explore-agent`      | sonnet | Exploration: code search, analysis, structured-output answer                  |
+| `explore-log-writer` | haiku  | Writes a structured exploration log to `docs/ai/<slug>/<slug>-exploration.md` |
 
-## Пример
+## Example
 
 ```
-/sp:explore как работает система нотификаций
+/sp:explore how does the notification system work
 ```
 
-Результат: интерактивная сессия Q&A с накоплением контекста. По завершении — exploration log с выводами.
+Result: an interactive Q&A session that accumulates context. On completion, an exploration log with findings.
 
-## Связи
+## Connections
 
-Независимый скилл. После исследования рекомендуется `/sp:task` для создания задачи на основе выводов.
+Independent skill. After exploration, `/sp:task` is recommended to create a task based on the findings.

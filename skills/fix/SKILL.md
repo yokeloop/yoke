@@ -1,93 +1,93 @@
 ---
 name: fix
 description: >-
-  Быстрый фикс или доработка. Используется когда пользователь пишет
-  "fix", "поправь", "исправь", "доработай", "допили", "мелкий фикс",
-  "quick fix", или описывает мелкое изменение после /do.
+  Quick fix or follow-up change. Used when the user writes
+  "fix", "patch", "correct", "tweak", "polish", "small fix",
+  "quick fix", or describes a small change after /do.
 ---
 
-# Быстрый фикс
+# Quick fix
 
-Ты — оркестратор. Координируешь агентов, принимаешь решения через AskUserQuestion. Все файловые операции и bash делегируй агентам.
+You are the orchestrator. You coordinate agents and make decisions via AskUserQuestion. Delegate all file operations and bash to agents.
 
-Делегируй каждую фазу агенту через Agent tool:
+Delegate each phase to an agent via the Agent tool:
 
-- Контекст → `agents/fix-context-collector.md`
-- Исследование → `agents/fix-investigator.md`
-- Реализация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md`
+- Context → `agents/fix-context-collector.md`
+- Investigation → `agents/fix-investigator.md`
+- Implementation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md`
 - Polish → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md`
-- Валидация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
-- Документация → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/doc-updater.md`
-- Форматирование → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
+- Validation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
+- Documentation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/doc-updater.md`
+- Formatting → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
 - Fix-log → `agents/fix-log-writer.md`
 
-Работай от начала до конца без остановок.
+Work end-to-end without stopping.
 
-**Принцип:** разработчик пишет описание фикса и уходит. Opus на code-фазах заменяет review loop.
+**Principle:** the developer writes a fix description and walks away. Opus on code phases replaces the review loop.
 
 ---
 
-## Вход
+## Input
 
-`$ARGUMENTS` — описание фикса или URL PR-комментария.
+`$ARGUMENTS` — fix description or PR-comment URL.
 
-Если `$ARGUMENTS` пуст — спроси описание через AskUserQuestion.
+If `$ARGUMENTS` is empty — ask for a description via AskUserQuestion.
 
-Если `$ARGUMENTS` содержит URL PR-комментария (`github.com/.../pull/...#discussion_r...`):
+If `$ARGUMENTS` contains a PR-comment URL (`github.com/.../pull/...#discussion_r...`):
 
-1. Извлеки текст комментария через `gh api`
-2. Используй как описание фикса
-3. Контекст: файл и строки из комментария
+1. Extract the comment text via `gh api`
+2. Use it as the fix description
+3. Context: file and lines from the comment
 
 ---
 
 ## Pipeline
 
-7 фаз. Отмечай каждую через TodoWrite.
+7 phases. Mark each via TodoWrite.
 
 ```
 1. Collect     → dispatch fix-context-collector (haiku)
 2. Investigate → dispatch fix-investigator (sonnet)
-3. Decide      → scope guard + уточнения (оркестратор)
+3. Decide      → scope guard + clarifications (orchestrator)
 4. Implement   → dispatch task-executor (opus, reuse /do)
 5. Post-process → polish (opus) + validate + docs + format
 6. Artifact    → dispatch fix-log-writer (haiku)
-7. Complete    → AskUserQuestion: ещё fix / review / выход
+7. Complete    → AskUserQuestion: another fix / review / exit
 ```
 
 ---
 
-## Фаза 1 — Collect
+## Phase 1 — Collect
 
-Dispatch `fix-context-collector` через Agent tool (model: haiku).
+Dispatch `fix-context-collector` via the Agent tool (model: haiku).
 
-Прочитай `agents/fix-context-collector.md`, передай промт агенту.
+Read `agents/fix-context-collector.md`, pass the prompt to the agent.
 
-Агент вернёт structured data:
+The agent returns structured data:
 
 ```
 MODE: <post-flow | standalone>
 SLUG, SLUG_SOURCE, TICKET_ID
 FIX_NUMBER, FIX_LOG_EXISTS, FIX_LOG_SUMMARY
-TASK_FILE, REPORT_FILE, PLAN_FILE (пути)
+TASK_FILE, REPORT_FILE, PLAN_FILE (paths)
 ```
 
-Сохрани результат. Переход → Фаза 2.
+Save the result. Transition → Phase 2.
 
 ---
 
-## Фаза 2 — Investigate
+## Phase 2 — Investigate
 
-Dispatch `fix-investigator` через Agent tool (model: sonnet).
+Dispatch `fix-investigator` via the Agent tool (model: sonnet).
 
-Прочитай `agents/fix-investigator.md`, передай агенту:
+Read `agents/fix-investigator.md`, pass to the agent:
 
-- Описание фикса от пользователя
-- MODE из Фазы 1
-- Пути артефактов: TASK_FILE, REPORT_FILE, PLAN_FILE
-- FIX_LOG_SUMMARY (предыдущие фиксы)
+- Fix description from the user
+- MODE from Phase 1
+- Artifact paths: TASK_FILE, REPORT_FILE, PLAN_FILE
+- FIX_LOG_SUMMARY (previous fixes)
 
-Агент вернёт findings:
+The agent returns findings:
 
 ```
 FILES_TO_CHANGE, FILES_COUNT
@@ -95,193 +95,193 @@ PATTERNS, CONSTRAINTS, VERIFY
 COMPLEXITY: trivial | simple | escalate
 ```
 
-Переход → Фаза 3.
+Transition → Phase 3.
 
 ---
 
-## Фаза 3 — Decide
+## Phase 3 — Decide
 
-### 0. Защита default branch
+### 0. Default-branch guard
 
-Если `IS_DEFAULT_BRANCH = true` (из Фазы 1) → AskUserQuestion:
+If `IS_DEFAULT_BRANCH = true` (from Phase 1) → AskUserQuestion:
 
-> Fix на `<BRANCH>` — default branch. Продолжить?
+> Fix on `<BRANCH>` — default branch. Continue?
 
-Варианты:
+Options:
 
-- **Продолжить**
-- **Отменить** → выйди
+- **Continue**
+- **Cancel** → exit
 
 ### 1. Scope guard
 
-Если `COMPLEXITY = escalate` → отправь нотификацию и AskUserQuestion:
+If `COMPLEXITY = escalate` → send a notification and AskUserQuestion:
 
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill fix --phase Decide --slug "$SLUG" --title "Большой фикс" --body "Затронуто $FILES_COUNT файлов"`
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill fix --phase Decide --slug "$SLUG" --title "Large fix" --body "Affects $FILES_COUNT files"`
 
-> Фикс затрагивает N файлов: [список]. Выглядит как задача для /sp:task.
+> The fix touches N files: [list]. Looks like a job for /sp:task.
 
-Варианты:
+Options:
 
-- **Продолжить как fix**
-- **Escalate в /sp:task** → вызови Skill tool с `/sp:task` и описанием фикса, выйди
+- **Continue as fix**
+- **Escalate to /sp:task** → invoke the Skill tool with `/sp:task` and the fix description, exit
 
-### 2. Уточнения
+### 2. Clarifications
 
-Если нужны уточнения — отправь нотификацию:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill fix --phase Decide --slug "$SLUG" --title "Требуется уточнение" --body "Не хватает данных для фикса"`
+If clarifications are needed — send a notification:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill fix --phase Decide --slug "$SLUG" --title "Clarification required" --body "Missing data for the fix"`
 
-Если `FILES_TO_CHANGE` пуст или `VERIFY` пуст → AskUserQuestion с 1-3 вопросами.
+If `FILES_TO_CHANGE` is empty or `VERIFY` is empty → AskUserQuestion with 1-3 questions.
 
-Всё ясно → пропусти.
+Everything clear → skip.
 
-### 3. Промт для implementer
+### 3. Implementer prompt
 
-Подготовь данные:
+Prepare the data:
 
-- **TASK_WHAT:** описание фикса
-- **TASK_HOW:** из findings (files + patterns)
+- **TASK_WHAT:** fix description
+- **TASK_HOW:** from findings (files + patterns)
 - **TASK_FILES:** FILES_TO_CHANGE
-- **TASK_CONTEXT:** файлы для чтения
-- **CONSTRAINTS:** из findings + task-файла (post-flow)
-- **TASK_VERIFY:** из findings
-- **COMMIT_MESSAGE:** `TICKET fix(SLUG): <описание фикса>` — по `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`
+- **TASK_CONTEXT:** files to read
+- **CONSTRAINTS:** from findings + task file (post-flow)
+- **TASK_VERIFY:** from findings
+- **COMMIT_MESSAGE:** `TICKET fix(SLUG): <fix description>` — per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`
 
-Переход → Фаза 4.
-
----
-
-## Фаза 4 — Implement
-
-Прочитай `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md`. Dispatch через Agent tool с моделью из frontmatter агента.
-
-Передай подготовленный промт из Фазы 3 (TASK_WHAT, TASK_HOW, TASK_FILES, TASK_CONTEXT, CONSTRAINTS, TASK_VERIFY, COMMIT_MESSAGE).
-
-### Обработка статусов (упрощённая)
-
-- **DONE** → Фаза 5
-- **DONE_WITH_CONCERNS** → запиши concerns, Фаза 5
-- **NEEDS_CONTEXT** → добавь контекст, re-dispatch (1 retry). Повторно → BLOCKED
-- **BLOCKED** → запиши причину, Фаза 6 (артефакт со статусом BLOCKED)
-
-Opus на code-фазах снижает ошибки на входе, validator ловит regression — review loop избыточен.
-
-Task-executor коммитит по COMMIT_MESSAGE из промта. Если его статус DONE — коммит гарантирован.
-
-Переход → Фаза 5.
+Transition → Phase 4.
 
 ---
 
-## Фаза 5 — Post-process
+## Phase 4 — Implement
 
-Полный pipeline из /do за один проход. Сохрани список изменённых файлов из Фазы 4.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md`. Dispatch via the Agent tool using the model from the agent's frontmatter.
+
+Pass the prompt prepared in Phase 3 (TASK_WHAT, TASK_HOW, TASK_FILES, TASK_CONTEXT, CONSTRAINTS, TASK_VERIFY, COMMIT_MESSAGE).
+
+### Status handling (simplified)
+
+- **DONE** → Phase 5
+- **DONE_WITH_CONCERNS** → record concerns, Phase 5
+- **NEEDS_CONTEXT** → add context, re-dispatch (1 retry). Repeated → BLOCKED
+- **BLOCKED** → record the reason, Phase 6 (artifact with status BLOCKED)
+
+Opus on code phases reduces input errors, the validator catches regressions — the review loop is redundant.
+
+Task-executor commits using COMMIT_MESSAGE from the prompt. If its status is DONE — the commit is guaranteed.
+
+Transition → Phase 5.
+
+---
+
+## Phase 5 — Post-process
+
+Full pipeline from /do in a single run. Save the list of files changed in Phase 4.
 
 ### 5a. Polish
 
-Dispatch `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md` с моделью из frontmatter агента.
+Dispatch `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md` with the model from the agent's frontmatter.
 
-Передай: изменённые файлы, CONSTRAINTS.
+Pass: changed files, CONSTRAINTS.
 
-Коммит: `TICKET refactor(SLUG): polish fix-N`
+Commit: `TICKET refactor(SLUG): polish fix-N`
 
 ### 5b. Validate
 
 Dispatch `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`.
 
-Передай: изменённые файлы, SLUG, TICKET_ID, CONSTRAINTS.
+Pass: changed files, SLUG, TICKET_ID, CONSTRAINTS.
 
 ### 5c. Document
 
 Dispatch `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/doc-updater.md`.
 
-Передай: изменённые файлы, SLUG, описание фикса.
+Pass: changed files, SLUG, fix description.
 
-Коммит: `TICKET docs(SLUG): update docs for fix-N`
+Commit: `TICKET docs(SLUG): update docs for fix-N`
 
 ### 5d. Format
 
 Dispatch `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`.
 
-Передай: изменённые файлы, SLUG, TICKET_ID.
+Pass: changed files, SLUG, TICKET_ID.
 
-Отмечай каждый шаг в TodoWrite.
+Mark each step in TodoWrite.
 
-Переход → Фаза 6.
+Transition → Phase 6.
 
 ---
 
-## Фаза 6 — Artifact
+## Phase 6 — Artifact
 
-Dispatch `fix-log-writer` через Agent tool (model: haiku).
+Dispatch `fix-log-writer` via the Agent tool (model: haiku).
 
-Прочитай `agents/fix-log-writer.md`, передай агенту:
+Read `agents/fix-log-writer.md`, pass to the agent:
 
 - SLUG, FIX_NUMBER
-- Описание фикса
+- Fix description
 - STATUS (done / blocked)
-- Коммиты из Фаз 4-5 (хеши + сообщения)
-- Изменённые файлы с описаниями
+- Commits from Phases 4-5 (hashes + messages)
+- Changed files with descriptions
 - Validation results
-- Concerns (если были)
+- Concerns (if any)
 - TICKET_ID
 
-Агент запишет/дополнит `docs/ai/<SLUG>/<SLUG>-fixes.md` и закоммитит.
+The agent writes/appends `docs/ai/<SLUG>/<SLUG>-fixes.md` and commits.
 
-Переход → Фаза 7.
+Transition → Phase 7.
 
 ---
 
-## Фаза 7 — Complete
+## Phase 7 — Complete
 
-Выведи результат:
+Print the result:
 
 ```
-Fix N: <описание>
-Коммиты: <список>
+Fix N: <description>
+Commits: <list>
 Validation: pass / fail
 ```
 
-Отправь нотификацию:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill fix --phase Complete --slug "$SLUG" --title "Fix $FIX_NUMBER завершён" --body "$FIX_DESCRIPTION"`
+Send a notification:
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill fix --phase Complete --slug "$SLUG" --title "Fix $FIX_NUMBER complete" --body "$FIX_DESCRIPTION"`
 
-AskUserQuestion — что дальше:
+AskUserQuestion — what next:
 
-- **Ещё один fix** → вернись к Фазе 1 (SLUG сохраняется)
-- **Запустить /sp:review (Recommended)** → вызови Skill tool с `/sp:review` и SLUG
-- **Завершить** → выйди
+- **Another fix** → go back to Phase 1 (SLUG is preserved)
+- **Run /sp:review (Recommended)** → invoke the Skill tool with `/sp:review` and SLUG
+- **Finish** → exit
 
 ---
 
 ## Chain awareness
 
-Каждый `/fix` в цепочке читает предыдущие записи из fix-log:
+Each `/fix` in the chain reads previous entries from the fix-log:
 
-- Fix-2 знает об изменениях Fix-1 → избегает конфликтов
-- Fix-investigator получает FIX_LOG_SUMMARY как контекст
-- Fix-log-writer append-ит запись, сохраняя историю
+- Fix-2 knows about Fix-1's changes → avoids conflicts
+- Fix-investigator receives FIX_LOG_SUMMARY as context
+- Fix-log-writer appends an entry, preserving history
 
 ---
 
 ## Fix from PR feedback
 
-Если `$ARGUMENTS` содержит URL PR-комментария:
+If `$ARGUMENTS` contains a PR-comment URL:
 
-1. Извлеки текст через `gh api repos/{owner}/{repo}/pulls/comments/{id}`
-2. Используй текст как описание фикса
-3. Файл и строки из контекста комментария → передай investigator
-4. URL нерабочий → спроси описание через AskUserQuestion (fallback)
+1. Extract the text via `gh api repos/{owner}/{repo}/pulls/comments/{id}`
+2. Use the text as the fix description
+3. File and lines from the comment context → pass to the investigator
+4. URL not working → ask for a description via AskUserQuestion (fallback)
 
-Закрывает flow: `/do` → `/review` → `/gp` → `/pr` → ревьюер комментирует → `/fix <URL>` → `/gp`.
+Closes the flow: `/do` → `/review` → `/gp` → `/pr` → reviewer comments → `/fix <URL>` → `/gp`.
 
 ---
 
-## Правила
+## Rules
 
-- **Тонкий оркестратор.** Все файловые операции и bash делегируй агентам.
-- **Без остановок.** Работай до конца без подтверждений между фазами.
-- **Модели по frontmatter.** task-executor и code-polisher используют модели из frontmatter агентов.
-- **Коммиты по конвенции.** Формат и ticket ID — из `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
-- **Scope guard.** 4+ файлов или архитектурные решения → предложи escalate в /sp:task.
-- **TodoWrite.** Отмечай каждый шаг сразу по завершении.
-- **Вывод CLI.** Команды с длинным выводом запускай с `2>&1 | tail -20`.
-- **Текущая директория.** Worktrees и управление ветками запрещены.
-- **Язык контента** — русский.
+- **Thin orchestrator.** Delegate all file operations and bash to agents.
+- **No stops.** Work through to the end without confirmations between phases.
+- **Models per frontmatter.** task-executor and code-polisher use models from the agents' frontmatter.
+- **Commits by convention.** Format and ticket ID — from `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
+- **Scope guard.** 4+ files or architectural decisions → propose escalating to /sp:task.
+- **TodoWrite.** Mark each step immediately upon completion.
+- **CLI output.** Run commands with long output as `2>&1 | tail -20`.
+- **Current directory.** Worktrees and branch management are forbidden.
+- Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

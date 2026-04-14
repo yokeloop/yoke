@@ -1,75 +1,75 @@
-# Telegram-нотификации
+# Telegram notifications
 
-Двухслойная система оповещений: скиллы записывают JSON в очередь, stop-hook отправляет накопленные сообщения в Telegram.
-Нотификации работают по принципу opt-in — без env-переменных система молча пропускает отправку.
+Two-layer notification system: skills write JSON to a queue; a stop hook sends the accumulated messages to Telegram.
+Notifications are opt-in — without the env vars, the system silently skips sending.
 
 ---
 
-## Настройка
+## Setup
 
-### 1. Создать бота
+### 1. Create a bot
 
-- Открой [@BotFather](https://t.me/BotFather) в Telegram
-- Отправь `/newbot` и следуй инструкциям
-- Сохрани полученный token (формат `123456789:ABC...`)
+- Open [@BotFather](https://t.me/BotFather) in Telegram
+- Send `/newbot` and follow the prompts
+- Save the resulting token (format `123456789:ABC...`)
 
-### 2. Получить chat_id
+### 2. Get the chat_id
 
-- Отправь любое сообщение своему боту
-- Вызови API:
+- Send any message to your bot
+- Call the API:
   ```bash
   curl -s "https://api.telegram.org/bot<TOKEN>/getUpdates" | jq '.result[0].message.chat.id'
   ```
-- Сохрани полученный `chat_id`
+- Save the resulting `chat_id`
 
-### 3. Задать переменные окружения
+### 3. Set environment variables
 
-Добавь в `~/.zshrc` (или `~/.bashrc`):
+Add to `~/.zshrc` (or `~/.bashrc`):
 
 ```bash
 export CC_TELEGRAM_BOT_TOKEN="YOUR_BOT_TOKEN"
 export CC_TELEGRAM_CHAT_ID="YOUR_CHAT_ID"
 ```
 
-Затем перезагрузи shell: `source ~/.zshrc`
+Then reload the shell: `source ~/.zshrc`
 
-Переменные пробрасываются в hook через `allowedEnvVars` в `hooks/hooks.json`.
-
----
-
-## Типы нотификаций
-
-| Тип             | Маркер | Когда срабатывает                             |
-| --------------- | ------ | --------------------------------------------- |
-| ACTION_REQUIRED | ⏸      | Перед вопросами, требующими ответа            |
-| STAGE_COMPLETE  | ✅     | Задача, план, PR или другой артефакт готов    |
-| ALERT           | ⚠️     | Блокировка, scope guard, критическая ситуация |
-
-Все три типа всегда включены.
+The variables are forwarded to the hook via `allowedEnvVars` in `hooks/hooks.json`.
 
 ---
 
-## Карта точек нотификаций
+## Notification types
 
-| Скилл | Фаза       | Тип             | Описание                     |
+| Type            | Marker | When it fires                              |
+| --------------- | ------ | ------------------------------------------ |
+| ACTION_REQUIRED | ⏸      | Before questions that require an answer    |
+| STAGE_COMPLETE  | ✅     | Task, plan, PR, or other artifact is ready |
+| ALERT           | ⚠️     | Block, scope guard, critical situation     |
+
+All three types are always on.
+
+---
+
+## Notification point map
+
+| Skill | Phase      | Type            | Description                  |
 | ----- | ---------- | --------------- | ---------------------------- |
-| task  | Synthesize | ACTION_REQUIRED | Уточняющие вопросы по задаче |
-| task  | Complete   | STAGE_COMPLETE  | Task-файл готов              |
-| plan  | Design     | ACTION_REQUIRED | Вопросы по реализации        |
-| plan  | Complete   | STAGE_COMPLETE  | План готов                   |
-| do    | Execute    | ALERT           | Task заблокирован            |
-| do    | Complete   | STAGE_COMPLETE  | Реализация завершена         |
-| fix   | Decide     | ALERT           | Большой фикс (scope guard)   |
-| fix   | Decide     | ACTION_REQUIRED | Требуется уточнение          |
-| fix   | Complete   | STAGE_COMPLETE  | Fix завершён                 |
-| pr    | Decide     | ACTION_REQUIRED | Выбор типа PR (draft/ready)  |
-| pr    | Complete   | STAGE_COMPLETE  | PR создан или обновлён       |
+| task  | Synthesize | ACTION_REQUIRED | Clarifying questions         |
+| task  | Complete   | STAGE_COMPLETE  | Task file ready              |
+| plan  | Design     | ACTION_REQUIRED | Implementation questions     |
+| plan  | Complete   | STAGE_COMPLETE  | Plan ready                   |
+| do    | Execute    | ALERT           | Task blocked                 |
+| do    | Complete   | STAGE_COMPLETE  | Implementation complete      |
+| fix   | Decide     | ALERT           | Large fix (scope guard)      |
+| fix   | Decide     | ACTION_REQUIRED | Clarification required       |
+| fix   | Complete   | STAGE_COMPLETE  | Fix complete                 |
+| pr    | Decide     | ACTION_REQUIRED | Choose PR type (draft/ready) |
+| pr    | Complete   | STAGE_COMPLETE  | PR created or updated        |
 
 ---
 
-## Тестирование
+## Testing
 
-Вызови notify.sh напрямую и проверь очередь:
+Call notify.sh directly and inspect the queue:
 
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
@@ -81,33 +81,33 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
   --body "test body"
 ```
 
-Затем проверь содержимое файла очереди:
+Then check the queue file contents:
 
 ```bash
 cat .sp/notify-pending.json
 ```
 
-Файл должен содержать JSON-объект с одной записью уведомления. Stop-hook (`hooks/notify.sh`) заберёт его при завершении сессии и отправит в Telegram.
+The file should contain a JSON object with a single notification entry. The stop hook (`hooks/notify.sh`) will pick it up when the session ends and send it to Telegram.
 
 ---
 
-## Зависимости
+## Dependencies
 
-- **jq** — для работы с JSON (обязательно для обоих скриптов)
-- **curl** — для отправки HTTP-запросов к Telegram Bot API (обязательно для stop-hook)
+- **jq** — for JSON handling (required by both scripts)
+- **curl** — for HTTP requests to the Telegram Bot API (required by the stop hook)
 
-При отсутствии jq или curl скрипты завершаются с exit 0.
+If jq or curl is missing, the scripts exit 0.
 
 ---
 
 ## Troubleshooting
 
-| Проблема                      | Проверка                                                                                                                                                              |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Нотификации не приходят       | Проверь что `CC_TELEGRAM_BOT_TOKEN` и `CC_TELEGRAM_CHAT_ID` заданы: `echo $CC_TELEGRAM_BOT_TOKEN`                                                                     |
-| curl not found                | Установи curl: `sudo apt install curl` / `brew install curl`                                                                                                          |
-| jq not found                  | Установи jq: `sudo apt install jq` / `brew install jq`                                                                                                                |
-| Ошибка 401 от Telegram        | Неверный bot token — пересоздай через @BotFather                                                                                                                      |
-| Ошибка 400 (chat not found)   | Неверный chat_id — отправь сообщение боту и повтори getUpdates                                                                                                        |
-| Очередь не очищается          | Проверь, что `hooks/notify.sh` указан в `hooks/hooks.json` как stop-hook                                                                                              |
-| Telegram недоступен / timeout | curl ждёт до 8 секунд (hook timeout 10s). При сбое `notify-pending.json` удаляется, повторная отправка не производится. Удалить вручную: `rm .sp/notify-pending.json` |
+| Problem                        | Check                                                                                                                                               |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Notifications don't arrive     | Verify `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID` are set: `echo $CC_TELEGRAM_BOT_TOKEN`                                                     |
+| curl not found                 | Install curl: `sudo apt install curl` / `brew install curl`                                                                                         |
+| jq not found                   | Install jq: `sudo apt install jq` / `brew install jq`                                                                                               |
+| 401 from Telegram              | Bad bot token — recreate it via @BotFather                                                                                                          |
+| 400 (chat not found)           | Bad chat_id — message the bot and rerun getUpdates                                                                                                  |
+| Queue isn't draining           | Confirm `hooks/notify.sh` is registered as a stop hook in `hooks/hooks.json`                                                                        |
+| Telegram unreachable / timeout | curl waits up to 8 seconds (hook timeout 10s). On failure `notify-pending.json` is removed; no retry. Delete manually: `rm .sp/notify-pending.json` |

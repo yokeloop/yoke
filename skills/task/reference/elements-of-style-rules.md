@@ -1,44 +1,44 @@
-# Elements of Style — правила для copyedit
+# Elements of Style — copyedit rules
 
-Выжимка из William Strunk Jr. _The Elements of Style_ для вычитки прозы в plan-файлах.
+A distillation of William Strunk Jr.'s _The Elements of Style_ for copyediting prose in plan files.
 
 ---
 
-## Правила
+## Rules
 
 **Rule 10: Use active voice.**
-Плохо: «Файл должен быть прочитан агентом.»
-Хорошо: «Агент читает файл.»
+Bad: "The file must be read by the agent."
+Good: "The agent reads the file."
 
 **Rule 11: Put statements in positive form.**
-Плохо: «Не забудь добавить тесты.»
-Хорошо: «Добавь тесты.»
+Bad: "Don't forget to add tests."
+Good: "Add tests."
 
 **Rule 12: Use definite, specific, concrete language.**
-Плохо: «Обработай данные в модуле.»
-Хорошо: «Распарси JSON-ответ в `src/api/parser.ts:45`.»
+Bad: "Process the data in the module."
+Good: "Parse the JSON response in `src/api/parser.ts:45`."
 
 **Rule 13: Omit needless words.**
-Плохо: «В целях обеспечения корректной работы системы необходимо выполнить валидацию.»
-Хорошо: «Валидируй входные данные.»
+Bad: "In order to ensure correct system operation, it is necessary to perform validation."
+Good: "Validate the input."
 
 **Rule 16: Keep related words together.**
-Плохо: «Добавить в компонент, который рендерит список пользователей, пагинацию.»
-Хорошо: «Добавить пагинацию в компонент списка пользователей.»
+Bad: "Add, to the component that renders the user list, pagination."
+Good: "Add pagination to the user-list component."
 
 **Rule 18: Place emphatic words at end of sentence.**
-Плохо: «Критически важно что middleware обрабатывает ошибки.»
-Хорошо: «Middleware обрабатывает ошибки — это критично.»
+Bad: "It is critical that the middleware handles errors."
+Good: "The middleware handles errors — that matters most."
 
 ---
 
-## Применение
+## Application
 
-Для каждого предложения в plan-файле:
+For every sentence in the plan file:
 
-1. Активный залог?
-2. Положительная формулировка?
-3. Конкретный язык (файлы, строки, имена)?
-4. Можно ли убрать слова без потери смысла?
-5. Связанные слова рядом?
-6. Главное в конце предложения?
+1. Active voice?
+2. Positive form?
+3. Concrete language (files, lines, names)?
+4. Can any words be cut without losing meaning?
+5. Related words next to each other?
+6. The emphatic word at the end?

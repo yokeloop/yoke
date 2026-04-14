@@ -1,70 +1,70 @@
-# Скилл /task
+# Skill /task
 
-Формирует задачу для AI-реализации из тикета или текстового описания. Исследует кодовую базу через субагентов,
-анализирует архитектуру, задаёт уточняющие вопросы, создаёт task-файл с контекстом, requirements и constraints.
-Результат — task-файл, по которому `/sp:plan` построит план реализации.
+Defines a task for AI implementation from a ticket or free-form description. Explores the codebase via sub-agents,
+analyzes the architecture, asks clarifying questions, and produces a task file with context, requirements, and constraints.
+The output is a task file that `/sp:plan` turns into an implementation plan.
 
-## Вход
+## Input
 
-`$ARGUMENTS` — URL тикета (GitHub Issues, YouTrack, Jira) и/или текстовое описание задачи.
+`$ARGUMENTS` — ticket URL (GitHub Issues, YouTrack, Jira) and/or a free-form task description.
 
 ```
 /sp:task https://github.com/owner/repo/issues/86
-/sp:task добавить тёмную тему в настройки
+/sp:task add dark theme to settings
 ```
 
-## Фазы
+## Phases
 
-| Фаза | Название        | Что происходит                                                                                          |
-| ---- | --------------- | ------------------------------------------------------------------------------------------------------- |
-| 1    | **Parse**       | Получение содержимого тикета, извлечение материалов, формирование task-slug и TICKET_ID                 |
-| 2    | **Investigate** | Субагенты исследуют кодовую базу (task-explorer) и архитектуру (task-architect). Строго последовательно |
-| 3    | **Synthesize**  | Применение 5 измерений к findings, определение типа (frontend/general), уточняющие вопросы              |
-| 4    | **Write**       | Запись task-файла по примерам (simple/complex), copyedit через субагент (Elements of Style)             |
-| 5    | **Commit**      | Автоматический коммит артефакта: `TICKET docs(SLUG): add task definition`                               |
-| 6    | **Complete**    | Цикл завершения: запустить /sp:plan (рекомендуемо) / ревью через plannotator / завершить                |
+| Phase | Name            | What happens                                                                                           |
+| ----- | --------------- | ------------------------------------------------------------------------------------------------------ |
+| 1     | **Parse**       | Fetch ticket contents, extract materials, form task-slug and TICKET_ID                                 |
+| 2     | **Investigate** | Sub-agents explore the codebase (task-explorer) and architecture (task-architect). Strictly sequential |
+| 3     | **Synthesize**  | Apply 5 dimensions to findings, determine type (frontend/general), form clarifying questions           |
+| 4     | **Write**       | Write the task file from examples (simple/complex), copyedit via sub-agent (Elements of Style)         |
+| 5     | **Commit**      | Auto-commit the artifact: `TICKET docs(SLUG): add task definition`                                     |
+| 6     | **Complete**    | Completion loop: run /sp:plan (recommended) / review via plannotator / finish                          |
 
-## Выход
+## Output
 
-Файл `docs/ai/<slug>/<slug>-task.md` со структурой:
+File `docs/ai/<slug>/<slug>-task.md` with the following structure:
 
 - **Header** — Slug, Ticket, Complexity (trivial/simple/medium/complex), Type (frontend/general)
-- **Task** — одно предложение, что конкретно сделать
-- **Context** — 4 подсекции: архитектура области, файлы для изменения, паттерны для повторения, тесты
-- **Requirements** — конкретные, верифицируемые требования
-- **Constraints** — что не менять, какие подходы избегать, риски из findings
-- **Verification** — команды с ожидаемым результатом, edge cases
-- **Материалы** — ссылки и пути файлов из входа
+- **Task** — one sentence: what exactly to do
+- **Context** — 4 subsections: area architecture, files to change, patterns to reuse, tests
+- **Requirements** — concrete, verifiable requirements
+- **Constraints** — what not to change, approaches to avoid, risks from findings
+- **Verification** — commands with expected results, edge cases
+- **Materials** — links and file paths from input
 
-## 5 измерений Synthesize
+## 5 Synthesize dimensions
 
-| Измерение           | Контрольный вопрос                                                     |
-| ------------------- | ---------------------------------------------------------------------- |
-| Intent Clarity      | Два разных разработчика прочитают Task и сделают одно и то же?         |
-| Scope Boundaries    | Что точно входит в задачу, а что не входит?                            |
-| Context Anchoring   | Реализатор знает ровно столько, сколько нужно — не меньше и не больше? |
-| Acceptance Criteria | Реализатор может проверить каждый критерий без запуска всего проекта?  |
-| Reuse Opportunities | Какие существующие компоненты можно переиспользовать?                  |
+| Dimension           | Check question                                                                |
+| ------------------- | ----------------------------------------------------------------------------- |
+| Intent Clarity      | Two different developers read the Task and arrive at the same implementation? |
+| Scope Boundaries    | What's definitely in scope, and what's out?                                   |
+| Context Anchoring   | The implementer knows exactly what's needed — no more, no less?               |
+| Acceptance Criteria | The implementer can verify each criterion without running the whole project?  |
+| Reuse Opportunities | Which existing components can be reused?                                      |
 
-## Субагенты
+## Sub-agents
 
-| Агент            | Модель | Роль                                                              |
-| ---------------- | ------ | ----------------------------------------------------------------- |
-| `task-explorer`  | sonnet | Исследование кодовой базы: файлы, паттерны, тесты, зависимости    |
-| `task-architect` | sonnet | Анализ архитектуры: паттерны, точки интеграции, риски, trade-offs |
+| Agent            | Model  | Role                                                                   |
+| ---------------- | ------ | ---------------------------------------------------------------------- |
+| `task-explorer`  | sonnet | Codebase exploration: files, patterns, tests, dependencies             |
+| `task-architect` | sonnet | Architecture analysis: patterns, integration points, risks, trade-offs |
 
-## Пример
+## Example
 
 ```
 /sp:task https://github.com/org/repo/issues/112
 ```
 
-Результат: `docs/ai/112-password-reset-email/112-password-reset-email-task.md`
+Result: `docs/ai/112-password-reset-email/112-password-reset-email-task.md`
 
-## Связи
+## Connections
 
 ```
 /sp:task → /sp:plan → /sp:do → /sp:review
 ```
 
-`/task` создаёт описание задачи. `/plan` строит план реализации. `/do` выполняет план.
+`/task` defines the task. `/plan` builds the implementation plan. `/do` executes the plan.

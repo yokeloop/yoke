@@ -1,101 +1,101 @@
 # Review Report Format
 
-Формат выходного файла `<SLUG>-review.md`. Агент review-report-writer записывает этот файл.
+Format of the output file `<SLUG>-review.md`. The review-report-writer agent writes this file.
 
 ---
 
-## Шаблон
+## Template
 
 ```markdown
 # Code Review: <SLUG>
 
 ## Summary
 
-### Контекст и цель
+### Context and goal
 
-<1-3 предложения: что сделано и зачем>
+<1-3 sentences: what was done and why>
 
-### Ключевые участки для ревью
+### Key code areas for review
 
-1. **`src/path/file.ts:fn()`** — <почему важен>
+1. **`src/path/file.ts:fn()`** — <why it matters>
 
-### Сложные решения
+### Complex decisions
 
-1. **<Что>** (`src/path/file.ts:42`)
-   <Почему так сделано. Trade-off'ы.>
+1. **<What>** (`src/path/file.ts:42`)
+   <Why it is done this way. Trade-offs.>
 
-### Вопросы к ревьюеру
+### Questions for the reviewer
 
-1. <Конкретный вопрос по архитектуре, контрактам, перформансу, безопасности или читаемости>
+1. <Concrete question on architecture, contracts, performance, security, or readability>
 
-### Риски и влияние
+### Risks and impact
 
-- <Риск>: <на что обратить внимание>
+- <Risk>: <what to watch out for>
 
-### Тесты и ручные проверки
+### Tests and manual checks
 
-**Авто-тесты:**
+**Auto-tests:**
 
-- <что должно быть покрыто>
+- <what should be covered>
 
-**Ручные сценарии:**
+**Manual scenarios:**
 
-1. <Шаг> → <ожидаемый результат>
+1. <Step> → <expected result>
 
 ### Out of scope
 
-- <что PR намеренно исключает>
+- <what the PR intentionally excludes>
 
 ## Commits
 
-| Hash    | Описание        |
+| Hash    | Description     |
 | ------- | --------------- |
 | abc1234 | feat(slug): ... |
 
 ## Changed Files
 
-| Файл             | +/-     | Описание         |
-| ---------------- | ------- | ---------------- |
-| src/path/file.ts | +42/-10 | <что изменилось> |
+| File             | +/-     | Description    |
+| ---------------- | ------- | -------------- |
+| src/path/file.ts | +42/-10 | <what changed> |
 
 ## Issues Found
 
-| Severity  | Score | Category    | File:line            | Description             |
-| --------- | ----- | ----------- | -------------------- | ----------------------- |
-| Critical  | 90    | security    | src/auth/login.ts:42 | SQL injection в запросе |
-| Important | 65    | performance | src/api/list.ts:15   | N+1 запрос в цикле      |
-| Minor     | 30    | style       | src/utils/fmt.ts:8   | Неиспользуемый импорт   |
+| Severity  | Score | Category    | File:line            | Description            |
+| --------- | ----- | ----------- | -------------------- | ---------------------- |
+| Critical  | 90    | security    | src/auth/login.ts:42 | SQL injection in query |
+| Important | 65    | performance | src/api/list.ts:15   | N+1 query in loop      |
+| Minor     | 30    | style       | src/utils/fmt.ts:8   | Unused import          |
 
-> Проблем нет — заменить таблицу текстом: **Код чист.**
+> No issues — replace the table with text: **Code is clean.**
 
 ## Fixed Issues
 
-| Issue                       | Commit    | Description                  |
-| --------------------------- | --------- | ---------------------------- |
-| SQL injection в login.ts:42 | `def5678` | Параметризованный запрос     |
-| N+1 запрос в list.ts:15     | `ghi9012` | Batch-загрузка через Promise |
+| Issue                        | Commit    | Description            |
+| ---------------------------- | --------- | ---------------------- |
+| SQL injection in login.ts:42 | `def5678` | Parameterized query    |
+| N+1 query in list.ts:15      | `ghi9012` | Batch load via Promise |
 
-> Фиксов нет — заменить таблицу текстом: **Все проблемы исправлены.**
+> No fixes — replace the table with text: **All issues fixed.**
 
 ## Skipped Issues
 
-| Issue                 | Reason                        |
-| --------------------- | ----------------------------- |
-| Неиспользуемый импорт | Стилистическое, вне скоупа PR |
+| Issue         | Reason                     |
+| ------------- | -------------------------- |
+| Unused import | Stylistic, out of PR scope |
 
-> Пропущенных нет — заменить таблицу текстом: **Все найденные проблемы исправлены.**
+> No skipped — replace the table with text: **All found issues were fixed.**
 
 ## Recommendations
 
-- <Рекомендация для PR review: на что обратить внимание при мердже>
+- <Recommendation for PR review: what to watch out for when merging>
 ```
 
 ---
 
-## Правила
+## Rules
 
-- **Summary** — 7 измерений: контекст и цель, ключевые участки, сложные решения, вопросы к ревьюеру, риски, тесты, out of scope.
-- **Issues Found** — сортируй по Score убыванием. Severity: `Critical` / `Important` / `Minor`.
-- **Fixed Issues** и **Skipped Issues** — показывай если Issues Found содержит записи.
-- Пустые таблицы заменяй заглушками из блоков `>` выше.
-- Язык — русский. Активный залог, конкретные формулировки, без лишних слов.
+- **Summary** — 7 dimensions: context and goal, key areas, complex decisions, questions for the reviewer, risks, tests, out of scope.
+- **Issues Found** — sort by Score descending. Severity: `Critical` / `Important` / `Minor`.
+- **Fixed Issues** and **Skipped Issues** — show if Issues Found contains entries.
+- Replace empty tables with the placeholders from the `>` blocks above.
+- Active voice, concrete phrasing, no filler words.

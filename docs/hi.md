@@ -1,40 +1,40 @@
-# Скилл /hi
+# Skill /hi
 
-Приветственный скилл — объясняет структуру маркетплейса sp, доступные скиллы и рекомендуемый цикл работы.
-Точка входа для новых пользователей плагина.
+Welcome skill — explains the sp marketplace layout, available skills, and the recommended workflow.
+Entry point for new users of the plugin.
 
-## Вход
+## Input
 
-Срабатывает автоматически при вопросах: «как пользоваться sp?», «что такое маркетплейс?»,
-«какие скиллы доступны?» или при первом знакомстве с плагином. Параметров не принимает.
-
-```
-/sp:hi
-```
-
-## Выход
-
-Структурированный обзор:
-
-- **Описание проекта** — что такое sp, вдохновение
-- **Каталог скиллов** — краткое описание каждого скилла с примерами команд
-- **Полный цикл** — рекомендуемая последовательность: task → plan → do → fix → review
-- **Планируемые скиллы** — список будущих компонентов
-- **Установка** — команда для подключения плагина
-
-## Особенности
-
-- Информационный скилл — без субагентов, без побочных эффектов
-- Статический контент, выводится напрямую в основном треде
-
-## Пример
+Fires automatically on prompts like: "how do I use sp?", "what is the marketplace?",
+"which skills are available?", or on first contact with the plugin. No parameters.
 
 ```
 /sp:hi
 ```
 
-Результат: обзор маркетплейса sp и доступных скиллов.
+## Output
 
-## Связи
+A structured overview:
 
-Точка входа в систему sp. Рекомендует полный цикл: `/task` → `/plan` → `/do` → `/fix` → `/review`.
+- **Project description** — what sp is, inspiration
+- **Skills catalog** — short description of each skill with example commands
+- **Full cycle** — recommended sequence: task → plan → do → fix → review
+- **Planned skills** — list of upcoming components
+- **Installation** — command to install the plugin
+
+## Notes
+
+- Informational skill — no sub-agents, no side effects
+- Static content, printed directly in the main thread
+
+## Example
+
+```
+/sp:hi
+```
+
+Result: an overview of the sp marketplace and available skills.
+
+## Connections
+
+Entry point into the sp system. Recommends the full cycle: `/task` → `/plan` → `/do` → `/fix` → `/review`.

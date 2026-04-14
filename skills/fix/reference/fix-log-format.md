@@ -1,10 +1,10 @@
 # Fix Log Format
 
-Формат файла `<slug>-fixes.md` и отдельных записей.
+Format of the `<slug>-fixes.md` file and individual entries.
 
 ---
 
-## Header файла (при создании)
+## File header (on creation)
 
 ```markdown
 # Fix Log: <SLUG>
@@ -14,41 +14,41 @@
 
 ---
 
-## Формат записи
+## Entry format
 
 ```markdown
-## Fix N: <краткое описание>
+## Fix N: <short description>
 
-**Дата:** <YYYY-MM-DD>
-**Статус:** done | blocked
+**Date:** <YYYY-MM-DD>
+**Status:** done | blocked
 
-### Что изменено
+### What changed
 
-<1-3 предложения — что сделано и почему>
+<1-3 sentences — what was done and why>
 
-### Файлы
+### Files
 
-| Файл   | Action                         | Описание             |
+| File   | Action                         | Description          |
 | ------ | ------------------------------ | -------------------- |
-| <path> | <created / modified / deleted> | <описание изменения> |
+| <path> | <created / modified / deleted> | <change description> |
 
 ### Validation
 
-<результаты lint/types/tests/build>
+<lint/types/tests/build results>
 
 ### Concerns
 
-<если были, иначе секцию опустить>
+<if any, otherwise omit the section>
 ```
 
 ---
 
-## Коммиты
+## Commits
 
-Список коммитов записывай после секции Validation:
+Record the list of commits after the Validation section:
 
 ```markdown
-### Коммиты
+### Commits
 
 - `<hash>` <message>
 - `<hash>` <message>
@@ -56,10 +56,10 @@
 
 ---
 
-## Правила
+## Rules
 
-- Каждая запись начинается с `## Fix N:`.
-- N — порядковый номер (1, 2, 3...).
-- Секция Concerns — только при наличии. Без concerns секцию опусти.
-- Статус: `done` или `blocked`. Без emoji.
-- Дата: формат `YYYY-MM-DD`.
+- Each entry starts with `## Fix N:`.
+- N — sequential number (1, 2, 3...).
+- Concerns section — only if present. No concerns, omit the section.
+- Status: `done` or `blocked`. No emoji.
+- Date: `YYYY-MM-DD` format.

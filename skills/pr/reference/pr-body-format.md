@@ -1,114 +1,114 @@
-# Формат PR body
+# PR body format
 
-Форматы, маппинг секций и маркеры для агента `pr-body-generator`.
+Formats, section mappings, and markers for the `pr-body-generator` agent.
 
 ## SP markers
 
-Оборачивай контент в маркеры:
+Wrap content in markers:
 
 ```markdown
 <!-- sp:start -->
 
-...контент...
+...content...
 
 <!-- sp:end -->
 ```
 
-При update — заменяй только контент между маркерами. Текст вне маркеров принадлежит пользователю.
+On update — replace only the content between the markers. Text outside the markers belongs to the user.
 
-## Формат sp_full (review + report)
+## sp_full format (review + report)
 
 ```markdown
 <!-- sp:start -->
 
 ## Summary
 
-<1-3 предложения из review "Контекст и цель">
+<1-3 sentences from review "Context and goal">
 
 ## Attention
 
-<Ключевые участки из review — файлы и строки, на что смотреть при ревью>
+<Key areas from review — files and lines, what to look at during review>
 
 ## Design decisions
 
-<Сложные решения из review — что выбрано и почему>
+<Complex decisions from review — what was chosen and why>
 
 ## Questions
 
-<Вопросы к ревьюеру из review>
+<Questions for the reviewer from review>
 
 ## Risks
 
-<Риски из review>
+<Risks from review>
 
 ## Test plan
 
-<Manual verification из report как GitHub checkboxes>
+<Manual verification from report as GitHub checkboxes>
 
-- [ ] <сценарий 1>
-- [ ] <сценарий 2>
+- [ ] <scenario 1>
+- [ ] <scenario 2>
 
 ## Changes
 
-<Changes summary из report — таблица файлов>
+<Changes summary from report — file table>
 
-| Файл | Action | Описание |
-| ---- | ------ | -------- |
-| ...  | ...    | ...      |
+| File | Action | Description |
+| ---- | ------ | ----------- |
+| ...  | ...    | ...         |
 
 ## Commits
 
-<Список коммитов>
+<List of commits>
 
 ## Validation
 
-<Validation results из report>
+<Validation results from report>
 
 ---
 
 <!-- sp:end -->
 ```
 
-## Формат sp_partial (только report)
+## sp_partial format (report only)
 
-Секции Attention, Design decisions, Questions, Risks — опустить (нет review).
+Sections Attention, Design decisions, Questions, Risks — omit (no review).
 
 ```markdown
 <!-- sp:start -->
 
 ## Summary
 
-<Summary из report Tasks table + коммитов>
+<Summary from report Tasks table + commits>
 
 ## Test plan
 
-<Manual verification из report>
+<Manual verification from report>
 
 ## Changes
 
-<Changes из report>
+<Changes from report>
 
 ## Commits
 
-<Список коммитов>
+<List of commits>
 
 ---
 
 <!-- sp:end -->
 ```
 
-## Формат fallback (нет артефактов sp)
+## fallback format (no sp artifacts)
 
 ```markdown
 <!-- sp:start -->
 
 ## Summary
 
-<Сгенерированное summary из коммитов>
+<Generated summary from commits>
 
 ## Changes
 
-| Файл | +/- |
+| File | +/- |
 | ---- | --- |
 | ...  | ... |
 
@@ -125,45 +125,45 @@
 <!-- sp:end -->
 ```
 
-## Маппинг review → PR body
+## review → PR body mapping
 
-| Секция review              | Секция PR        |
+| Review section             | PR section       |
 | -------------------------- | ---------------- |
-| Контекст и цель            | Summary          |
-| Ключевые участки для ревью | Attention        |
-| Сложные решения            | Design decisions |
-| Вопросы к ревьюеру         | Questions        |
-| Риски и влияние            | Risks            |
+| Context and goal           | Summary          |
+| Key areas for review       | Attention        |
+| Complex decisions          | Design decisions |
+| Questions for the reviewer | Questions        |
+| Risks and impact           | Risks            |
 
-## Маппинг report → PR body
+## report → PR body mapping
 
-| Секция report         | Секция PR                     |
-| --------------------- | ----------------------------- |
-| Tasks table (статусы) | Summary (дополнение)          |
-| Manual verification   | Test plan (GitHub checkboxes) |
-| Changes summary       | Changes                       |
-| Commits list          | Commits                       |
-| Validation results    | Validation                    |
+| Report section         | PR section                    |
+| ---------------------- | ----------------------------- |
+| Tasks table (statuses) | Summary (addition)            |
+| Manual verification    | Test plan (GitHub checkboxes) |
+| Changes summary        | Changes                       |
+| Commits list           | Commits                       |
+| Validation results     | Validation                    |
 
-## PR template интеграция
+## PR template integration
 
-Если существует `.github/pull_request_template.md`:
+If `.github/pull_request_template.md` exists:
 
-1. Заполнить секции template данными по маппингу заголовков:
-   - `## Summary` / `## Description` / `## What` → "Контекст и цель" из review
-   - `## Test plan` / `## Testing` / `## How to test` → manual verification из report
-   - `## Ticket` / `## Issue` / `## Related` → auto-link из ticket ID
-2. Секции без маппинга — оставить пустыми
-3. sp-секцию (`<!-- sp:start/end -->`) добавить после template-секций
+1. Fill template sections with data via heading mapping:
+   - `## Summary` / `## Description` / `## What` → "Context and goal" from review
+   - `## Test plan` / `## Testing` / `## How to test` → manual verification from report
+   - `## Ticket` / `## Issue` / `## Related` → auto-link from ticket ID
+2. Sections without a mapping — leave empty
+3. Add the sp section (`<!-- sp:start/end -->`) after the template sections
 
 ## Auto-link
 
-| Ticket ID  | Формат             |
+| Ticket ID  | Format             |
 | ---------- | ------------------ |
 | `#86`      | `Closes #86`       |
 | `R2-208`   | `Ticket: R2-208`   |
 | `PROJ-123` | `Ticket: PROJ-123` |
-| none       | опустить           |
+| none       | omit               |
 
 ## Auto-labels
 
@@ -174,11 +174,11 @@
 | refactor    | maintenance   |
 | docs        | documentation |
 
-Назначать label только если он существует в `AVAILABLE_LABELS`.
+Assign a label only if it exists in `AVAILABLE_LABELS`.
 
-## Логика update
+## Update logic
 
-1. Получить текущий PR body
-2. Если содержит `<!-- sp:start -->` → заменить контент между маркерами
-3. Если маркеров нет → вставить sp-секцию перед body
-4. Текст вне маркеров сохранить
+1. Get the current PR body
+2. If it contains `<!-- sp:start -->` → replace the content between the markers
+3. If no markers → insert the sp section before the body
+4. Preserve text outside the markers

@@ -80,16 +80,16 @@ If the cascade did not determine a ticket — ask via AskUserQuestion:
 
 ## Types
 
-| Type       | When                                        |
-| ---------- | ------------------------------------------- |
-| `feat`     | New functionality                           |
-| `fix`      | Bug fix                                     |
-| `refactor` | Refactoring without behavior change         |
-| `docs`     | Documentation only                          |
-| `test`     | Tests only                                  |
-| `chore`    | Build, CI, dependencies, configs            |
-| `style`    | Formatting only (result of prettier/eslint) |
-| `perf`     | Performance optimization                    |
+| Type       | When                                                                                          |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| `feat`     | New functionality                                                                             |
+| `fix`      | Bug fix                                                                                       |
+| `refactor` | Refactoring without behavior change                                                           |
+| `docs`     | Documentation only                                                                            |
+| `test`     | Tests only                                                                                    |
+| `chore`    | Build, CI, dependencies, configs                                                              |
+| `style`    | Formatting only (result of project formatter/linter, e.g. prettier, eslint, black, cargo fmt) |
+| `perf`     | Performance optimization                                                                      |
 
 ---
 
@@ -115,7 +115,7 @@ Slug = current branch name without prefix (`feature/`, `fix/`, `hotfix/`, `bugfi
 R2-50 refactor(auth-redesign): extract token refresh into separate service
 docs(86-black-jack-page): update task file with clarified requirements
 chore: update dependencies
-style: apply prettier formatting
+style: apply code formatting
 ```
 
 ---

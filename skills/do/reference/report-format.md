@@ -49,10 +49,10 @@ Format of the output file `<slug>-report.md`. Written in Phase 6.
 ## Validation
 ```
 
-npm run lint ✅
-npm run type-check ✅
-npm test ✅ (47 passed, 0 failed)
-npm run build ✅
+<lint command> ✅
+<type-check command> ✅ (or N/A if not applicable)
+<test command> ✅ (<N> passed, 0 failed)
+<build command> ✅ (or N/A if not applicable)
 
 ```
 

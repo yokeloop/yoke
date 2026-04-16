@@ -31,16 +31,32 @@ Use the data as additional context: stack, architecture, validation commands.
 If yoke-context contains a Commands section — use commands from there. Verify each via `--help` or `--version` before running.
 File absent — skip this step.
 
-### 1. Determine available commands
+### 1. Resolve validation commands
 
-Read `package.json` (scripts). Determine the package manager (pnpm / npm / yarn).
+**Priority 1 — yoke-context** (already read in Step 0):
+If yoke-context has a Commands section with non-NOT_FOUND values for Lint, Test, Build, Typecheck — use them directly.
 
-Run the available commands:
+**Priority 2 — auto-detect from project files:**
 
-- lint (`lint`, `eslint`)
-- type-check (`type-check`, `typecheck`, `tsc`)
-- test (`test`, `test:unit`)
-- build (`build`)
+| Config file    | Stack       | Lint                                                  | Type-check                                           | Test                                           | Build                         |
+| -------------- | ----------- | ----------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------- | ----------------------------- |
+| package.json   | Node.js     | detect from scripts (`lint`/`eslint`) via pkg manager | detect from scripts (`type-check`/`typecheck`/`tsc`) | detect from scripts (`test`/`test:unit`)       | detect from scripts (`build`) |
+| go.mod         | Go          | `go vet ./...`                                        | — (skip)                                             | `go test ./...`                                | `go build ./...`              |
+| Cargo.toml     | Rust        | `cargo clippy`                                        | — (skip)                                             | `cargo test`                                   | `cargo build`                 |
+| pyproject.toml | Python      | detect: `ruff check`/`flake8`/`pylint`                | detect: `mypy`/`pyright`                             | detect: `pytest`/`python -m unittest`          | — (skip)                      |
+| Gemfile        | Ruby        | `bundle exec rubocop`                                 | — (skip)                                             | `bundle exec rspec` or `bundle exec rake test` | — (skip)                      |
+| mix.exs        | Elixir      | `mix credo`                                           | `mix dialyzer`                                       | `mix test`                                     | `mix compile`                 |
+| Makefile       | Any         | check for `lint` target                               | check for `typecheck`/`check` target                 | check for `test` target                        | check for `build` target      |
+| pom.xml        | Java        | — (skip)                                              | — (skip)                                             | `mvn test`                                     | `mvn package`                 |
+| build.gradle   | Java/Kotlin | — (skip)                                              | — (skip)                                             | `gradle test`                                  | `gradle build`                |
+
+For Node.js: detect package manager from lock files (pnpm-lock.yaml → pnpm, yarn.lock → yarn, package-lock.json → npm).
+For Python: detect tools from pyproject.toml sections (`[tool.ruff]`, `[tool.pytest]`, `[tool.mypy]`, etc.) or from config files (`.flake8`, `.pylintrc`, `setup.cfg`).
+
+**Priority 3 — skip:**
+No config file found — skip validation entirely. Return all commands as "skip".
+
+Before running any detected command, verify it exists: `command --version 2>/dev/null || command --help 2>/dev/null`.
 
 ### 2. Run each command
 
@@ -83,7 +99,8 @@ NO colon after the ticket. Slug is REQUIRED (value from input `{{SLUG}}`).
 
 ```
 RESULTS:
-- lint: <pass | fail> — <brief output>
+detected_stack: <Node.js | Go | Rust | Python | Ruby | Elixir | Java | unknown>
+- lint: <pass | fail | skip> — <brief output>
 - type-check: <pass | fail | skip> — <brief output>
 - test: <pass | fail | skip> — <brief output>
 - build: <pass | fail | skip> — <brief output>

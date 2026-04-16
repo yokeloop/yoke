@@ -121,24 +121,14 @@ While any item stays open — launch another task-explorer.
 
 ### Phase 3 — Synthesize
 
-**Determine the task type — frontend or general:**
-
-The task is **frontend** when findings contain:
-
-- Technologies: React, Vue, CSS, Tailwind, SCSS, styled-components, Framer Motion, Three.js
-- Files: .tsx, .jsx, .css, .scss in the essential file list or change map
-- Artifacts: component, page, layout, screen, UI, modal, animation
-
-Record: `TASK_TYPE = frontend | general`
-
 **WARNING:** Read `reference/synthesize-guide.md` before writing.
 
-**If `TASK_TYPE = frontend`:** also read `reference/frontend-guide.md`.
+**If the task involves UI components, styles, or frontend work** (React, Vue, Svelte, CSS, Tailwind, animations, layouts, pages): also read `reference/frontend-guide.md`.
 Read both files before starting.
 
 Apply the 5 dimensions from synthesize-guide to the Phase 2 findings. For each dimension: one sentence of reasoning aloud, then the formulation.
 
-**If `TASK_TYPE = frontend`:** for the Requirements, Constraints, and Verification dimensions, also apply the frontend checklists from frontend-guide.
+**If the task involves frontend work:** for the Requirements, Constraints, and Verification dimensions, also apply the frontend checklists from frontend-guide.
 
 Classify complexity: trivial / simple / medium / complex.
 

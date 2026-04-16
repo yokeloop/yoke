@@ -15,7 +15,7 @@ Collect all modified/new files via `git status --porcelain`. Classify each file:
 | `feature`        | Main task files (src/, components/, pages/, lib/, app/)                             | `feat` / `fix` / `refactor` |
 | `test`           | Test files (`*.test.*`, `*.spec.*`, `__tests__/`, `*.cy.*`)                         | `test`                      |
 | `docs`           | Documentation (`.md`, `docs/`, README, CHANGELOG)                                   | `docs`                      |
-| `style`          | Formatting only (result of prettier/eslint --fix, no logical changes)               | `style`                     |
+| `style`          | Formatting only (result of project formatter/linter, no logical changes)            | `style`                     |
 | `chore`          | Configs, dependencies (`package.json`, `*.config.*`, `.eslintrc`, CI)               | `chore`                     |
 | `yoke-artifacts` | Yoke flow files (`docs/ai/**/*-task.md`, `*-plan.md`, `*-report.md`, `*-review.md`) | `docs`                      |
 
@@ -42,10 +42,10 @@ Before executing, show the commit plan to the user:
 
 ```
 Planned commits:
-  1. chore: update eslint config
+  1. chore: update linter config
   2. #86 feat(86-black-jack-page): add game page with basic layout
   3. #86 test(86-black-jack-page): add unit tests for score calculation
-  4. style: apply prettier formatting
+  4. style: apply code formatting
   5. #86 docs(86-black-jack-page): add task definition
 
 Proceed? [Y/n]

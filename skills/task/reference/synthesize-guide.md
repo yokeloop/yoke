@@ -161,8 +161,8 @@ There is a cache for data storage.
 # Good — commands and behavior
 ## Verification
 
-- `npm test src/api/middleware/__tests__/auth.test.ts` — all tests green
-- `npm test` — full suite, no new failures
+- `<project test command for auth middleware>` — all tests green
+- `<project test>` — full suite, no new failures
 - 101 curl requests in a row → first 100 return 200, the 101st returns 429
   with body `{"error": "Too Many Requests", "retryAfter": 60}`
 - curl from different IPs → limits are independent (IP A does not affect IP B's counter)

@@ -39,14 +39,14 @@ After simplify, clean up:
 
 ## CLI rules
 
-- Run commands with long output (lint, test, build, formatter) with `2>&1 | tail -20`.
+- Run commands with long output (project lint, test, build, formatter from `.claude/yoke-context.md` or auto-detected) with `2>&1 | tail -20`.
 
 ## Do NOT touch
 
 - Exported interfaces — signatures unchanged
 - Code behavior — result identical
 - Files outside the list
-- JSDoc/TSDoc on exported functions
+- Documentation comments on exported functions (JSDoc/TSDoc, docstrings, godoc, etc.)
 - Comments about business logic or edge-case explanations
 - `TODO`/`FIXME` with a ticket number
 - Code not changed as part of the task

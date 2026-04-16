@@ -25,6 +25,8 @@ For each requirement in the task file:
 - Which files to change (path, what to change, line numbers)
 - Which files to read but not change (dependencies, interfaces)
 
+Detect project structure from the filesystem — don't assume `src/` or any specific directory layout. If `.claude/yoke-context.md` exists, use its Architecture section. Otherwise, use Glob to discover actual source directories.
+
 **2. Implementation patterns**
 Find 1–2 similar implementations in the project. For each:
 

@@ -78,7 +78,7 @@ Standard for security-sensitive operations; no prior convention in the project.
 - **Scope:** M
 - **What:** Create handler POST /auth/forgot-password. Accepts {email}, finds user, generates token, writes to User, sends email. Email not found → 200 (don't leak account existence).
 - **Context:** `src/auth/login.ts:8-19` (handler+zod pattern), `src/models/User.ts:34-35` (fields), `src/services/email.ts:12` (send), `src/config/index.ts` (APP_URL, EMAIL_FROM)
-- **Verify:** `npm test src/auth/__tests__/forgot-password.test.ts` — green
+- **Verify:** `<project test command for forgot-password>` — green
 
 ### Task 2: reset-password endpoint
 
@@ -87,7 +87,7 @@ Standard for security-sensitive operations; no prior convention in the project.
 - **Scope:** M
 - **What:** Create handler POST /auth/reset-password. Accepts {token, newPassword}, validates token + expiry, updates passwordHash, clears token fields. Invalid/expired → 400.
 - **Context:** `src/auth/forgot-password.ts` (Task 1 — how the token was written), `src/models/User.ts:34-35`, `src/auth/login.ts:8-19` (pattern)
-- **Verify:** `npm test src/auth/__tests__/reset-password.test.ts` — green
+- **Verify:** `<project test command for reset-password>` — green
 
 ### Task 3: Tests for both endpoints
 
@@ -96,7 +96,7 @@ Standard for security-sensitive operations; no prior convention in the project.
 - **Scope:** M
 - **What:** Write tests following `src/auth/__tests__/login.test.ts`. Cases: existing email → 200 + token in DB, unknown → 200, valid token → 200 + password updated, expired → 400, reuse → 400.
 - **Context:** `src/auth/__tests__/login.test.ts` (template), `src/auth/forgot-password.ts`, `src/auth/reset-password.ts`
-- **Verify:** `npm test src/auth/__tests__/` — all green
+- **Verify:** `<project test command for auth module>` — all green
 
 ### Task 4: Validation
 
@@ -105,7 +105,7 @@ Standard for security-sensitive operations; no prior convention in the project.
 - **Scope:** S
 - **What:** Run the full validation suite.
 - **Context:** —
-- **Verify:** `npm test && npm run lint` — all green, 0 new failures
+- **Verify:** `<project test> && <project lint>` — all green, 0 new failures
 
 ## Execution
 
@@ -116,9 +116,9 @@ Standard for security-sensitive operations; no prior convention in the project.
 
 ## Verification
 
-- `npm test src/auth/__tests__/forgot-password.test.ts` — green
-- `npm test src/auth/__tests__/reset-password.test.ts` — green
-- `npm test` — full suite, no new failures
+- `<project test command for forgot-password>` — green
+- `<project test command for reset-password>` — green
+- `<project test>` — full suite, no new failures
 - POST /auth/forgot-password with unknown email → 200
 - POST /auth/reset-password with expired token → 400
 

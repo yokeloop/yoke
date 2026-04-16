@@ -203,8 +203,8 @@ Implement one of two approaches — pick after answering clarifying question #1.
 
 ## Verification
 
-- `npm test --workspace=apps/game-api` — all tests green
-- `npm test --workspace=apps/leaderboard-screen` — all tests green
+- `<project test for game-api>` — all tests green
+- `<project test for leaderboard-screen>` — all tests green
 - player-station emits `score_update` → leaderboard-screen updates without reload, position-change animation fires
 - leaderboard-screen connection drop → reconnect with no data loss
 - player-station connection (WS) works unchanged after deploy

@@ -107,8 +107,8 @@ Tests: `src/auth/__tests__/` — structure example in `login.test.ts`.
 
 ## Verification
 
-- `npm test src/auth/__tests__/forgot-password.test.ts` — all tests green
-- `npm test` — full suite, no new failures
+- `<project test command for forgot-password>` — all tests green
+- `<project test>` — full suite, no new failures
 - `POST /auth/forgot-password` with existing email → 200, email sent,
   `resetToken` and `resetTokenExpiry` written to the DB
 - `POST /auth/forgot-password` with unknown email → 200 (not 404)

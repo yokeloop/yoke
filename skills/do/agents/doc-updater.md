@@ -1,6 +1,6 @@
 ---
 name: doc-updater
-description: Updates project documentation after implementation — README, CHANGELOG, JSDoc/TSDoc for new exports.
+description: Updates project documentation after implementation — README, CHANGELOG, inline documentation for new exports.
 tools: Read, Write, Edit, Bash, Glob, Grep, LS
 model: sonnet
 color: purple
@@ -42,15 +42,31 @@ If the project has CHANGELOG.md:
 
 CHANGELOG is absent — don't create one.
 
-### 3. JSDoc / TSDoc
+### 3. Documentation
 
-For each new or changed exported symbol (function, class, type, interface):
+For each new or changed exported symbol (function, class, type, interface, struct, method):
 
-- Add or update JSDoc/TSDoc
+Detect documentation convention from file extension:
+
+| Extension            | Convention        | Format                                                                   |
+| -------------------- | ----------------- | ------------------------------------------------------------------------ |
+| .ts, .tsx, .js, .jsx | JSDoc/TSDoc       | `/** ... */` above declaration                                           |
+| .py                  | Docstrings        | `"""..."""` under declaration (match project style: Google/NumPy/Sphinx) |
+| .rs                  | Rust doc comments | `/// ...` above declaration                                              |
+| .go                  | Godoc             | `// FuncName ...` comment above declaration                              |
+| .rb                  | YARD              | `# @param`, `# @return` above method                                     |
+| .ex, .exs            | ExDoc             | `@doc """..."""` above function                                          |
+| .java, .kt           | Javadoc/KDoc      | `/** ... */` above declaration                                           |
+| .swift               | DocC              | `/// ...` above declaration                                              |
+
+For each symbol:
+
+- Add or update documentation in the detected convention
 - Describe: purpose, parameters, return value
-- Follow the project's documentation style
+- Follow the project's existing documentation style (read nearby files for reference)
 
-Don't document private or internal functions.
+Don't document private or internal functions/methods.
+If file extension is not in the table — skip documentation for that file.
 
 ## What NOT to do
 
@@ -65,7 +81,7 @@ Don't document private or internal functions.
 ```
 UPDATED:
 - README.md: added description of the new endpoint POST /api/reset-password
-- src/auth/forgot-password.ts: added JSDoc for forgotPassword()
+- src/auth/forgot-password.ts: added documentation for forgotPassword()
 
 NO_UPDATES_NEEDED: documentation is up to date
 ```

@@ -34,7 +34,7 @@ The output file format for `<slug>-plan.md` in Phase 6 (Write).
 - **What:** <1–2 sentences — what exactly to do>
 - **How:** <key implementation steps — concrete, not "add validation">
 - **Context:** <files and lines for the agent to read>
-- **Verify:** `npm test src/path/__tests__/file.test.ts` — green
+- **Verify:** `<project test command for the changed module>` — green
 
 ### Task 2: <title>
 
@@ -52,7 +52,9 @@ The output file format for `<slug>-plan.md` in Phase 6 (Write).
 - **Scope:** S
 - **What:** Run full validation: lint, types, tests, build
 - **Context:** —
-- **Verify:** `npm run lint && npm run type-check && npm test && npm run build` — all green
+- **Verify:** `<project lint> && <project type-check> && <project test> && <project build>` — all green
+
+Use commands from `.claude/yoke-context.md` Commands section, or auto-detect from project config files.
 
 ## Execution
 

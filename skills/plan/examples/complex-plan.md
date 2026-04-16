@@ -108,7 +108,7 @@ Complexity: complex
 - **Scope:** M
 - **What:** Server: SSE endpoint emits an event on processEvent(), connection cleanup on close. Client: hook switches to EventSource, falls back to polling on error.
 - **Context:** `apps/game-api/src/routes/__tests__/game-events.test.ts` (test pattern), Task 1–3 files
-- **Verify:** `npm test --workspace=apps/game-api && npm test --workspace=apps/leaderboard-screen` — green
+- **Verify:** `<project test for game-api> && <project test for leaderboard-screen>` — green
 
 ### Task 6: Validation
 
@@ -117,7 +117,7 @@ Complexity: complex
 - **Scope:** S
 - **What:** Full validation: lint, types, tests in both workspaces.
 - **Context:** —
-- **Verify:** `npm test --workspace=apps/game-api && npm test --workspace=apps/leaderboard-screen && npm run lint` — all green
+- **Verify:** `<project test for game-api> && <project test for leaderboard-screen> && <project lint>` — all green
 
 ## Execution
 
@@ -141,8 +141,8 @@ Complexity: complex
 
 ## Verification
 
-- `npm test --workspace=apps/game-api` — all tests green
-- `npm test --workspace=apps/leaderboard-screen` — all tests green
+- `<project test for game-api>` — all tests green
+- `<project test for leaderboard-screen>` — all tests green
 - player-station emits score_update → leaderboard updates without reload
 - Position-change animation fires
 - SSE drop → fallback to polling with no data loss

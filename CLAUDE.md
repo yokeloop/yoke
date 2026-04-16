@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**yoke** — a marketplace of skills and commands for Claude Code, inspired by [obra/superpowers](https://github.com/obra/superpowers). Distributed as a Claude Code plugin via `.claude-plugin/marketplace.json`.
+**yoke** — a marketplace of skills and commands for Claude Code, inspired by [obra/superpowers](https://github.com/obra/superpowers). Forked from [projectory-com/sp](https://github.com/projectory-com/sp). Distributed as a Claude Code plugin via `.claude-plugin/marketplace.json`.
 
 ## Architecture
 
@@ -19,7 +19,6 @@ commands/              # slash commands — auto-discovered by .md files
 hooks/                 # hooks — auto-discovered by hooks.json (Telegram notifications)
 lib/                   # shared scripts called from skills (notify.sh)
 docs/                  # reference documentation for the plugin system
-_skills/               # drafts — NOT part of the plugin, don't touch
 ```
 
 Components (`skills/`, `commands/`) live at the repository root, NOT inside `.claude-plugin/`.

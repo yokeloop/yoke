@@ -1,7 +1,7 @@
 ---
-name: sp-release
+name: yoke-release
 description: >-
-  Publishing the sp plugin: quality checks, documentation validation, version bump,
+  Publishing the yoke plugin: quality checks, documentation validation, version bump,
   tag, push, GitHub release. Used when the user writes "release",
   "publish", "ship version", "make a release",
   "prepare a release", "new version".
@@ -9,7 +9,7 @@ description: >-
 
 # Release Orchestrator
 
-You are the orchestrator for publishing the sp plugin. Run the pipeline without pauses between phases. Use AskUserQuestion only in Phase 2 and Phase 3a.
+You are the orchestrator for publishing the yoke plugin. Run the pipeline without pauses between phases. Use AskUserQuestion only in Phase 2 and Phase 3a.
 
 Run all bash commands and file operations yourself (not through agents), except for Phase 1 where 4 agents work in parallel.
 
@@ -46,7 +46,7 @@ Run the checks sequentially. On the first error — report and exit.
 test -f .claude-plugin/plugin.json
 ```
 
-If the file is not found → report: "Run from the sp project root (the directory containing .claude-plugin/plugin.json).". Exit.
+If the file is not found → report: "Run from the yoke project root (the directory containing .claude-plugin/plugin.json).". Exit.
 
 ### 0b. main branch
 
@@ -109,7 +109,7 @@ Run 4 agents in parallel via the Agent tool (model: sonnet, subagent_type: gener
 
 Agent prompt:
 
-> Check the text quality in the markdown files of the sp project. Work in the current directory.
+> Check the text quality in the markdown files of the yoke project. Work in the current directory.
 >
 > Read all files: `skills/*/SKILL.md` and `docs/*.md`.
 >
@@ -225,7 +225,7 @@ TodoWrite: mark "Quality" as done.
 Show the summary:
 
 ```
-sp v<CURRENT_VERSION> — release preflight
+yoke v<CURRENT_VERSION> — release preflight
 
 Commits since <PREV_TAG>: <N>
 
@@ -290,7 +290,7 @@ Remember `NEW_VERSION`.
 Update the version in 3 files via the Edit tool:
 
 1. `.claude-plugin/plugin.json` — replace `"version": "<CURRENT_VERSION>"` with `"version": "<NEW_VERSION>"`
-2. `.claude-plugin/marketplace.json` — replace `"version": "<CURRENT_VERSION>"` in the block with `"name": "sp"` with `"version": "<NEW_VERSION>"`
+2. `.claude-plugin/marketplace.json` — replace `"version": "<CURRENT_VERSION>"` in the block with `"name": "yoke"` with `"version": "<NEW_VERSION>"`
 3. `package.json` — replace `"version": "<CURRENT_VERSION>"` with `"version": "<NEW_VERSION>"`
 
 ### 3c. Format
@@ -372,7 +372,7 @@ bash ./lib/notify.sh \
   --skill release \
   --phase Complete \
   --slug "v<NEW_VERSION>" \
-  --title "sp v<NEW_VERSION> released" \
+  --title "yoke v<NEW_VERSION> released" \
   --body "<RELEASE_URL>"
 ```
 
@@ -381,7 +381,7 @@ bash ./lib/notify.sh \
 Print:
 
 ```
-sp v<NEW_VERSION> released
+yoke v<NEW_VERSION> released
 
 Commit: <hash> chore: bump version to <NEW_VERSION>
 Tag: v<NEW_VERSION>

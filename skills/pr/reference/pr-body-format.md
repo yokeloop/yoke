@@ -2,24 +2,24 @@
 
 Formats, section mappings, and markers for the `pr-body-generator` agent.
 
-## SP markers
+## Yoke markers
 
 Wrap content in markers:
 
 ```markdown
-<!-- sp:start -->
+<!-- yoke:start -->
 
 ...content...
 
-<!-- sp:end -->
+<!-- yoke:end -->
 ```
 
 On update — replace only the content between the markers. Text outside the markers belongs to the user.
 
-## sp_full format (review + report)
+## yoke_full format (review + report)
 
 ```markdown
-<!-- sp:start -->
+<!-- yoke:start -->
 
 ## Summary
 
@@ -66,15 +66,15 @@ On update — replace only the content between the markers. Text outside the mar
 
 ---
 
-<!-- sp:end -->
+<!-- yoke:end -->
 ```
 
-## sp_partial format (report only)
+## yoke_partial format (report only)
 
 Sections Attention, Design decisions, Questions, Risks — omit (no review).
 
 ```markdown
-<!-- sp:start -->
+<!-- yoke:start -->
 
 ## Summary
 
@@ -94,13 +94,13 @@ Sections Attention, Design decisions, Questions, Risks — omit (no review).
 
 ---
 
-<!-- sp:end -->
+<!-- yoke:end -->
 ```
 
-## fallback format (no sp artifacts)
+## fallback format (no yoke artifacts)
 
 ```markdown
-<!-- sp:start -->
+<!-- yoke:start -->
 
 ## Summary
 
@@ -122,7 +122,7 @@ Sections Attention, Design decisions, Questions, Risks — omit (no review).
 
 ---
 
-<!-- sp:end -->
+<!-- yoke:end -->
 ```
 
 ## review → PR body mapping
@@ -154,7 +154,7 @@ If `.github/pull_request_template.md` exists:
    - `## Test plan` / `## Testing` / `## How to test` → manual verification from report
    - `## Ticket` / `## Issue` / `## Related` → auto-link from ticket ID
 2. Sections without a mapping — leave empty
-3. Add the sp section (`<!-- sp:start/end -->`) after the template sections
+3. Add the yoke section (`<!-- yoke:start/end -->`) after the template sections
 
 ## Auto-link
 
@@ -179,6 +179,6 @@ Assign a label only if it exists in `AVAILABLE_LABELS`.
 ## Update logic
 
 1. Get the current PR body
-2. If it contains `<!-- sp:start -->` → replace the content between the markers
-3. If no markers → insert the sp section before the body
+2. If it contains `<!-- yoke:start -->` → replace the content between the markers
+3. If no markers → insert the yoke section before the body
 4. Preserve text outside the markers

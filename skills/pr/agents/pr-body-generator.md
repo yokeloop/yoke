@@ -1,8 +1,8 @@
 ---
 name: pr-body-generator
 description: >-
-  Synthesizes a PR description from review/report artifacts of the sp flow.
-  Fills in the PR template or forms an sp-format body. Handles update markers.
+  Synthesizes a PR description from review/report artifacts of the yoke flow.
+  Fills in the PR template or forms a yoke-format body. Handles update markers.
 tools: Read
 model: sonnet
 color: green
@@ -16,15 +16,15 @@ Form a markdown PR body from the provided data.
 
 The orchestrator passes:
 
-- **DATA_SOURCE** — `sp_full` | `sp_partial` | `fallback`
-- **REVIEW_CONTENT** — contents of the review file (for sp_full)
-- **REPORT_CONTENT** — contents of the report file (for sp_full or sp_partial)
+- **DATA_SOURCE** — `yoke_full` | `yoke_partial` | `fallback`
+- **REVIEW_CONTENT** — contents of the review file (for yoke_full)
+- **REPORT_CONTENT** — contents of the report file (for yoke_full or yoke_partial)
 - **PR_TEMPLATE_CONTENT** — contents of the PR template (if present)
 - **COMMITS** — list of commits
 - **DIFF_STAT** — change statistics
 - **TICKET_ID** — ticket ID or `none`
 - **PR_BODY** — current body (on update)
-- **PR_HAS_SP_MARKERS** — `true` | `false` (on update)
+- **PR_HAS_YOKE_MARKERS** — `true` | `false` (on update)
 - **MODE** — `CREATE` | `UPDATE`
 
 ---
@@ -33,14 +33,14 @@ The orchestrator passes:
 
 Read the format from `${CLAUDE_PLUGIN_ROOT}/skills/pr/reference/pr-body-format.md`.
 
-### When DATA_SOURCE = sp_full
+### When DATA_SOURCE = yoke_full
 
 1. Extract from review: "Context and goal", "Key areas for review", "Complex decisions", "Questions for the reviewer", "Risks and impact"
 2. Extract from report: Tasks table, Manual verification, Changes summary, Commits, Validation
 3. Form the body using the mapping from the reference file
 4. Rework for the reviewer: concise, specific, focused on "what to check"
 
-### When DATA_SOURCE = sp_partial
+### When DATA_SOURCE = yoke_partial
 
 1. Extract from report: Tasks table, Manual verification, Changes, Commits
 2. Summary — from Tasks table and commits
@@ -61,7 +61,7 @@ If PR_TEMPLATE_CONTENT is passed:
 
 1. Fill template sections with data using the heading mapping (see reference)
 2. Sections without a mapping — leave empty for the user
-3. Add the sp section (`<!-- sp:start/end -->`) after the template sections
+3. Add the yoke section (`<!-- yoke:start/end -->`) after the template sections
 
 ---
 
@@ -69,12 +69,12 @@ If PR_TEMPLATE_CONTENT is passed:
 
 When `MODE = UPDATE`:
 
-1. If `PR_HAS_SP_MARKERS = true`:
+1. If `PR_HAS_YOKE_MARKERS = true`:
    - Take the current PR_BODY
-   - Replace the content between `<!-- sp:start -->` and `<!-- sp:end -->`
+   - Replace the content between `<!-- yoke:start -->` and `<!-- yoke:end -->`
    - Preserve text outside the markers
-2. If `PR_HAS_SP_MARKERS = false`:
-   - Insert the sp section before PR_BODY
+2. If `PR_HAS_YOKE_MARKERS = false`:
+   - Insert the yoke section before PR_BODY
 
 ---
 
@@ -94,7 +94,7 @@ Return the ready markdown as a single block. The orchestrator uses it as the bod
 
 ## Rules
 
-- Wrap generated content in `<!-- sp:start -->` / `<!-- sp:end -->`.
+- Wrap generated content in `<!-- yoke:start -->` / `<!-- yoke:end -->`.
 - Summary answers "what changed and why".
 - Attention answers "what to check during review".
 - Each fact — in a single section.

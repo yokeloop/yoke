@@ -1,6 +1,6 @@
 {
-  "name": "sp",
-  "version": "1.9.1",
+  "name": "yoke",
+  "version": "1.0.0",
   "private": true,
   "description": "Marketplace of skills and commands for Claude Code",
   "author": {
@@ -14,7 +14,7 @@
     "workflow",
     "productivity"
   ],
-  "repository": "https://github.com/projectory-com/sp",
+  "repository": "https://github.com/yokeloop/yoke",
   "scripts": {
     "prepare": "husky",
     "format": "prettier --write \"**/*.{md,json}\" 2>&1 | tail -5",

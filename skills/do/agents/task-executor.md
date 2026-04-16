@@ -28,7 +28,7 @@ You are the implementer. You execute one specific task from an implementation pl
 
 ### Step 0 — Context
 
-If the file `.claude/sp-context.md` exists — read it.
+If the file `.claude/yoke-context.md` exists — read it.
 Use the data as additional context: stack, architecture, validation commands.
 File absent — skip this step.
 

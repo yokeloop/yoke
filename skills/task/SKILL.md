@@ -272,13 +272,13 @@ Send a notification:
 
 Offer 3 options through AskUserQuestion:
 
-1. **Run /sp:plan (Recommended)** — auto-handoff to planning
+1. **Run /yoke:plan (Recommended)** — auto-handoff to planning
 2. **Review via plannotator** — interactive review of the task file
 3. **Finish** — exit
 
 **Handle the choice:**
 
-- **Run /sp:plan:** call the Skill tool with `/sp:plan` and the argument `docs/ai/<task-slug>/<task-slug>-task.md`. Exit.
+- **Run /yoke:plan:** call the Skill tool with `/yoke:plan` and the argument `docs/ai/<task-slug>/<task-slug>-task.md`. Exit.
 - **Review via plannotator:** call the Skill tool with `/plannotator-annotate` and the path to the task file. Apply the returned annotations, overwrite the file. Loop back to the start.
 - **Finish:** report the file path. Exit.
 

@@ -118,12 +118,12 @@ If `COMPLEXITY = escalate` → send a notification and AskUserQuestion:
 
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill fix --phase Decide --slug "$SLUG" --title "Large fix" --body "Affects $FILES_COUNT files"`
 
-> The fix touches N files: [list]. Looks like a job for /sp:task.
+> The fix touches N files: [list]. Looks like a job for /yoke:task.
 
 Options:
 
 - **Continue as fix**
-- **Escalate to /sp:task** → invoke the Skill tool with `/sp:task` and the fix description, exit
+- **Escalate to /yoke:task** → invoke the Skill tool with `/yoke:task` and the fix description, exit
 
 ### 2. Clarifications
 
@@ -246,7 +246,7 @@ Send a notification:
 AskUserQuestion — what next:
 
 - **Another fix** → go back to Phase 1 (SLUG is preserved)
-- **Run /sp:review (Recommended)** → invoke the Skill tool with `/sp:review` and SLUG
+- **Run /yoke:review (Recommended)** → invoke the Skill tool with `/yoke:review` and SLUG
 - **Finish** → exit
 
 ---
@@ -280,7 +280,7 @@ Closes the flow: `/do` → `/review` → `/gp` → `/pr` → reviewer comments �
 - **No stops.** Work through to the end without confirmations between phases.
 - **Models per frontmatter.** task-executor and code-polisher use models from the agents' frontmatter.
 - **Commits by convention.** Format and ticket ID — from `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
-- **Scope guard.** 4+ files or architectural decisions → propose escalating to /sp:task.
+- **Scope guard.** 4+ files or architectural decisions → propose escalating to /yoke:task.
 - **TodoWrite.** Mark each step immediately upon completion.
 - **CLI output.** Run commands with long output as `2>&1 | tail -20`.
 - **Current directory.** Worktrees and branch management are forbidden.

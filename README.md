@@ -1,6 +1,6 @@
-# sp
+# yoke
 
-![sp — command and workflow overview](sp.png)
+![yoke — command and workflow overview](yoke.png)
 
 A marketplace of skills and commands for Claude Code, inspired by:
 
@@ -15,8 +15,8 @@ A marketplace of skills and commands for Claude Code, inspired by:
 Accepts a ticket URL or free-form description. Explores the codebase, analyzes architecture, and produces a prompt-task with context, requirements, constraints, and clarifying questions. [Details →](docs/task.md)
 
 ```
-/sp:task https://github.com/owner/repo/issues/86
-/sp:task add dark theme to settings
+/yoke:task https://github.com/owner/repo/issues/86
+/yoke:task add dark theme to settings
 ```
 
 **Output:** `docs/ai/<slug>/<slug>-task.md`
@@ -26,7 +26,7 @@ Accepts a ticket URL or free-form description. Explores the codebase, analyzes a
 Reads the task file, explores the codebase, makes design decisions, decomposes the work into atomic tasks with dependencies, picks the execution order (sequential/parallel), and reviews the plan. [Details →](docs/plan.md)
 
 ```
-/sp:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
 **Output:** `docs/ai/<slug>/<slug>-plan.md`
@@ -36,7 +36,7 @@ Reads the task file, explores the codebase, makes design decisions, decomposes t
 Dispatches sub-agents for each task. After each one, runs a two-stage review (spec compliance → code quality). Polishes the code, validates (lint, types, tests, build), updates documentation, and writes a report. [Details →](docs/do.md)
 
 ```
-/sp:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
+/yoke:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
 ```
 
 **Output:** implemented code + `docs/ai/<slug>/<slug>-report.md`
@@ -46,19 +46,19 @@ Dispatches sub-agents for each task. After each one, runs a two-stage review (sp
 Analyzes all changes against origin/main. Produces a report: key areas, complex decisions, risks, questions for the reviewer, manual verification scenarios. [Details →](docs/review.md)
 
 ```
-/sp:review 86-black-jack-page
+/yoke:review 86-black-jack-page
 ```
 
 **Output:** `docs/ai/<slug>/<slug>-review.md`
 
 ### /gca — git commit with smart grouping
 
-Analyzes changed files, classifies them into groups (feature, test, docs, style, chore), and produces atomic commits following Conventional Commits in English. Resolves the ticket ID from arguments, branch name, or SP flow. [Details →](docs/gca.md)
+Analyzes changed files, classifies them into groups (feature, test, docs, style, chore), and produces atomic commits following Conventional Commits in English. Resolves the ticket ID from arguments, branch name, or yoke flow. [Details →](docs/gca.md)
 
 ```
-/sp:gca
-/sp:gca #86
-/sp:gca https://github.com/owner/repo/issues/86
+/yoke:gca
+/yoke:gca #86
+/yoke:gca https://github.com/owner/repo/issues/86
 ```
 
 ### /gp — git push with checks and report
@@ -66,18 +66,18 @@ Analyzes changed files, classifies them into groups (feature, test, docs, style,
 Inspects the repository state (branch, upstream, uncommitted changes, gh auth), pushes to remote, and prints a report: pushed commits, diff stat, branch link, PR status. [Details →](docs/gp.md)
 
 ```
-/sp:gp
-/sp:gp --force-with-lease
+/yoke:gp
+/yoke:gp --force-with-lease
 ```
 
 ### /pr — create and update Pull Request
 
-Creates or updates a GitHub PR. Builds the description from sp flow artifacts (review + report): key areas, design decisions, questions for the reviewer, risks, test plan. Without artifacts, falls back to commits and diff. Supports PR templates and auto-labels. [Details →](docs/pr.md)
+Creates or updates a GitHub PR. Builds the description from yoke flow artifacts (review + report): key areas, design decisions, questions for the reviewer, risks, test plan. Without artifacts, falls back to commits and diff. Supports PR templates and auto-labels. [Details →](docs/pr.md)
 
 ```
-/sp:pr
-/sp:pr --draft
-/sp:pr --base develop
+/yoke:pr
+/yoke:pr --draft
+/yoke:pr --base develop
 ```
 
 ### /fix — quick fix
@@ -85,9 +85,9 @@ Creates or updates a GitHub PR. Builds the description from sp flow artifacts (r
 Compressed pipeline for small changes (1–3 files). Explores the codebase, implements the fix (opus), polishes, validates, and appends an entry to the fix log. Two modes: post-flow (after task/plan/do) and standalone. Supports chains of fixes and "fix from PR comment URL". [Details →](docs/fix.md)
 
 ```
-/sp:fix fix email validation — it doesn't handle empty strings
-/sp:fix bump reconnect timeout from 5s to 15s
-/sp:fix https://github.com/owner/repo/pull/42#discussion_r123456
+/yoke:fix fix email validation — it doesn't handle empty strings
+/yoke:fix bump reconnect timeout from 5s to 15s
+/yoke:fix https://github.com/owner/repo/pull/42#discussion_r123456
 ```
 
 **Output:** code + `docs/ai/<slug>/<slug>-fixes.md`
@@ -97,7 +97,7 @@ Compressed pipeline for small changes (1–3 files). Explores the codebase, impl
 Shows development status: branch, changes, commits relative to main, hot files, semantic summary. [Details →](docs/gst.md)
 
 ```
-/sp:gst
+/yoke:gst
 ```
 
 ### /explore — codebase exploration
@@ -105,54 +105,54 @@ Shows development status: branch, changes, commits relative to main, hot files, 
 Interactive Q&A over the codebase and brainstorming. Delegates research to a sub-agent, accumulates findings in a summary chain, and saves an exploration log. [Details →](docs/explore.md)
 
 ```
-/sp:explore how does authorization work
-/sp:explore compare caching approaches
-/sp:explore what if we replaced REST with gRPC
+/yoke:explore how does authorization work
+/yoke:explore compare caching approaches
+/yoke:explore what if we replaced REST with gRPC
 ```
 
 **Output:** `docs/ai/<slug>/<slug>-exploration.md`
 
-### /bootstrap — prepare project for sp flow
+### /bootstrap — prepare project for yoke flow
 
-Detects the project stack, analyzes architecture, scans conventions, and generates CLAUDE.md and `.claude/sp-context.md`. Entry point for wiring sp into a new project. [Details →](docs/bootstrap.md)
+Detects the project stack, analyzes architecture, scans conventions, and generates CLAUDE.md and `.claude/yoke-context.md`. Entry point for wiring yoke into a new project. [Details →](docs/bootstrap.md)
 
 ```
-/sp:bootstrap
-/sp:bootstrap configure sp for this project
+/yoke:bootstrap
+/yoke:bootstrap configure yoke for this project
 ```
 
-**Output:** `CLAUDE.md` + `.claude/sp-context.md`
+**Output:** `CLAUDE.md` + `.claude/yoke-context.md`
 
 ### /hi — skills overview
 
 Welcome skill — explains available skills and the recommended workflow. Entry point for new users. [Details →](docs/hi.md)
 
 ```
-/sp:hi
+/yoke:hi
 ```
 
 ## Local skills (development)
 
-Skills under `.claude/skills/` are tools for developing the sp plugin itself. They are available when working in the repository but are not part of the published plugin.
+Skills under `.claude/skills/` are tools for developing the yoke plugin itself. They are available when working in the repository but are not part of the published plugin.
 
-### /sp-create — skill factory
+### /yoke-create — skill factory
 
-Full pipeline for creating a new skill: task analysis, design with a mermaid diagram, SKILL.md and agent implementation, quality validation (elements-of-style + skill-development), documentation integration. [Details →](docs/sp-create.md)
+Full pipeline for creating a new skill: task analysis, design with a mermaid diagram, SKILL.md and agent implementation, quality validation (elements-of-style + skill-development), documentation integration. [Details →](docs/yoke-create.md)
 
 ```
-/sp-create a skill for automated code review with bug hunting
-/sp-create https://github.com/projectory-com/sp/issues/44
+/yoke-create a skill for automated code review with bug hunting
+/yoke-create https://github.com/yokeloop/yoke/issues/44
 ```
 
 **Output:** `skills/<name>/SKILL.md` + agents + docs + updated README and CLAUDE.md
 
-### /sp-release — plugin release
+### /yoke-release — plugin release
 
 Quality checks (prose, structure, documentation, links), version bump, tag, push, GitHub release with changelog.
 
 ```
-/sp-release minor
-/sp-release 2.0.0
+/yoke-release minor
+/yoke-release 2.0.0
 ```
 
 **Output:** new tag + GitHub release
@@ -166,31 +166,31 @@ When working on multiple projects in parallel (tmux + worktree), skills send con
 ## Full cycle
 
 ```
-/sp:task <ticket or description>   # define the task
+/yoke:task <ticket or description>   # define the task
   → answer questions in the file
-/sp:plan <path to task file>       # build the plan
+/yoke:plan <path to task file>       # build the plan
   → answer questions in the file
-/sp:do <path to plan file>         # execute the plan
-/sp:fix <description>              # quick fix after /do
-/sp:review <slug>                  # prepare the review
-/sp:gp                             # push to remote
-/sp:pr                             # create a pull request
+/yoke:do <path to plan file>         # execute the plan
+/yoke:fix <description>              # quick fix after /do
+/yoke:review <slug>                  # prepare the review
+/yoke:gp                             # push to remote
+/yoke:pr                             # create a pull request
 ```
 
 ## Structure
 
 ```
-sp/
+yoke/
 ├── .claude/
 │   └── skills/              # local skills (plugin development)
-│       ├── sp-create/       # skill factory
-│       └── sp-release/      # plugin release
+│       ├── yoke-create/     # skill factory
+│       └── yoke-release/    # plugin release
 ├── .claude-plugin/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # marketplace registry
 ├── skills/
 │   ├── hi/                  # welcome and skills overview
-│   ├── bootstrap/           # prepare project for sp flow
+│   ├── bootstrap/           # prepare project for yoke flow
 │   │   ├── SKILL.md
 │   │   ├── agents/          # stack-detector, architecture-mapper, convention-scanner, etc.
 │   │   └── reference/
@@ -244,11 +244,11 @@ sp/
 
 ```bash
 # Add the marketplace
-claude marketplace add github:projectory-com/sp
+claude marketplace add github:yokeloop/yoke
 
 # Locally (for development)
-git clone https://github.com/projectory-com/sp.git
-claude --plugin-dir ./sp
+git clone https://github.com/yokeloop/yoke.git
+claude --plugin-dir ./yoke
 ```
 
 ## Planned skills

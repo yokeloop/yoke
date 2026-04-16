@@ -8,19 +8,19 @@ accumulates findings in a summary chain, and saves an exploration log when done.
 `$ARGUMENTS` — the first question or topic. If empty, asks via AskUserQuestion.
 
 ```
-/sp:explore how does authorization work
-/sp:explore compare caching approaches in the project
-/sp:explore what if we replaced REST with gRPC
+/yoke:explore how does authorization work
+/yoke:explore compare caching approaches in the project
+/yoke:explore what if we replaced REST with gRPC
 ```
 
 ## Phases
 
-| Phase | Name         | What happens                                                            |
-| ----- | ------------ | ----------------------------------------------------------------------- |
-| 1     | **Init**     | Pick slug, initialize summary chain and QA log                          |
-| 2     | **Loop**     | User-driven Q&A: enrich the prompt with context, dispatch explore-agent |
-| 3     | **Finalize** | Sub-agent writes the exploration log                                    |
-| 4     | **Complete** | AskUserQuestion: another question / create a task via /sp:task / finish |
+| Phase | Name         | What happens                                                              |
+| ----- | ------------ | ------------------------------------------------------------------------- |
+| 1     | **Init**     | Pick slug, initialize summary chain and QA log                            |
+| 2     | **Loop**     | User-driven Q&A: enrich the prompt with context, dispatch explore-agent   |
+| 3     | **Finalize** | Sub-agent writes the exploration log                                      |
+| 4     | **Complete** | AskUserQuestion: another question / create a task via /yoke:task / finish |
 
 ## Output
 
@@ -38,11 +38,11 @@ Each Q&A entry contains structured sections: question context, answer, details (
 ## Example
 
 ```
-/sp:explore how does the notification system work
+/yoke:explore how does the notification system work
 ```
 
 Result: an interactive Q&A session that accumulates context. On completion, an exploration log with findings.
 
 ## Connections
 
-Independent skill. After exploration, `/sp:task` is recommended to create a task based on the findings.
+Independent skill. After exploration, `/yoke:task` is recommended to create a task based on the findings.

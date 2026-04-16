@@ -96,7 +96,7 @@ Show `PUSH_ERROR`.
 
 If the error contains "non-fast-forward" → suggest:
 
-> `git pull --rebase` or `/sp:gp --force-with-lease`
+> `git pull --rebase` or `/yoke:gp --force-with-lease`
 
 Exit.
 
@@ -136,15 +136,15 @@ AskUserQuestion — what's next:
 
 If `PR_EXISTS = true`:
 
-- **Update PR via /sp:pr (Recommended)** — `<PR_TITLE>` (`<PR_URL>`)
+- **Update PR via /yoke:pr (Recommended)** — `<PR_TITLE>` (`<PR_URL>`)
 - **Finish** → exit
 
 If `PR_EXISTS = false`:
 
-- **Create PR via /sp:pr (Recommended)**
+- **Create PR via /yoke:pr (Recommended)**
 - **Finish** → exit
 
-Handling: `/sp:pr` → invoke the Skill tool with `/sp:pr`. Finish → exit.
+Handling: `/yoke:pr` → invoke the Skill tool with `/yoke:pr`. Finish → exit.
 
 ---
 

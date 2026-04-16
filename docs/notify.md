@@ -84,7 +84,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
 Then check the queue file contents:
 
 ```bash
-cat .sp/notify-pending.json
+cat .yoke/notify-pending.json
 ```
 
 The file should contain a JSON object with a single notification entry. The stop hook (`hooks/notify.sh`) will pick it up when the session ends and send it to Telegram.
@@ -102,12 +102,12 @@ If jq or curl is missing, the scripts exit 0.
 
 ## Troubleshooting
 
-| Problem                        | Check                                                                                                                                               |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Notifications don't arrive     | Verify `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID` are set: `echo $CC_TELEGRAM_BOT_TOKEN`                                                     |
-| curl not found                 | Install curl: `sudo apt install curl` / `brew install curl`                                                                                         |
-| jq not found                   | Install jq: `sudo apt install jq` / `brew install jq`                                                                                               |
-| 401 from Telegram              | Bad bot token — recreate it via @BotFather                                                                                                          |
-| 400 (chat not found)           | Bad chat_id — message the bot and rerun getUpdates                                                                                                  |
-| Queue isn't draining           | Confirm `hooks/notify.sh` is registered as a stop hook in `hooks/hooks.json`                                                                        |
-| Telegram unreachable / timeout | curl waits up to 8 seconds (hook timeout 10s). On failure `notify-pending.json` is removed; no retry. Delete manually: `rm .sp/notify-pending.json` |
+| Problem                        | Check                                                                                                                                                 |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Notifications don't arrive     | Verify `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID` are set: `echo $CC_TELEGRAM_BOT_TOKEN`                                                       |
+| curl not found                 | Install curl: `sudo apt install curl` / `brew install curl`                                                                                           |
+| jq not found                   | Install jq: `sudo apt install jq` / `brew install jq`                                                                                                 |
+| 401 from Telegram              | Bad bot token — recreate it via @BotFather                                                                                                            |
+| 400 (chat not found)           | Bad chat_id — message the bot and rerun getUpdates                                                                                                    |
+| Queue isn't draining           | Confirm `hooks/notify.sh` is registered as a stop hook in `hooks/hooks.json`                                                                          |
+| Telegram unreachable / timeout | curl waits up to 8 seconds (hook timeout 10s). On failure `notify-pending.json` is removed; no retry. Delete manually: `rm .yoke/notify-pending.json` |

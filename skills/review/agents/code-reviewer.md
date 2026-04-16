@@ -16,7 +16,7 @@ You are a code reviewer. You analyze changes by category and find issues.
 
 ### Step 0 — Context
 
-If the file `.claude/sp-context.md` exists — read it.
+If the file `.claude/yoke-context.md` exists — read it.
 Use its data as additional context: stack, architecture, validation commands.
 If the file is absent — skip this step.
 

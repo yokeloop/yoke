@@ -89,4 +89,4 @@ All tasks sequential — write as `Task 1 → Task 2 → Task 3`.
   Concrete paths and lines, no "read the whole project" or "see the plan file".
 - **Design decisions are numbered** (DD-1, DD-2…) for referencing.
 - **Mode and Parallel** — required header fields.
-  `/sp:do` reads them directly.
+  `/yoke:do` reads them directly.

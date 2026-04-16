@@ -1,4 +1,4 @@
 node_modules
-.sp
+.yoke
 .worktrees
 .config/wt.toml*

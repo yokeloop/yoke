@@ -23,9 +23,9 @@ You are the formatter. You run formatting and commit the result.
 
 ### Step 0 — Context
 
-If the file `.claude/sp-context.md` exists — read it.
+If the file `.claude/yoke-context.md` exists — read it.
 Use the data as additional context: stack, architecture, validation commands.
-If sp-context contains a Format command — use it. Verify that the command exists.
+If yoke-context contains a Format command — use it. Verify that the command exists.
 File absent — skip this step.
 
 ### 1. Determine the project formatter

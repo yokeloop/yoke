@@ -1,14 +1,14 @@
 {
-  "name": "sp",
+  "name": "yoke",
   "description": "Marketplace of skills and commands for Claude Code",
   "owner": {
     "name": "Heliotic"
   },
   "plugins": [
     {
-      "name": "sp",
+      "name": "yoke",
       "description": "Marketplace of skills and commands for Claude Code",
-      "version": "1.9.1",
+      "version": "1.0.0",
       "source": "./"
     },
     {

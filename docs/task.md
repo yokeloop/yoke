@@ -2,15 +2,15 @@
 
 Defines a task for AI implementation from a ticket or free-form description. Explores the codebase via sub-agents,
 analyzes the architecture, asks clarifying questions, and produces a task file with context, requirements, and constraints.
-The output is a task file that `/sp:plan` turns into an implementation plan.
+The output is a task file that `/yoke:plan` turns into an implementation plan.
 
 ## Input
 
 `$ARGUMENTS` — ticket URL (GitHub Issues, YouTrack, Jira) and/or a free-form task description.
 
 ```
-/sp:task https://github.com/owner/repo/issues/86
-/sp:task add dark theme to settings
+/yoke:task https://github.com/owner/repo/issues/86
+/yoke:task add dark theme to settings
 ```
 
 ## Phases
@@ -22,7 +22,7 @@ The output is a task file that `/sp:plan` turns into an implementation plan.
 | 3     | **Synthesize**  | Apply 5 dimensions to findings, determine type (frontend/general), form clarifying questions           |
 | 4     | **Write**       | Write the task file from examples (simple/complex), copyedit via sub-agent (Elements of Style)         |
 | 5     | **Commit**      | Auto-commit the artifact: `TICKET docs(SLUG): add task definition`                                     |
-| 6     | **Complete**    | Completion loop: run /sp:plan (recommended) / review via plannotator / finish                          |
+| 6     | **Complete**    | Completion loop: run /yoke:plan (recommended) / review via plannotator / finish                        |
 
 ## Output
 
@@ -56,7 +56,7 @@ File `docs/ai/<slug>/<slug>-task.md` with the following structure:
 ## Example
 
 ```
-/sp:task https://github.com/org/repo/issues/112
+/yoke:task https://github.com/org/repo/issues/112
 ```
 
 Result: `docs/ai/112-password-reset-email/112-password-reset-email-task.md`
@@ -64,7 +64,7 @@ Result: `docs/ai/112-password-reset-email/112-password-reset-email-task.md`
 ## Connections
 
 ```
-/sp:task → /sp:plan → /sp:do → /sp:review
+/yoke:task → /yoke:plan → /yoke:do → /yoke:review
 ```
 
 `/task` defines the task. `/plan` builds the implementation plan. `/do` executes the plan.

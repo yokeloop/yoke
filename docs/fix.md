@@ -9,9 +9,9 @@ Two modes: post-flow (after task/plan/do) and standalone. Supports chains of fix
 `$ARGUMENTS` — fix description or PR comment URL.
 
 ```
-/sp:fix fix email validation — it doesn't handle empty strings
-/sp:fix bump reconnect timeout from 5s to 15s
-/sp:fix https://github.com/owner/repo/pull/42#discussion_r123456
+/yoke:fix fix email validation — it doesn't handle empty strings
+/yoke:fix bump reconnect timeout from 5s to 15s
+/yoke:fix https://github.com/owner/repo/pull/42#discussion_r123456
 ```
 
 ## Phases
@@ -48,7 +48,7 @@ The fix log contains: description, status, changed files, validation results, co
 ## Example
 
 ```
-/sp:fix fix email validation
+/yoke:fix fix email validation
 ```
 
 Result: the fix is implemented (opus), polished, validated; an entry is added to `docs/ai/<slug>/<slug>-fixes.md`.
@@ -56,8 +56,8 @@ Result: the fix is implemented (opus), polished, validated; an entry is added to
 ## Connections
 
 ```
-/sp:task → /sp:plan → /sp:do → /sp:fix → /sp:review
+/yoke:task → /yoke:plan → /yoke:do → /yoke:fix → /yoke:review
 ```
 
-`/fix` complements `/do` with targeted changes. On scope guard (4+ files), escalate to `/sp:task`.
+`/fix` complements `/do` with targeted changes. On scope guard (4+ files), escalate to `/yoke:task`.
 Reuses 5 agents from `/do` (task-executor, code-polisher, validator, doc-updater, formatter).

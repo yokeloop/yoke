@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**sp** — a marketplace of skills and commands for Claude Code, inspired by [obra/superpowers](https://github.com/obra/superpowers). Distributed as a Claude Code plugin via `.claude-plugin/marketplace.json`.
+**yoke** — a marketplace of skills and commands for Claude Code, inspired by [obra/superpowers](https://github.com/obra/superpowers). Distributed as a Claude Code plugin via `.claude-plugin/marketplace.json`.
 
 ## Architecture
 
 ```
 .claude/
-  skills/              # local skills for plugin development (sp-create, sp-release)
+  skills/              # local skills for plugin development (yoke-create, yoke-release)
 .claude-plugin/
   plugin.json          # plugin manifest (name, version, author)
   marketplace.json     # marketplace registry (name, owner, plugins[])
@@ -28,8 +28,8 @@ Components (`skills/`, `commands/`) live at the repository root, NOT inside `.cl
 
 - **Skills** (`skills/<name>/SKILL.md`): model-invoked, activated automatically by `description` in YAML frontmatter
 - **Agents** (`skills/<name>/agents/<agent>.md`): model-invoked sub-agents dispatched by skill orchestrators via the Agent tool; YAML frontmatter with `name` and `description`
-- **Commands** (`commands/<name>.md`): user-invoked via `/sp:<name>`, YAML frontmatter with `name` and `description`
-- **Namespace**: all components are available as `/sp:<name>` after installation
+- **Commands** (`commands/<name>.md`): user-invoked via `/yoke:<name>`, YAML frontmatter with `name` and `description`
+- **Namespace**: all components are available as `/yoke:<name>` after installation
 - **`$ARGUMENTS`**: placeholder for user input in commands
 - **`${CLAUDE_PLUGIN_ROOT}`**: for paths inside the plugin in hooks and MCP configs
 
@@ -71,12 +71,12 @@ claude --plugin-dir .
 - `/fix` — quick fix or follow-up (1–3 files, opus on code phases)
 - `/hi` — welcome and overview of available skills
 - `/explore` — codebase exploration: read-only Q&A loop with a summary chain
-- `/bootstrap` — prepare a project for sp flow: stack detection, CLAUDE.md generation, `.claude/sp-context.md` creation
+- `/bootstrap` — prepare a project for yoke flow: stack detection, CLAUDE.md generation, `.claude/yoke-context.md` creation
 
 ## Local skills (development)
 
-- `/sp-create` — skill factory: analysis, design, implementation, validation, integration
-- `/sp-release` — plugin release: quality checks, version bump, tag, push, GitHub release
+- `/yoke-create` — skill factory: analysis, design, implementation, validation, integration
+- `/yoke-release` — plugin release: quality checks, version bump, tag, push, GitHub release
 
 ## Planned skills
 

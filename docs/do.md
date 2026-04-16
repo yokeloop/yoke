@@ -7,10 +7,10 @@ and comes back to a notification.
 
 ## Input
 
-`$ARGUMENTS` — path to the plan file produced by `/sp:plan`.
+`$ARGUMENTS` — path to the plan file produced by `/yoke:plan`.
 
 ```
-/sp:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
+/yoke:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
 ```
 
 ## Pipeline
@@ -78,13 +78,13 @@ Sub-agents return a status after running a task:
 ## Example
 
 ```
-/sp:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
+/yoke:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
 ```
 
 ## Connections
 
 ```
-/sp:task → /sp:plan → /sp:do → /sp:review
+/yoke:task → /yoke:plan → /yoke:do → /yoke:review
 ```
 
 `/task` defines the task. `/plan` builds the plan. `/do` executes the plan. `/review` prepares the report.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# notify.sh — write a notification JSON atomically to .sp/notify-pending.json
+# notify.sh — write a notification JSON atomically to .yoke/notify-pending.json
 # Usage: notify.sh --type TYPE --skill SKILL --phase PHASE --slug SLUG --title TITLE --body BODY
 
 # --- Parse arguments ---
@@ -47,7 +47,7 @@ fi
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null) || true
 
 # --- Ensure output directory ---
-mkdir -p "$PROJECT_DIR/.sp" || exit 0
+mkdir -p "$PROJECT_DIR/.yoke" || exit 0
 
 # --- Build JSON via jq ---
 JSON=$(jq -n \
@@ -64,6 +64,6 @@ JSON=$(jq -n \
 ) || exit 0
 
 # --- Atomic write via tmp + mv ---
-TMP=$(mktemp "$PROJECT_DIR/.sp/notify-pending.XXXXXX") || exit 0
+TMP=$(mktemp "$PROJECT_DIR/.yoke/notify-pending.XXXXXX") || exit 0
 printf '%s\n' "$JSON" > "$TMP" || { rm -f "$TMP"; exit 0; }
-mv "$TMP" "$PROJECT_DIR/.sp/notify-pending.json" || { rm -f "$TMP"; exit 0; }
+mv "$TMP" "$PROJECT_DIR/.yoke/notify-pending.json" || { rm -f "$TMP"; exit 0; }

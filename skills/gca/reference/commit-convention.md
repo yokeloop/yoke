@@ -1,6 +1,6 @@
 # Commit Convention
 
-Commit format for SP skills and standalone invocations.
+Commit format for yoke skills and standalone invocations.
 
 ---
 
@@ -59,9 +59,9 @@ The user passes a ticket ID or URL.
 | `PROJ-123-feature`      | `([A-Z]+-\d+)` | `PROJ-123` |
 | `main`, `develop`, etc. | --             | not found  |
 
-### From SP flow
+### From yoke flow
 
-Within SP flow (`/task` -> `/plan` -> `/do` -> `/review`) the ticket ID is extracted from the slug:
+Within yoke flow (`/task` -> `/plan` -> `/do` -> `/review`) the ticket ID is extracted from the slug:
 
 | Slug pattern                               | Ticket ID | Example |
 | ------------------------------------------ | --------- | ------- |
@@ -97,11 +97,11 @@ If the cascade did not determine a ticket — ask via AskUserQuestion:
 
 Determined by context:
 
-### Within SP flow
+### Within yoke flow
 
 Slug = task directory name (e.g. `86-black-jack-page` from `docs/ai/86-black-jack-page/`). Source: active task/plan file in `docs/ai/` or the passed path.
 
-### Outside SP flow (standalone /gca)
+### Outside yoke flow (standalone /gca)
 
 Slug = current branch name without prefix (`feature/`, `fix/`, `hotfix/`, `bugfix/`, `release/`). If the branch is `main`, `master` or `develop` — omit the slug.
 
@@ -120,9 +120,9 @@ style: apply prettier formatting
 
 ---
 
-## Types for SP artifacts
+## Types for yoke artifacts
 
-Commits for SP flow artifacts (format `TICKET docs(SLUG): description`):
+Commits for yoke flow artifacts (format `TICKET docs(SLUG): description`):
 
 ```
 #86 docs(86-black-jack-page): add task definition           # after /task

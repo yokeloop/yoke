@@ -1,6 +1,6 @@
 # Staging strategy
 
-Grouping files into atomic commits. Applied on standalone `/gca` invocations (outside SP flow). `/do` uses its own pipeline model with per-task commits.
+Grouping files into atomic commits. Applied on standalone `/gca` invocations (outside yoke flow). `/do` uses its own pipeline model with per-task commits.
 
 ---
 
@@ -10,14 +10,14 @@ Grouping files into atomic commits. Applied on standalone `/gca` invocations (ou
 
 Collect all modified/new files via `git status --porcelain`. Classify each file:
 
-| Group          | Criterion                                                                         | Commit type                 |
-| -------------- | --------------------------------------------------------------------------------- | --------------------------- |
-| `feature`      | Main task files (src/, components/, pages/, lib/, app/)                           | `feat` / `fix` / `refactor` |
-| `test`         | Test files (`*.test.*`, `*.spec.*`, `__tests__/`, `*.cy.*`)                       | `test`                      |
-| `docs`         | Documentation (`.md`, `docs/`, README, CHANGELOG)                                 | `docs`                      |
-| `style`        | Formatting only (result of prettier/eslint --fix, no logical changes)             | `style`                     |
-| `chore`        | Configs, dependencies (`package.json`, `*.config.*`, `.eslintrc`, CI)             | `chore`                     |
-| `sp-artifacts` | SP flow files (`docs/ai/**/*-task.md`, `*-plan.md`, `*-report.md`, `*-review.md`) | `docs`                      |
+| Group            | Criterion                                                                           | Commit type                 |
+| ---------------- | ----------------------------------------------------------------------------------- | --------------------------- |
+| `feature`        | Main task files (src/, components/, pages/, lib/, app/)                             | `feat` / `fix` / `refactor` |
+| `test`           | Test files (`*.test.*`, `*.spec.*`, `__tests__/`, `*.cy.*`)                         | `test`                      |
+| `docs`           | Documentation (`.md`, `docs/`, README, CHANGELOG)                                   | `docs`                      |
+| `style`          | Formatting only (result of prettier/eslint --fix, no logical changes)               | `style`                     |
+| `chore`          | Configs, dependencies (`package.json`, `*.config.*`, `.eslintrc`, CI)               | `chore`                     |
+| `yoke-artifacts` | Yoke flow files (`docs/ai/**/*-task.md`, `*-plan.md`, `*-report.md`, `*-review.md`) | `docs`                      |
 
 ### Step 2: Determining atomic commits
 
@@ -26,7 +26,7 @@ Collect all modified/new files via `git status --porcelain`. Classify each file:
 - `feature` + `test` for the same feature -> combine into one commit (tests ship together with the code)
 - `style` (linter output) -> always a separate commit
 - `chore` (dependencies) -> always a separate commit
-- `sp-artifacts` -> a separate commit (or several, if they belong to different flow stages)
+- `yoke-artifacts` -> a separate commit (or several, if they belong to different flow stages)
 
 ### Step 3: Commit order
 
@@ -34,7 +34,7 @@ Collect all modified/new files via `git status --porcelain`. Classify each file:
 2. `feature`/`fix`/`refactor` + related `test` (main work)
 3. `style` (formatting on top)
 4. `docs` (documentation)
-5. `sp-artifacts` (planning artifacts — last)
+5. `yoke-artifacts` (planning artifacts — last)
 
 ### Step 4: Confirmation
 

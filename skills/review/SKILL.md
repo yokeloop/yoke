@@ -170,8 +170,8 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --
 
 **3.** AskUserQuestion — what next:
 
-- **"Push (/sp:gp) (Recommended)"** — invoke the Skill tool with `/sp:gp`
-- **"Create PR (/sp:pr)"** — invoke the Skill tool with `/sp:pr`
+- **"Push (/yoke:gp) (Recommended)"** — invoke the Skill tool with `/yoke:gp`
+- **"Create PR (/yoke:pr)"** — invoke the Skill tool with `/yoke:pr`
 - **"Finish"** — exit
 
 ---

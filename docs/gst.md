@@ -9,7 +9,7 @@ Fires automatically on prompts like: "status", "gst", "git status", "what's goin
 "repo state", "show changes". No parameters.
 
 ```
-/sp:gst
+/yoke:gst
 ```
 
 ## Phases
@@ -41,7 +41,7 @@ A text report:
 ## Example
 
 ```
-/sp:gst
+/yoke:gst
 ```
 
 Result: a text report on the repository state.

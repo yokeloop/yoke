@@ -9,9 +9,9 @@ and produces a report with key areas, complex decisions, risks, and questions fo
 from the branch or the latest directory under `docs/ai/`.
 
 ```
-/sp:review 86-black-jack-page
-/sp:review docs/ai/86-black-jack-page/86-black-jack-page-task.md
-/sp:review
+/yoke:review 86-black-jack-page
+/yoke:review docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:review
 ```
 
 ## Phases
@@ -44,7 +44,7 @@ File `docs/ai/<slug>/<slug>-review.md` with 7 sections:
 ## Example
 
 ```
-/sp:review 86-black-jack-page
+/yoke:review 86-black-jack-page
 ```
 
 Result: `docs/ai/86-black-jack-page/86-black-jack-page-review.md`
@@ -52,7 +52,7 @@ Result: `docs/ai/86-black-jack-page/86-black-jack-page-review.md`
 ## Connections
 
 ```
-/sp:task → /sp:plan → /sp:do → /sp:review
+/yoke:task → /yoke:plan → /yoke:do → /yoke:review
 ```
 
 `/review` closes the development cycle. Analyzes the `/task`, `/plan`, `/do` artifacts and the code changes.

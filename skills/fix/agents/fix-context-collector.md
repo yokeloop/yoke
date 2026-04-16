@@ -2,7 +2,7 @@
 name: fix-context-collector
 description: >-
   Collects context for fix: mode (post-flow/standalone), slug,
-  ticket ID, fix number, paths to sp flow artifacts.
+  ticket ID, fix number, paths to yoke flow artifacts.
 tools: Bash, Glob, LS
 model: haiku
 color: cyan
@@ -38,7 +38,7 @@ Compare BRANCH with DEFAULT_BRANCH → `IS_DEFAULT_BRANCH: true | false`.
 
 ### Step 2 — Mode and slug
 
-Check for sp flow artifacts:
+Check for yoke flow artifacts:
 
 ```bash
 # Latest directory in docs/ai/

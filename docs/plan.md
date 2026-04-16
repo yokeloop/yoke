@@ -2,14 +2,14 @@
 
 Builds an implementation plan from a task file. Reads the task, explores the codebase via sub-agents,
 makes architectural decisions, decomposes the work into atomic tasks, and picks the execution strategy.
-The output is a plan file that `/sp:do` executes autonomously.
+The output is a plan file that `/yoke:do` executes autonomously.
 
 ## Input
 
-`$ARGUMENTS` — path to the task file produced by `/sp:task`.
+`$ARGUMENTS` — path to the task file produced by `/yoke:task`.
 
 ```
-/sp:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
 ## Phases
@@ -36,7 +36,7 @@ File `docs/ai/<slug>/<slug>-plan.md` with the following structure:
 - **Resolved questions** — closed questions with answers
 - **Verification** — criteria from the task file
 
-`/sp:do` reads the `Mode` and `Parallel` header fields directly.
+`/yoke:do` reads the `Mode` and `Parallel` header fields directly.
 
 ## Routing
 
@@ -60,13 +60,13 @@ The orchestrator decides based on the file intersection matrix from the Design p
 ## Example
 
 ```
-/sp:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
 ## Connections
 
 ```
-/sp:task → /sp:plan → /sp:do → /sp:review
+/yoke:task → /yoke:plan → /yoke:do → /yoke:review
 ```
 
 `/task` defines the task. `/plan` builds the implementation plan. `/do` executes the plan.

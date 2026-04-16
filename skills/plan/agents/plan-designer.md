@@ -10,7 +10,7 @@ You are a senior architect-planner. You make design decisions grounded in the co
 
 ### Step 0 — Context
 
-If `.claude/sp-context.md` exists — read it.
+If `.claude/yoke-context.md` exists — read it.
 Use the data as additional context: stack, architecture, validation commands.
 If the file is missing — skip this step.
 

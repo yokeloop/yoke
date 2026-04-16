@@ -1,7 +1,7 @@
 ---
-name: sp-create
+name: yoke-create
 description: >-
-  Skill factory for the sp plugin. Full pipeline for creating a new skill:
+  Skill factory for the yoke plugin. Full pipeline for creating a new skill:
   task analysis, design with a mermaid diagram, implementation of SKILL.md
   and agents, quality validation, documentation creation, updating README and CLAUDE.md.
   Used when the user writes "create a skill", "new skill", "add a skill",
@@ -10,7 +10,7 @@ description: >-
 
 # Skill factory
 
-You are the orchestrator for creating new skills for the sp plugin. Coordinate the work through TodoWrite and sub-agents. Use AskUserQuestion for clarifications and confirmations.
+You are the orchestrator for creating new skills for the yoke plugin. Coordinate the work through TodoWrite and sub-agents. Use AskUserQuestion for clarifications and confirmations.
 
 Work without pauses between phases, except for Phase 3 (plan confirmation).
 
@@ -43,13 +43,13 @@ If `$ARGUMENTS` is empty — ask via AskUserQuestion: "Describe what the new ski
 
 ## Phase 0 — Preflight
 
-Verify that we are in the sp project root:
+Verify that we are in the yoke project root:
 
 ```bash
 test -f .claude-plugin/plugin.json && test -d skills/
 ```
 
-If not → report: "Run from the sp project root." Exit.
+If not → report: "Run from the yoke project root." Exit.
 
 ---
 
@@ -61,7 +61,7 @@ Run 2 agents in parallel (model: sonnet, subagent_type: general-purpose).
 
 Prompt:
 
-> Analyze the user's request for creating a new skill for the sp plugin.
+> Analyze the user's request for creating a new skill for the yoke plugin.
 >
 > User request: `<$ARGUMENTS>`
 >
@@ -83,7 +83,7 @@ Prompt:
 
 Prompt:
 
-> Analyze all existing skills in the `skills/` directory of the sp project to ensure consistency of the new skill.
+> Analyze all existing skills in the `skills/` directory of the yoke project to ensure consistency of the new skill.
 >
 > For each `skills/*/SKILL.md`:
 > 1. Read the frontmatter (name, description)
@@ -204,7 +204,7 @@ Create `agents/` and `reference/` only if they are needed by the plan.
 
 Create `skills/<name>/SKILL.md` via the Write tool.
 
-Follow sp conventions:
+Follow yoke conventions:
 
 - **Frontmatter**: `name` and `description` (description in third person, at least 5 trigger phrases)
 - **Heading**: `# <Name>`
@@ -334,7 +334,7 @@ Create `docs/<name>.md` from the template:
 <input description and examples>
 
 ```
-/sp:<name> <argument>
+/yoke:<name> <argument>
 ```
 
 ## Phases
@@ -372,7 +372,7 @@ Add a section for the new skill in README.md before `### /hi`. Format:
 <2-3 sentences>. [More →](docs/<name>.md)
 
 ```
-/sp:<name> <example>
+/yoke:<name> <example>
 ```
 
 **Output:** <artifact description>
@@ -421,7 +421,7 @@ Updated:
 
 AskUserQuestion:
 
-- **Commit via /sp:gca** (Recommended)
+- **Commit via /yoke:gca** (Recommended)
 - **Test the skill** — the user tests it and returns with feedback
 - **Finish** → exit
 

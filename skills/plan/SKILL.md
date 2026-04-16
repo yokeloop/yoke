@@ -16,7 +16,7 @@ Delegate codebase investigation and design through the Agent tool:
 - Design → `agents/plan-designer.md`
 - Plan review → `agents/plan-reviewer.md`
 
-The output is a plan file that `/sp:do` can execute autonomously.
+The output is a plan file that `/yoke:do` can execute autonomously.
 
 ---
 
@@ -288,13 +288,13 @@ Send a notification:
 
 Offer 3 options through AskUserQuestion:
 
-1. **Run /sp:do (Recommended)** — auto-handoff to execution
+1. **Run /yoke:do (Recommended)** — auto-handoff to execution
 2. **Review via plannotator** — interactive review of the plan file
 3. **Finish** — exit
 
 **Handle the choice:**
 
-- **Run /sp:do:** call the Skill tool with `/sp:do` and the argument `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit the loop.
+- **Run /yoke:do:** call the Skill tool with `/yoke:do` and the argument `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit the loop.
 - **Review via plannotator:** call the Skill tool with `/plannotator-annotate` and the plan file path. When annotations come back — apply them to the plan file, overwrite it. Loop back to the start.
 - **Finish:** report the file path. Exit the loop.
 

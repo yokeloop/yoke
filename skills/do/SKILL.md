@@ -280,12 +280,12 @@ Send a notification:
 
 Report the path to the report file and offer 2 options via AskUserQuestion:
 
-1. **Run /sp:review (Recommended)** — automatic transition to code review
+1. **Run /yoke:review (Recommended)** — automatic transition to code review
 2. **Finish** — exit
 
 **Handling the choice:**
 
-- **Run /sp:review:** invoke the Skill tool with `/sp:review` and argument `<SLUG>`
+- **Run /yoke:review:** invoke the Skill tool with `/yoke:review` and argument `<SLUG>`
 - **Finish:** report the path to the report file
 
 ---

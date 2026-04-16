@@ -58,13 +58,13 @@ gh pr view --json number,url,title,body,state 2>/dev/null
 If a PR exists:
 
 - Fill in PR_EXISTS, PR_NUMBER, PR_URL, PR_TITLE, PR_BODY
-- Check for `<!-- sp:start -->` in the body → `PR_HAS_SP_MARKERS`
+- Check for `<!-- yoke:start -->` in the body → `PR_HAS_YOKE_MARKERS`
 
 If no PR exists: `PR_EXISTS: false`.
 
 ### Step 4 — Review and report files
 
-Find sp flow artifacts:
+Find yoke flow artifacts:
 
 ```bash
 # By slug
@@ -139,7 +139,7 @@ PR_NUMBER: <number | empty>
 PR_URL: <url | empty>
 PR_TITLE: <title | empty>
 PR_BODY: <current body | empty>
-PR_HAS_SP_MARKERS: <true | false>
+PR_HAS_YOKE_MARKERS: <true | false>
 
 REVIEW_FILE: <path | NOT_FOUND>
 REVIEW_CONTENT: <contents | empty>

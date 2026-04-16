@@ -1,22 +1,22 @@
 # Skill /hi
 
-Welcome skill — explains the sp marketplace layout, available skills, and the recommended workflow.
+Welcome skill — explains the yoke marketplace layout, available skills, and the recommended workflow.
 Entry point for new users of the plugin.
 
 ## Input
 
-Fires automatically on prompts like: "how do I use sp?", "what is the marketplace?",
+Fires automatically on prompts like: "how do I use yoke?", "what is the marketplace?",
 "which skills are available?", or on first contact with the plugin. No parameters.
 
 ```
-/sp:hi
+/yoke:hi
 ```
 
 ## Output
 
 A structured overview:
 
-- **Project description** — what sp is, inspiration
+- **Project description** — what yoke is, inspiration
 - **Skills catalog** — short description of each skill with example commands
 - **Full cycle** — recommended sequence: task → plan → do → fix → review
 - **Planned skills** — list of upcoming components
@@ -30,11 +30,11 @@ A structured overview:
 ## Example
 
 ```
-/sp:hi
+/yoke:hi
 ```
 
-Result: an overview of the sp marketplace and available skills.
+Result: an overview of the yoke marketplace and available skills.
 
 ## Connections
 
-Entry point into the sp system. Recommends the full cycle: `/task` → `/plan` → `/do` → `/fix` → `/review`.
+Entry point into the yoke system. Recommends the full cycle: `/task` → `/plan` → `/do` → `/fix` → `/review`.

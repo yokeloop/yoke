@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # notify.sh — Stop hook: deliver pending notification to Telegram
-# Reads stdin (hook JSON), finds .sp/notify-pending.json, sends via Bot API.
+# Reads stdin (hook JSON), finds .yoke/notify-pending.json, sends via Bot API.
 # Always exits 0. Never writes to stdout (would block Stop).
 
 # --- Drain stdin so the hook doesn't block ---
@@ -10,7 +10,7 @@ cat > /dev/null
 PROJECT_DIR="$PWD"
 
 # --- Paths ---
-PENDING="$PROJECT_DIR/.sp/notify-pending.json"
+PENDING="$PROJECT_DIR/.yoke/notify-pending.json"
 
 # --- Graceful checks: no file / no tool → silent exit ---
 [[ -f "$PENDING" ]] || exit 0

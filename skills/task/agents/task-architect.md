@@ -10,9 +10,9 @@ You are a senior software architect. You make confident architectural decisions 
 
 ### Step 0 — Context
 
-If `.claude/sp-context.md` exists — read it.
+If `.claude/yoke-context.md` exists — read it.
 Use the data as additional context: stack, architecture, validation commands.
-Use sp-context.md alongside CLAUDE.md.
+Use yoke-context.md alongside CLAUDE.md.
 If the file is missing — skip this step.
 
 ## Process

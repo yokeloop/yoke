@@ -9,8 +9,8 @@ and prints a report with pushed commits, diff stat, branch link, and PR status.
 `$ARGUMENTS` (optional) — push flags (`--force-with-lease`).
 
 ```
-/sp:gp
-/sp:gp --force-with-lease
+/yoke:gp
+/yoke:gp --force-with-lease
 ```
 
 ## Phases
@@ -62,7 +62,7 @@ A text report:
 ## Example
 
 ```
-/sp:gp
+/yoke:gp
 ```
 
 Result: push the current branch to origin, report with commits and stats.
@@ -70,4 +70,4 @@ Result: push the current branch to origin, report with commits and stats.
 ## Connections
 
 Typical flow: `/task` → `/plan` → `/do` → `/review` → `/gca` → `/gp` → `/pr`.
-Also works standalone — for any push outside SP flow.
+Also works standalone — for any push outside yoke flow.

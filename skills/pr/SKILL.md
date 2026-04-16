@@ -38,7 +38,7 @@ Process the collector's data strictly in order.
 - `GH_AUTH = not_installed` → report: "Install gh CLI: https://cli.github.com", exit
 - `GH_AUTH = not_authenticated` → report: "Authenticate: `gh auth login`", exit
 - `BRANCH` matches `DEFAULT_BRANCH` → report: "PR from default branch is not possible", exit
-- `COMMITS_COUNT = 0` and `PR_EXISTS = false` → report: "No commits. Push first: `/sp:gp`", exit
+- `COMMITS_COUNT = 0` and `PR_EXISTS = false` → report: "No commits. Push first: `/yoke:gp`", exit
 
 ### 2. Create vs Update
 
@@ -63,8 +63,8 @@ Options:
 
 ### 4. Determine DATA_SOURCE
 
-- `REVIEW_FILE` found → `DATA_SOURCE = sp_full`
-- Only `REPORT_FILE` found → `DATA_SOURCE = sp_partial`
+- `REVIEW_FILE` found → `DATA_SOURCE = yoke_full`
+- Only `REPORT_FILE` found → `DATA_SOURCE = yoke_partial`
 - Neither found → `DATA_SOURCE = fallback`
 
 ### 5. Base branch
@@ -81,7 +81,7 @@ Transition → Phase 3.
 Run `pr-body-generator` via the Agent tool:
 
 - Agent: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-body-generator.md`
-- Pass: DATA_SOURCE, REVIEW_CONTENT, REPORT_CONTENT, PR_TEMPLATE_CONTENT, COMMITS, DIFF_STAT, TICKET_ID, PR_BODY (on update), PR_HAS_SP_MARKERS, MODE
+- Pass: DATA_SOURCE, REVIEW_CONTENT, REPORT_CONTENT, PR_TEMPLATE_CONTENT, COMMITS, DIFF_STAT, TICKET_ID, PR_BODY (on update), PR_HAS_YOKE_MARKERS, MODE
 
 The agent returns ready markdown. Transition → Phase 4.
 
@@ -147,7 +147,7 @@ AskUserQuestion — what's next:
 
 - Delegate bash commands to agents. Exception: `gh pr create/edit` in Phase 4.
 - AskUserQuestion — only in the orchestrator.
-- Wrap PR body in `<!-- sp:start/end -->` markers.
+- Wrap PR body in `<!-- yoke:start/end -->` markers.
 - On update — preserve user text outside the markers.
 - Assign only labels that exist in the repository.
 - Limits: max 30 commits.

@@ -35,19 +35,19 @@ If there are no changes — tell the user and stop.
 
 ## Step 2 — Context detection
 
-Determine the mode: SP flow or standalone.
+Determine the mode: yoke flow or standalone.
 
-### SP flow detection
+### Yoke flow detection
 
 Does `$ARGUMENTS` contain a path under `docs/ai/` or a slug? Are there recent artifacts in `docs/ai/*/`? If yes:
 
-- `MODE = sp-flow`
+- `MODE = yoke-flow`
 - `SLUG` = from the path or directory name
 - `TICKET_ID` = extracted from the slug per `reference/commit-convention.md`
 
 ### Standalone mode
 
-If SP flow is not detected:
+If yoke flow is not detected:
 
 - `MODE = standalone`
 - `SLUG` = current branch name without prefix (`feature/`, `fix/`, `hotfix/`, `bugfix/`, `release/`). If the branch is `main`/`master`/`develop` — omit the slug.
@@ -59,7 +59,7 @@ If SP flow is not detected:
 Apply the cascade from `reference/commit-convention.md`:
 
 1. **From `$ARGUMENTS`** — user passed a ticket ID or URL
-2. **From the slug** (SP flow) — extract from the slug pattern
+2. **From the slug** (yoke flow) — extract from the slug pattern
 3. **From the branch name** (standalone) — extract via regex patterns
 4. **Ask the user** — via AskUserQuestion: "No ticket" / "Enter number"
 
@@ -67,7 +67,7 @@ Apply the cascade from `reference/commit-convention.md`:
 
 ## Step 4 — Classification and staging
 
-### SP flow mode
+### Yoke flow mode
 
 After a task/plan/do/review skill, commit only the artifact of that stage:
 
@@ -83,7 +83,7 @@ After a task/plan/do/review skill, commit only the artifact of that stage:
 Read `reference/staging-strategy.md` and apply it:
 
 1. Collect all modified/new files
-2. Classify them into groups (feature, test, docs, style, chore, sp-artifacts)
+2. Classify them into groups (feature, test, docs, style, chore, yoke-artifacts)
 3. Determine atomic commits by group
 4. Exclude .env, credentials, large binaries — warn the user about excluded files
 5. Show the commit plan to the user via AskUserQuestion

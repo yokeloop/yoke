@@ -1,13 +1,13 @@
 ---
 name: bootstrap
 description: >-
-  Prepare a project for the sp flow — stack detection, generation of CLAUDE.md
-  and sp-context.md. Used when the user writes "bootstrap", "set up sp",
-  "prepare the project", "sp init", "setup sp", "first run",
-  "connect sp", "create CLAUDE.md".
+  Prepare a project for the yoke flow — stack detection, generation of CLAUDE.md
+  and yoke-context.md. Used when the user writes "bootstrap", "set up yoke",
+  "prepare the project", "yoke init", "setup yoke", "first run",
+  "connect yoke", "create CLAUDE.md".
 ---
 
-# Prepare a project for the sp flow
+# Prepare a project for the yoke flow
 
 You are the orchestrator. Coordinate agents and make decisions via AskUserQuestion. Agents perform all file operations.
 
@@ -20,13 +20,13 @@ Delegate each phase to an agent via the Agent tool:
 - Rules → `agents/existing-rules-detector.md`
 - Domain → `agents/domain-analyzer.md`
 - CLAUDE.md → `agents/claude-md-generator.md`
-- sp-context → `agents/sp-context-generator.md`
+- yoke-context → `agents/yoke-context-generator.md`
 - Automation → `agents/automation-recommender.md`
 - Verification → `agents/bootstrap-verifier.md`
 
 Work from start to finish.
 
-**Principle:** one-time project onboarding. Run once when connecting sp to a project.
+**Principle:** one-time project onboarding. Run once when connecting yoke to a project.
 
 ---
 
@@ -43,10 +43,10 @@ If empty — the skill auto-detects stack, architecture and conventions.
 7 phases. Mark completion via TodoWrite.
 
 ```text
-0. Preflight    → verify git-repo, not an sp-repo
+0. Preflight    → verify git-repo, not a yoke-repo
 1. Detect       → 6 parallel agents investigate the project
 2. Synthesize   → aggregate PROJECT_PROFILE
-3. Generate     → CLAUDE.md + sp-context + recommendations
+3. Generate     → CLAUDE.md + yoke-context + recommendations
 4. Verify       → check files and quality
 5. Confirm      → show the result, AskUserQuestion
 6. Commit       → commit the artifacts
@@ -66,13 +66,13 @@ git rev-parse --is-inside-work-tree 2>/dev/null
 
 Result false or error → tell the user: "/bootstrap only runs inside a git project." Exit.
 
-### 0b. Not an sp-repo
+### 0b. Not a yoke-repo
 
 ```bash
-test -f .claude-plugin/plugin.json && echo "SP_REPO" || echo "OK"
+test -f .claude-plugin/plugin.json && echo "YOKE_REPO" || echo "OK"
 ```
 
-SP_REPO → tell the user: "/bootstrap is meant for target projects, not for sp plugins." Exit.
+YOKE_REPO → tell the user: "/bootstrap is meant for target projects, not for yoke plugins." Exit.
 
 Both conditions passed → transition to Phase 1.
 
@@ -210,11 +210,11 @@ Dispatch 3 agents **in parallel** via the Agent tool:
    SECTIONS_ADDED, SECTIONS_UPDATED, QUALITY_ESTIMATE
    ```
 
-2. **sp-context-generator** (haiku) — read `agents/sp-context-generator.md`, pass to the agent:
+2. **yoke-context-generator** (haiku) — read `agents/yoke-context-generator.md`, pass to the agent:
    - the entire PROJECT_PROFILE
    - DOC_CONTENT from PROJECT_PROFILE.existing_rules.doc_content
    - DOMAIN_FINDINGS from PROJECT_PROFILE.domain
-     Result → SP_CONTEXT_FILE (path to .claude/sp-context.md)
+     Result → YOKE_CONTEXT_FILE (path to .claude/yoke-context.md)
 
 3. **automation-recommender** (haiku) — read `agents/automation-recommender.md`, pass to the agent:
    - PROJECT_PROFILE (stack, frameworks, commands)
@@ -234,7 +234,7 @@ Dispatch **bootstrap-verifier** (sonnet) via the Agent tool.
 
 Read `agents/bootstrap-verifier.md`, pass the prompt to the agent.
 
-The agent checks CLAUDE.md and .claude/sp-context.md and returns:
+The agent checks CLAUDE.md and .claude/yoke-context.md and returns:
 
 ```yaml
 FILES_OK, SECTIONS_OK, COMMANDS_OK, PATHS_OK
@@ -263,7 +263,7 @@ Transition → Phase 5.
 ### Notification
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill bootstrap --phase Confirm --slug "bootstrap" --title "Bootstrap ready" --body "CLAUDE.md and sp-context.md created"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill bootstrap --phase Confirm --slug "bootstrap" --title "Bootstrap ready" --body "CLAUDE.md and yoke-context.md created"
 ```
 
 ### Show the result
@@ -272,7 +272,7 @@ Show the user:
 
 1. **PROJECT_PROFILE summary:** stack, architecture, commands (compact)
 2. **CLAUDE.md quality:** Grade + score from verification
-3. **Contents of .claude/sp-context.md:** first 30 lines
+3. **Contents of .claude/yoke-context.md:** first 30 lines
 4. **Recommendations:** RECOMMENDATIONS from automation-recommender
 5. **Notes:** VERIFY_NOTES (if any after retry)
 
@@ -288,7 +288,7 @@ AskUserQuestion with 3 options:
 
 - **Commit** → transition to Phase 6
 - **Review and edit** → wait for the user's signal, re-dispatch bootstrap-verifier, return to Confirm
-- **Cancel** → tell the user "Bootstrap cancelled. The CLAUDE.md and .claude/sp-context.md files remain on disk." Exit.
+- **Cancel** → tell the user "Bootstrap cancelled. The CLAUDE.md and .claude/yoke-context.md files remain on disk." Exit.
 
 Mark in TodoWrite: `[x] Confirm`
 
@@ -304,32 +304,32 @@ grep -q "^\.claude/" .gitignore 2>/dev/null && echo "IGNORED" || echo "OK"
 
 If IGNORED → warn the user:
 
-> `.claude/` is in .gitignore. sp-context.md will not be included in the commit.
+> `.claude/` is in .gitignore. yoke-context.md will not be included in the commit.
 
 AskUserQuestion:
 
-1. **Add exception `!.claude/sp-context.md`** — append it to .gitignore and commit both files
-2. **Commit only CLAUDE.md** — skip sp-context
+1. **Add exception `!.claude/yoke-context.md`** — append it to .gitignore and commit both files
+2. **Commit only CLAUDE.md** — skip yoke-context
 3. **Cancel commit** — exit
 
 ### 6b. Git commit
 
 ```bash
-git add CLAUDE.md .claude/sp-context.md
-git commit -m "chore: bootstrap sp flow context"
+git add CLAUDE.md .claude/yoke-context.md
+git commit -m "chore: bootstrap yoke flow context"
 ```
 
 If the user chose "only CLAUDE.md" in step 6a:
 
 ```bash
 git add CLAUDE.md
-git commit -m "chore: bootstrap sp flow context"
+git commit -m "chore: bootstrap yoke flow context"
 ```
 
 ### 6c. Notification
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill bootstrap --phase Complete --slug "bootstrap" --title "Bootstrap complete" --body "CLAUDE.md + sp-context.md committed"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill bootstrap --phase Complete --slug "bootstrap" --title "Bootstrap complete" --body "CLAUDE.md + yoke-context.md committed"
 ```
 
 ### 6d. Summary
@@ -337,8 +337,8 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill bootstrap
 Show:
 
 - Commit hash (from `git log -1 --format=%h`)
-- Paths to files: `CLAUDE.md`, `.claude/sp-context.md`
-- Next step: "The project is ready to work with sp. Try `/sp:task` to create the first task."
+- Paths to files: `CLAUDE.md`, `.claude/yoke-context.md`
+- Next step: "The project is ready to work with yoke. Try `/yoke:task` to create the first task."
 
 Mark in TodoWrite: `[x] Commit`
 
@@ -351,6 +351,6 @@ Mark in TodoWrite: `[x] Commit`
 - **Parallel dispatch.** Phase 1: 6 agents. Phase 3: 3 agents.
 - **TodoWrite.** Mark each phase immediately upon completion.
 - **CLI output.** Run commands with long output through `2>&1 | tail -20`.
-- **Idempotency.** On re-run: CLAUDE.md is extended (Edit via an agent), sp-context is overwritten (Write via an agent).
+- **Idempotency.** On re-run: CLAUDE.md is extended (Edit via an agent), yoke-context is overwritten (Write via an agent).
 - **Language.** Match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
 - **Substitution.** When dispatching an agent, replace `{{PLACEHOLDER}}` in the prompt with data from findings. Agents receive real values, not template variables.

@@ -1,6 +1,6 @@
 ---
 name: bootstrap-verifier
-description: Verifies the generated CLAUDE.md and sp-context.md — existence, sections, commands, quality.
+description: Verifies the generated CLAUDE.md and yoke-context.md — existence, sections, commands, quality.
 tools: Read, Bash, Glob
 model: sonnet
 color: orange
@@ -8,7 +8,7 @@ color: orange
 
 # bootstrap-verifier
 
-Verify the quality of the generated CLAUDE.md and .claude/sp-context.md files.
+Verify the quality of the generated CLAUDE.md and .claude/yoke-context.md files.
 
 ## Process
 
@@ -17,7 +17,7 @@ Verify the quality of the generated CLAUDE.md and .claude/sp-context.md files.
 Check that both files exist:
 
 - `CLAUDE.md` in the project root
-- `.claude/sp-context.md` in the project root
+- `.claude/yoke-context.md` in the project root
 
 ### Step 2. Sections check
 
@@ -32,9 +32,9 @@ Each section is a heading (## or #) with content.
 
 Check Environment in CLAUDE.md (optional): list of variables or instructions. Don't penalize if it's missing.
 
-#### sp-context.md check
+#### yoke-context.md check
 
-Read `.claude/sp-context.md` and verify the required sections:
+Read `.claude/yoke-context.md` and verify the required sections:
 
 - **Stack** — technology stack description
 - **Commands** — project commands
@@ -81,7 +81,7 @@ Sum the points and determine the grade: A (90-100), B (70-89), C (55-69), D (40-
 ```yaml
 FILES_OK: true|false
 SECTIONS_OK: true|false — <list of found/missing sections in CLAUDE.md>
-SP_CONTEXT_SECTIONS_OK: true|false — <required sp-context.md sections; conditional: format ok/issues>
+YOKE_CONTEXT_SECTIONS_OK: true|false — <required yoke-context.md sections; conditional: format ok/issues>
 COMMANDS_OK: true|false — <commands: pass/fail for each>
 PATHS_OK: true|false — <paths: exist/missing for each>
 QUALITY_SCORE: <number 0-100>

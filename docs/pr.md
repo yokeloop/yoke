@@ -1,6 +1,6 @@
 # Skill /pr
 
-Creates or updates a GitHub Pull Request. Builds the description from sp flow artifacts
+Creates or updates a GitHub Pull Request. Builds the description from yoke flow artifacts
 (review + report), with a focus on "what to check during review". Without artifacts, falls back
 to commits and diff. Supports PR templates, auto-labels, and update markers.
 
@@ -9,9 +9,9 @@ to commits and diff. Supports PR templates, auto-labels, and update markers.
 `$ARGUMENTS` (optional) — flags: `--draft`, `--base <branch>`.
 
 ```
-/sp:pr
-/sp:pr --draft
-/sp:pr --base develop
+/yoke:pr
+/yoke:pr --draft
+/yoke:pr --base develop
 ```
 
 ## Phases
@@ -30,11 +30,11 @@ to commits and diff. Supports PR templates, auto-labels, and update markers.
 | ------------ | --------------------- | ----------------------------------------------------------------- |
 | `sp_full`    | review + report found | Summary, Attention, Design decisions, Questions, Risks, Test plan |
 | `sp_partial` | report only           | Summary, Test plan, Changes, Commits                              |
-| `fallback`   | no sp artifacts       | Summary from commits, Changes, Commits, generic Test plan         |
+| `fallback`   | no yoke artifacts     | Summary from commits, Changes, Commits, generic Test plan         |
 
 ## PR body
 
-Generated content is wrapped in `<!-- sp:start -->` / `<!-- sp:end -->` markers.
+Generated content is wrapped in `<!-- yoke:start -->` / `<!-- yoke:end -->` markers.
 On update, only the content between the markers is replaced — the user's text is preserved.
 
 Principle: the description answers "what to check during review".
@@ -56,7 +56,7 @@ Only labels that exist in the repository are applied.
 ## Example
 
 ```
-/sp:pr
+/yoke:pr
 ```
 
 Result: a PR on GitHub with a structured description from review and report.
@@ -64,5 +64,5 @@ Result: a PR on GitHub with a structured description from review and report.
 ## Connections
 
 Typical flow: `/task` → `/plan` → `/do` → `/review` → `/gca` → `/gp` → `/pr`.
-Works standalone — creates a PR from commits without sp artifacts.
+Works standalone — creates a PR from commits without yoke artifacts.
 Uses `reference/pr-body-format.md` for body format and section mapping.

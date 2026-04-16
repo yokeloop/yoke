@@ -2,7 +2,7 @@
 name: fix-investigator
 description: >-
   Investigates the codebase for a specific fix — finds files,
-  lines, patterns and constraints. Reads sp flow artifacts itself.
+  lines, patterns and constraints. Reads yoke flow artifacts itself.
 tools: Glob, Grep, LS, Read, Bash
 model: sonnet
 color: yellow
@@ -36,7 +36,7 @@ Investigate the codebase and find the change points for the fix.
 
 ### Standalone mode
 
-1. Read CLAUDE.md and `.claude/sp-context.md` (if they exist) — understand the stack, conventions, project structure
+1. Read CLAUDE.md and `.claude/yoke-context.md` (if they exist) — understand the stack, conventions, project structure
 2. Determine the project stack: `package.json`, `go.mod`, `requirements.txt`, `Cargo.toml`
 3. Grep by keywords from the fix description — find relevant files
 4. Read the found files — identify entry points and related components

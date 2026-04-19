@@ -289,13 +289,13 @@ Send a notification:
 Offer 3 options through AskUserQuestion:
 
 1. **Run /yoke:do (Recommended)** — auto-handoff to execution
-2. **Review via plannotator** — interactive review of the plan file
+2. **Review via revdiff** — interactive review of the plan file
 3. **Finish** — exit
 
 **Handle the choice:**
 
 - **Run /yoke:do:** call the Skill tool with `/yoke:do` and the argument `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit the loop.
-- **Review via plannotator:** call the Skill tool with `/plannotator-annotate` and the plan file path. When annotations come back — apply them to the plan file, overwrite it. Loop back to the start.
+- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Apply the returned annotations, overwrite the plan file. Loop back to the start. If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then loop back to the start.
 - **Finish:** report the file path. Exit the loop.
 
 ---

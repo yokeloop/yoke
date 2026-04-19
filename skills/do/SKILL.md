@@ -46,7 +46,7 @@ If there is no path — ask the user.
 4. Validate     → dispatch validator sub-agent
 5. Document     → update documentation
 6. Finalize     → format + report
-7. Complete     → review / plannotator / finish
+7. Complete     → review / revdiff / finish
 ```
 
 ---
@@ -79,7 +79,7 @@ If there is no path — ask the user.
 [ ] Validate: lint + types + tests
 [ ] Documentation: update documentation
 [ ] Finalize: format + report
-[ ] Complete: review / finish
+[ ] Complete: review / revdiff / finish
 ```
 
 **Transition:** plan loaded, todos created → Phase 2
@@ -278,14 +278,16 @@ Send a notification:
 
 ## Phase 7 — Complete
 
-Report the path to the report file and offer 2 options via AskUserQuestion:
+Report the path to the report file and offer 3 options via AskUserQuestion:
 
 1. **Run /yoke:review (Recommended)** — automatic transition to code review
-2. **Finish** — exit
+2. **Review via revdiff** — interactive annotation of the /do diff
+3. **Finish** — exit
 
 **Handling the choice:**
 
 - **Run /yoke:review:** invoke the Skill tool with `/yoke:review` and argument `<SLUG>`
+- **Review via revdiff:** resolve the default base via the cascade `git symbolic-ref refs/remotes/origin/HEAD` → `origin/main` → `origin/master` → fallback `main` (see `skills/gp/agents/git-pre-checker.md:40-54`). Call the Skill tool with `/revdiff` and the argument `<default-base>...HEAD`. Append returned annotations to `docs/ai/<SLUG>/<SLUG>-report.md` under a new `## Review notes` heading. Auto-commit with `git add docs/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"` (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`). Loop back. If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then loop back.
 - **Finish:** report the path to the report file
 
 ---

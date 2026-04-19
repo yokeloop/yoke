@@ -22,7 +22,7 @@ The output is a task file that `/yoke:plan` turns into an implementation plan.
 | 3     | **Synthesize**  | Apply 5 dimensions to findings, determine type (frontend/general), form clarifying questions           |
 | 4     | **Write**       | Write the task file from examples (simple/complex), copyedit via sub-agent (Elements of Style)         |
 | 5     | **Commit**      | Auto-commit the artifact: `TICKET docs(SLUG): add task definition`                                     |
-| 6     | **Complete**    | Completion loop: run /yoke:plan (recommended) / review via plannotator / finish                        |
+| 6     | **Complete**    | Completion loop: run /yoke:plan (recommended) / review via revdiff / finish                            |
 
 ## Output
 

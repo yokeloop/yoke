@@ -14,7 +14,7 @@ The output is a plan file that `/yoke:do` executes autonomously.
 
 ## Phases
 
-The skill runs autonomously through 6 sequential phases. The only interaction point is Checkpoint.
+The skill runs autonomously through 8 sequential phases. Interaction points: Checkpoint (Phase 5) and Complete (Phase 8).
 
 | Phase | Name           | What happens                                                                                                |
 | ----- | -------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -24,6 +24,8 @@ The skill runs autonomously through 6 sequential phases. The only interaction po
 | 4     | **Route**      | Pick the execution strategy (mode + parallel) from the routing rules table                                  |
 | 5     | **Checkpoint** | The single approval point: all decisions, tasks, and routing in one batch. The user edits or says `approve` |
 | 6     | **Write**      | Write the plan file to `docs/ai/<slug>/<slug>-plan.md`                                                      |
+| 7     | **Commit**     | Auto-commit the artifact: TICKET docs(SLUG): add implementation plan                                        |
+| 8     | **Complete**   | Completion loop: run /yoke:do (recommended) / review via revdiff / finish                                   |
 
 ## Output
 

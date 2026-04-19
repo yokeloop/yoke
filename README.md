@@ -271,11 +271,61 @@ commands/<name>.md
 
 Both formats use YAML frontmatter with `name` and `description`.
 
+## Interactive review (revdiff)
+
+yoke delegates interactive artifact review to [revdiff](https://github.com/umputun/revdiff) — a terminal TUI shipped as a separate Claude Code plugin. revdiff opens task files, plan files, and /do diffs for inline annotation; yoke folds the annotations back into the artifact.
+
+### Install
+
+```text
+/plugin marketplace add umputun/revdiff
+/plugin install revdiff@umputun-revdiff
+```
+
+### Terminal requirements
+
+revdiff launches inside a terminal overlay. One of the following is required; otherwise the plugin exits with an error.
+
+- tmux
+- Zellij
+- kitty
+- wezterm
+- Kaku
+- cmux
+- ghostty (macOS only)
+- iTerm2 (macOS only)
+- Emacs vterm
+
+### Usage in yoke
+
+Each yoke skill that produces an artifact offers "Review via revdiff" at its Complete phase.
+
+- Task file (from `/yoke:task` Phase 6):
+  ```text
+  /revdiff --only docs/ai/<slug>/<slug>-task.md
+  ```
+  Reviews the markdown task file.
+- Plan file (from `/yoke:plan` Phase 8):
+  ```text
+  /revdiff --only docs/ai/<slug>/<slug>-plan.md
+  ```
+  Reviews the markdown plan file.
+- Code changes (from `/yoke:do` Phase 7):
+  ```text
+  /revdiff <base>...HEAD
+  ```
+  Reviews the diff produced by /do against the default branch. `<base>` resolves via the cascade `origin/HEAD` → `origin/main` → `origin/master` → `main` (see `skills/do/SKILL.md` Phase 7).
+
+### Annotation fold-back
+
+revdiff returns structured annotations on quit. For task and plan files, yoke applies the annotations in place and overwrites the file. For /do code review, yoke appends the annotations to the execution report at `docs/ai/<slug>/<slug>-report.md` under a `## Review notes` heading.
+
+See https://github.com/umputun/revdiff (MIT) for binary install paths and deeper documentation.
+
 ## References
 
 - https://github.com/Q00/ouroboros
 - https://github.com/Yeachan-Heo/oh-my-claudecode
-- https://plannotator.ai/
 - superpowers-lab
 
 ## License

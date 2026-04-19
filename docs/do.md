@@ -15,17 +15,17 @@ and comes back to a notification.
 
 ## Pipeline
 
-7 stages. Each is tracked in TodoWrite. No confirmations between steps.
+7 stages. Each is tracked in TodoWrite. Stages 1–6 run without confirmations; Stage 7 has a Complete loop with an AskUserQuestion.
 
-| Stage | Name         | What happens                                                                                   |
-| ----- | ------------ | ---------------------------------------------------------------------------------------------- |
-| 1     | **Parse**    | Read the plan file, extract Mode, tasks, depends_on, verification. Build the todo list.        |
-| 2     | **Execute**  | Run tasks: inline (trivial/simple) or sub-agents sequential (medium/complex). Status protocol. |
-| 3     | **Simplify** | Sub-agent simplifies code: over-engineering, duplication, unneeded abstractions                |
-| 4     | **Cleanup**  | Sub-agent removes cruft: debug logs, commented-out code, unused imports                        |
-| 5     | **Validate** | Direct execution: lint, type-check, tests, build. One retry on failure.                        |
-| 6     | **Document** | Sub-agent updates README, CHANGELOG, JSDoc/TSDoc for new exports                               |
-| 7     | **Report**   | Write the report file, format code, send notification                                          |
+| Stage | Name         | What happens                                                                                                                |
+| ----- | ------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| 1     | **Parse**    | Read the plan file, extract Mode, tasks, depends_on, verification. Build the todo list.                                     |
+| 2     | **Execute**  | Run tasks: inline (trivial/simple) or sub-agents sequential (medium/complex). Status protocol.                              |
+| 3     | **Simplify** | Sub-agent simplifies code: over-engineering, duplication, unneeded abstractions                                             |
+| 4     | **Cleanup**  | Sub-agent removes cruft: debug logs, commented-out code, unused imports                                                     |
+| 5     | **Validate** | Direct execution: lint, type-check, tests, build. One retry on failure.                                                     |
+| 6     | **Document** | Sub-agent updates README, CHANGELOG, JSDoc/TSDoc for new exports                                                            |
+| 7     | **Complete** | Write the report, format, send notification; then completion loop: /yoke:review (recommended) / review via revdiff / finish |
 
 ## Output
 

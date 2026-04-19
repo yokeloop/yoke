@@ -15,7 +15,7 @@ and comes back to a notification.
 
 ## Pipeline
 
-7 stages. Each is tracked in TodoWrite. No confirmations between steps.
+7 stages. Each is tracked in TodoWrite. Stages 1–6 run without confirmations; Stage 7 has a Complete loop with an AskUserQuestion.
 
 | Stage | Name         | What happens                                                                                                                |
 | ----- | ------------ | --------------------------------------------------------------------------------------------------------------------------- |

@@ -314,7 +314,7 @@ Each yoke skill that produces an artifact offers "Review via revdiff" at its Com
   ```text
   /revdiff <base>...HEAD
   ```
-  Reviews the diff produced by /do against the default branch.
+  Reviews the diff produced by /do against the default branch. `<base>` resolves via the cascade `origin/HEAD` → `origin/main` → `origin/master` → `main` (see `skills/do/SKILL.md` Phase 7).
 
 ### Annotation fold-back
 

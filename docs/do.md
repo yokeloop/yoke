@@ -25,7 +25,7 @@ and comes back to a notification.
 | 4     | **Cleanup**  | Sub-agent removes cruft: debug logs, commented-out code, unused imports                        |
 | 5     | **Validate** | Direct execution: lint, type-check, tests, build. One retry on failure.                        |
 | 6     | **Document** | Sub-agent updates README, CHANGELOG, JSDoc/TSDoc for new exports                               |
-| 7     | **Report**   | Write the report file, format code, send notification                                          |
+| 7     | **Complete** | Write the report, format, send notification; then completion loop: /yoke:review (recommended) / review via revdiff / finish |
 
 ## Output
 

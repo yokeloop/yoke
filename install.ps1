@@ -9,7 +9,6 @@ param(
   [switch]$SkipGh,
   # -Yes is reserved for future interactive prompts; currently non-interactive, matching install.sh.
   [switch]$Yes,
-  [switch]$Verbose,
   [switch]$Help,
   [switch]$Version
 )
@@ -18,7 +17,7 @@ $script:INSTALLER_VERSION = "0.1.0"
 $script:REVDIFF_REPO = "umputun/revdiff"
 $script:REVDIFF_BREW_TAP = "umputun/apps"  # kept for parity with install.sh
 $script:YOKE_MARKETPLACE = "github:yokeloop/yoke"
-$script:IsVerbose = $PSBoundParameters.ContainsKey('Verbose')
+$script:IsVerbose = ($VerbosePreference -ne 'SilentlyContinue') -or $PSBoundParameters.ContainsKey('Verbose')
 
 function Test-Color {
   try { return -not [Console]::IsOutputRedirected } catch { return $false }
@@ -59,7 +58,7 @@ Flags:
   -SkipDeps    Skip the revdiff install / verify step.
   -SkipGh      Suppress the gh-missing warning.
   -Yes         Assume yes to any prompt (reserved).
-  -Verbose     Emit debug-level diagnostics.
+  -Verbose     Verbose logging (PowerShell common parameter).
   -Help        Print this help and exit 0.
   -Version     Print the installer version and exit 0.
 
@@ -127,7 +126,13 @@ function Install-Revdiff {
     if ($LASTEXITCODE -eq 0) {
       $installed = $true
     } else {
-      Write-LogWarn "winget install failed (exit $LASTEXITCODE)"
+      $wingetExit = $LASTEXITCODE
+      if (Get-Command revdiff -ErrorAction SilentlyContinue) {
+        Write-LogDebug "winget returned $wingetExit but revdiff is on PATH - assuming already installed"
+        $installed = $true
+      } else {
+        Write-LogWarn "winget install failed (exit $wingetExit)"
+      }
     }
   }
 
@@ -181,7 +186,8 @@ function Test-MarketplaceRegistered {
   } catch {
     $listOutput = ""
   }
-  return ($listOutput -match '(^|\s|/)yokeloop/yoke(\s|$)')
+  $rx = [regex]::new('(?m)(^|\s|/)yokeloop/yoke(\s|$)')
+  return $rx.IsMatch($listOutput)
 }
 
 function Register-Marketplace {

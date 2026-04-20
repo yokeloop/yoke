@@ -128,10 +128,11 @@ detect_os() {
     Linux)
       OS_KIND="linux"
       if [ -r /etc/os-release ]; then
+        # Subshell-scoped parse so PRETTY_NAME, NAME, VERSION, etc. don't leak into our env.
         # shellcheck disable=SC1091
-        . /etc/os-release
-        LINUX_ID="${ID:-}"
-        LINUX_ID_LIKE="${ID_LIKE:-}"
+        LINUX_ID=$( ( . /etc/os-release 2>/dev/null; printf '%s' "${ID:-}" ) )
+        # shellcheck disable=SC1091
+        LINUX_ID_LIKE=$( ( . /etc/os-release 2>/dev/null; printf '%s' "${ID_LIKE:-}" ) )
       fi
       ;;
     MINGW*|MSYS*|CYGWIN*)
@@ -191,30 +192,31 @@ detect_pm() {
 SUDO_PRIMED=0
 
 sudo_prefix() {
-  if [ "$(id -u)" = "0" ]; then
+  if [ "$(id -u)" -eq 0 ]; then
     printf ''
     return 0
   fi
-  if [ -t 0 ] && command -v sudo >/dev/null 2>&1; then
+  # Gate on stderr TTY (not stdin) so `curl … | bash` still allows sudo prompt;
+  # also accept a warm sudo cache (sudo -n succeeds non-interactively).
+  if command -v sudo >/dev/null 2>&1 && { [ -t 1 ] || sudo -n true 2>/dev/null; }; then
     printf 'sudo'
     return 0
   fi
-  log_err "Root privileges required. Re-run as root: $*"
-  exit 4
+  log_err "Root privileges required. Install or enable sudo (e.g. 'sudo -i') and re-run."
+  return 1
 }
 
 sudo_prime() {
   # Prime the sudo cache once per run so subsequent calls stay silent.
   [ "$SUDO_PRIMED" = "1" ] && return 0
-  if [ "$(id -u)" = "0" ]; then
-    SUDO_PRIMED=1
-    return 0
-  fi
-  if [ -t 0 ] && command -v sudo >/dev/null 2>&1; then
+  local p
+  p=$(sudo_prefix) || return 1
+  if [ "$p" = "sudo" ]; then
     log_info "Priming sudo cache (you may be prompted for your password)"
-    sudo -v || { log_err "sudo authentication failed"; exit 4; }
-    SUDO_PRIMED=1
+    sudo -v 2>/dev/null || true
   fi
+  SUDO_PRIMED=1
+  return 0
 }
 
 # --- Tarball fallback for revdiff ---
@@ -237,6 +239,12 @@ install_revdiff_tarball() {
   target_dir="${XDG_BIN_HOME:-$HOME/.local/bin}"
   mkdir -p "$target_dir" || { log_err "Cannot create $target_dir"; exit 4; }
 
+  # Ensure the target dir is writable by the current user; avoids silent failure of `install`.
+  if [ ! -w "$target_dir" ] || ! ( : > "$target_dir/.yoke-probe" 2>/dev/null; rm -f "$target_dir/.yoke-probe" ); then
+    log_err "Target $target_dir is not writable. Set XDG_BIN_HOME to a directory you own (e.g. \$HOME/.local/bin), or re-run with sudo."
+    exit 4
+  fi
+
   url="https://github.com/${REVDIFF_REPO}/releases/latest/download/revdiff_${os_tag}_${arch_tag}.tar.gz"
   log_info "Downloading revdiff tarball: $url"
 
@@ -245,13 +253,16 @@ install_revdiff_tarball() {
   trap "rm -rf '$tmpdir'" EXIT
   archive="$tmpdir/revdiff.tar.gz"
 
-  if ! curl -fsSL "$url" -o "$archive"; then
+  if ! curl -fsSL --connect-timeout 15 --max-time 300 --retry 2 --retry-delay 3 "$url" -o "$archive"; then
     log_err "Failed to download revdiff from $url"
     exit 4
   fi
-  if ! tar -xzf "$archive" -C "$tmpdir"; then
-    log_err "Failed to extract revdiff archive"
-    exit 4
+  # Try with --no-same-owner (GNU tar + modern BSD tar); fall back for older BSD tar.
+  if ! tar --no-same-owner -xzf "$archive" -C "$tmpdir" 2>/dev/null; then
+    if ! tar -xzf "$archive" -C "$tmpdir"; then
+      log_err "Failed to extract revdiff archive"
+      exit 4
+    fi
   fi
 
   local bin_src=""
@@ -295,7 +306,10 @@ install_revdiff() {
   log_info "Installing revdiff via $PM"
   case "$PM" in
     brew)
-      if ! brew tap | grep -qx "$REVDIFF_BREW_TAP"; then
+      # Split pipe to avoid pipefail false-negative when grep -q closes early (SIGPIPE on brew).
+      local tapped_list
+      tapped_list=$(brew tap 2>/dev/null) || tapped_list=""
+      if ! printf '%s\n' "$tapped_list" | grep -Fxq "$REVDIFF_BREW_TAP"; then
         log_debug "Adding brew tap $REVDIFF_BREW_TAP"
         brew tap "$REVDIFF_BREW_TAP" || { log_err "brew tap $REVDIFF_BREW_TAP failed"; exit 4; }
       fi
@@ -305,7 +319,9 @@ install_revdiff() {
       fi
       ;;
     apt-get)
-      sudo_prime
+      sudo_prime || exit 4
+      local SUDO=""
+      SUDO=$(sudo_prefix) || exit 4
       local deb_arch deb_os deb_url tmpdir deb
       deb_os="Linux"
       case "$OS_ARCH" in
@@ -319,14 +335,14 @@ install_revdiff() {
       tmpdir=$(mktemp -d) || { log_err "mktemp failed"; exit 4; }
       deb="$tmpdir/revdiff.deb"
       log_info "Downloading $deb_url"
-      if ! curl -fsSL "$deb_url" -o "$deb"; then
+      if ! curl -fsSL --connect-timeout 15 --max-time 300 --retry 2 --retry-delay 3 "$deb_url" -o "$deb"; then
         log_warn "Failed to download .deb; falling back to tarball"
         rm -rf "$tmpdir"
         install_revdiff_tarball
       else
-        if ! $(sudo_prefix) dpkg -i "$deb"; then
+        if ! $SUDO dpkg -i "$deb"; then
           log_warn "dpkg -i failed; trying apt-get -f install then tarball fallback"
-          $(sudo_prefix) apt-get -f install -y >/dev/null 2>&1 || true
+          $SUDO apt-get -f install -y >/dev/null 2>&1 || true
           if ! command -v revdiff >/dev/null 2>&1; then
             rm -rf "$tmpdir"
             install_revdiff_tarball
@@ -336,7 +352,9 @@ install_revdiff() {
       fi
       ;;
     dnf|yum)
-      sudo_prime
+      sudo_prime || exit 4
+      local SUDO=""
+      SUDO=$(sudo_prefix) || exit 4
       local rpm_arch rpm_os rpm_url tmpdir rpm
       rpm_os="Linux"
       case "$OS_ARCH" in
@@ -350,12 +368,12 @@ install_revdiff() {
       tmpdir=$(mktemp -d) || { log_err "mktemp failed"; exit 4; }
       rpm="$tmpdir/revdiff.rpm"
       log_info "Downloading $rpm_url"
-      if ! curl -fsSL "$rpm_url" -o "$rpm"; then
+      if ! curl -fsSL --connect-timeout 15 --max-time 300 --retry 2 --retry-delay 3 "$rpm_url" -o "$rpm"; then
         log_warn "Failed to download .rpm; falling back to tarball"
         rm -rf "$tmpdir"
         install_revdiff_tarball
       else
-        if ! $(sudo_prefix) "$PM" install -y "$rpm"; then
+        if ! $SUDO "$PM" install -y "$rpm"; then
           log_warn "$PM install failed; falling back to tarball"
           rm -rf "$tmpdir"
           install_revdiff_tarball

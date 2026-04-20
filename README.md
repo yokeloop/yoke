@@ -263,7 +263,21 @@ cd yoke && ./install.sh   # or .\install.ps1 on Windows
 
 </details>
 
-Uninstall: re-run with `--uninstall`.
+> These one-liners run a remote script. Prefer to review it first — download, inspect, then run. The full source lives at [install.sh](./install.sh) and [install.ps1](./install.ps1) in this repo.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yokeloop/yoke/main/install.sh -o install.sh
+less install.sh
+bash install.sh
+```
+
+```powershell
+irm https://raw.githubusercontent.com/yokeloop/yoke/main/install.ps1 -OutFile install.ps1
+Get-Content install.ps1 | more
+.\install.ps1
+```
+
+Uninstall: re-run with `--uninstall` (macOS / Linux) or `-Uninstall` (Windows).
 
 ## Planned skills
 

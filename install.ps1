@@ -16,7 +16,7 @@ param(
 
 $script:INSTALLER_VERSION = "0.1.0"
 $script:REVDIFF_REPO = "umputun/revdiff"
-$script:REVDIFF_BREW_TAP = "umputun/apps"
+$script:REVDIFF_BREW_TAP = "umputun/apps"  # kept for parity with install.sh
 $script:YOKE_MARKETPLACE = "github:yokeloop/yoke"
 $script:IsVerbose = $PSBoundParameters.ContainsKey('Verbose')
 

@@ -68,12 +68,13 @@ Flags:
   --version      Print the installer version and exit.
 
 Exit codes:
-  0  success
-  2  Claude Code CLI not found on PATH
-  3  unsupported platform / no supported package manager
-  4  dependency install failed
-  5  marketplace registration failed
-  6  verification failed
+  0   success
+  2   Claude Code CLI not found on PATH
+  3   unsupported platform / no supported package manager
+  4   dependency install failed
+  5   marketplace registration failed
+  6   verification failed
+  64  unknown argument
 
 Marketplace: ${YOKE_MARKETPLACE}
 EOF
@@ -472,7 +473,6 @@ uninstall() {
 main() {
   ensure_claude_cli
   detect_os
-  detect_marketplace_subcmd
 
   if [ "$UNINSTALL" = "1" ]; then
     uninstall

@@ -289,11 +289,10 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
 - **Run /yoke:review:** invoke the Skill tool with `/yoke:review` and argument `<SLUG>`
 - **Review via revdiff:** After revdiff closes, continue with the following steps:
   1. Resolve the default base via the cascade `git symbolic-ref refs/remotes/origin/HEAD` → `origin/main` → `origin/master` → fallback `main` (see `skills/gp/agents/git-pre-checker.md:43-54`). Call the Skill tool with `/revdiff` and the argument `<default-base>...HEAD`.
-  2. If the Skill return is non-empty:
+  2. If the Skill return is empty, skip this entire step. Otherwise:
      - If the annotations describe code changes, apply those code changes inline (orchestrator edits — do not dispatch a sub-agent). If the annotations are prose-only, skip the code-edit step.
      - Append the full annotation text to `docs/ai/<SLUG>/<SLUG>-report.md`: if a `## Review notes` heading already exists in the file, append under the existing heading; otherwise create the heading and append under it.
      - Check `.gitignore` for `docs/ai/` (same as Phase 6c). If ignored, skip the auto-commit. Otherwise, run `git add docs/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"` (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
-       If the Skill return is empty, skip this entire step.
   3. Return to the "Offer 3 options" step above.
      If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then return to the "Offer 3 options" step above.
 - **Finish:** report the path to the report file

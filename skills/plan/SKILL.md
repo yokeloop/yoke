@@ -295,7 +295,11 @@ Offer 3 options through AskUserQuestion:
 **Handle the choice:**
 
 - **Run /yoke:do:** call the Skill tool with `/yoke:do` and the argument `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit the loop.
-- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Apply the returned annotations, overwrite the plan file. Loop back to the start. If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then loop back to the start.
+- **Review via revdiff:** After revdiff closes, continue with the following steps:
+  1. Call the Skill tool with `/revdiff` and the argument `--only docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`.
+  2. If the Skill return is non-empty, apply the returned annotations to the plan file and overwrite `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. If the return is empty, skip this step.
+  3. Return to the "Offer 3 options" step above.
+  If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then return to the "Offer 3 options" step above.
 - **Finish:** report the file path. Exit the loop.
 
 ---

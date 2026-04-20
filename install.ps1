@@ -7,6 +7,7 @@ param(
   [switch]$Uninstall,
   [switch]$SkipDeps,
   [switch]$SkipGh,
+  # -Yes is reserved for future interactive prompts; currently non-interactive, matching install.sh.
   [switch]$Yes,
   [switch]$Verbose,
   [switch]$Help,
@@ -17,6 +18,7 @@ $script:INSTALLER_VERSION = "0.1.0"
 $script:REVDIFF_REPO = "umputun/revdiff"
 $script:REVDIFF_BREW_TAP = "umputun/apps"
 $script:YOKE_MARKETPLACE = "github:yokeloop/yoke"
+$script:IsVerbose = $PSBoundParameters.ContainsKey('Verbose')
 
 function Test-Color {
   try { return -not [Console]::IsOutputRedirected } catch { return $false }
@@ -43,7 +45,7 @@ function Write-LogErr  { param([string]$Message) Write-Stderr "[err ] $Message" 
 function Write-LogOk   { param([string]$Message) Write-Stderr "[ ok ] $Message" "Green" }
 function Write-LogDebug {
   param([string]$Message)
-  if ($Verbose) { Write-Stderr "[dbg ] $Message" "DarkGray" }
+  if ($script:IsVerbose) { Write-Stderr "[dbg ] $Message" "DarkGray" }
 }
 
 function Show-Help {
@@ -56,7 +58,7 @@ Flags:
   -Uninstall   Remove the yoke marketplace entry (binaries kept).
   -SkipDeps    Skip the revdiff install / verify step.
   -SkipGh      Suppress the gh-missing warning.
-  -Yes         Assume yes to any prompt.
+  -Yes         Assume yes to any prompt (reserved).
   -Verbose     Emit debug-level diagnostics.
   -Help        Print this help and exit 0.
   -Version     Print the installer version and exit 0.
@@ -64,7 +66,7 @@ Flags:
 Exit codes:
   0   success or idempotent no-op
   2   Claude Code CLI not found on PATH
-  3   no supported Windows package manager (winget or scoop)
+  3   unsupported platform (PowerShell < 5) or no supported Windows package manager (winget or scoop)
   4   revdiff install failed
   5   claude plugin marketplace add failed
   6   post-install verification failed
@@ -79,7 +81,7 @@ function Show-Version {
 function Test-PsVersion {
   if ($PSVersionTable.PSVersion.Major -lt 5) {
     Write-LogErr "PowerShell 5.1 or later required. Detected: $($PSVersionTable.PSVersion)"
-    exit 1
+    exit 3
   }
 }
 
@@ -146,7 +148,7 @@ function Install-Revdiff {
   Write-LogOk "revdiff installed"
 }
 
-function Warn-Gh {
+function Show-GhWarning {
   if ($SkipGh) { return }
   if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
     Write-LogWarn "gh CLI not found. /gp, /gca, /pr work without it, but GitHub-backed flows need it. Install: https://cli.github.com"
@@ -240,7 +242,7 @@ function main {
 
   $pm = Get-PackageManager
   Install-Revdiff -PackageManager $pm
-  Warn-Gh
+  Show-GhWarning
   Register-Marketplace
   Test-Install
   exit 0

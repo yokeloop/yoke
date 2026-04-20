@@ -242,14 +242,28 @@ yoke/
 
 ## Installation
 
-```bash
-# Add the marketplace
-claude marketplace add github:yokeloop/yoke
+### macOS / Linux
 
-# Locally (for development)
-git clone https://github.com/yokeloop/yoke.git
-claude --plugin-dir ./yoke
+```bash
+curl -fsSL https://raw.githubusercontent.com/yokeloop/yoke/main/install.sh | bash
 ```
+
+### Windows
+
+```powershell
+irm https://raw.githubusercontent.com/yokeloop/yoke/main/install.ps1 | iex
+```
+
+<details><summary>Manual install</summary>
+
+```bash
+git clone https://github.com/yokeloop/yoke.git
+cd yoke && ./install.sh   # or .\install.ps1 on Windows
+```
+
+</details>
+
+Uninstall: re-run with `--uninstall`.
 
 ## Planned skills
 
@@ -276,6 +290,8 @@ Both formats use YAML frontmatter with `name` and `description`.
 yoke delegates interactive artifact review to [revdiff](https://github.com/umputun/revdiff) — a terminal TUI shipped as a separate Claude Code plugin. revdiff opens task files, plan files, and /do diffs for inline annotation; yoke folds the annotations back into the artifact.
 
 ### Install
+
+The yoke installer provisions the revdiff binary automatically (see the top of this README). To install the Claude Code plugin separately:
 
 ```text
 /plugin marketplace add umputun/revdiff

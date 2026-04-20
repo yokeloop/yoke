@@ -132,6 +132,25 @@ Read-only Q&A loop for codebase exploration and brainstorming. Classifies questi
 
 ## Installation
 
+### macOS / Linux
+
 ```bash
-claude marketplace add github:yokeloop/yoke
+curl -fsSL https://raw.githubusercontent.com/yokeloop/yoke/main/install.sh | bash
 ```
+
+### Windows
+
+```powershell
+irm https://raw.githubusercontent.com/yokeloop/yoke/main/install.ps1 | iex
+```
+
+<details><summary>Manual install</summary>
+
+```bash
+git clone https://github.com/yokeloop/yoke.git
+cd yoke && ./install.sh   # or .\install.ps1 on Windows
+```
+
+</details>
+
+Uninstall: re-run with `--uninstall`.

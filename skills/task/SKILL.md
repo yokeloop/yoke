@@ -116,25 +116,27 @@ While any item stays open — launch another task-explorer.
 
 ### Phase 3 — Synthesize
 
-**WARNING:** Read `reference/synthesize-guide.md` before writing.
+**Apply the 5-dimension checklist to Phase 2 findings.** For each: one sentence of reasoning, then the formulation.
 
-**If the task involves UI components, styles, or frontend work** (React, Vue, Svelte, CSS, Tailwind, animations, layouts, pages): also read `reference/frontend-guide.md`.
-Read both files before starting.
+1. **Intent Clarity.** Will two developers read the Task and do the same thing? One verb per Task — concrete, not "improve" or "fix".
+2. **Scope Boundaries.** What sits in scope and what stays explicitly out? Each Constraint maps to a concrete risk from Investigate (fragile file, similar code that must stay, dependency surface).
+3. **Context Anchoring.** Cite paths and line numbers — `src/auth/middleware.ts:validateToken():89`, not "the auth module". Context has 4 subsections: Area architecture, Files to change, Patterns to reuse, Tests.
+4. **Acceptance Criteria.** Write each Verification bullet as a command with expected result OR an observable behavior. Pull edge cases from Investigate findings.
+5. **Reuse Opportunities.** For each requirement, find a partial existing solution. Record under Patterns to reuse with paths.
 
-Apply the 5 dimensions from synthesize-guide to Phase 2 findings. For each: one sentence of reasoning, then the formulation.
+**Complexity:** trivial (1 file, ≤5 lines) / simple (1-2 files, clear scope) / medium (3-7 files, possible regressions) / complex (architecture, multiple layers, no tests, public API).
 
-**If the task involves frontend work:** for the Requirements, Constraints, and Verification dimensions, also apply the frontend checklists from frontend-guide.
+**If the task touches UI components, styles, or frontend work** (React, Vue, Svelte, CSS, Tailwind, animations, layouts, pages): read `reference/frontend-guide.md` and apply its checklists to the Requirements, Constraints, and Verification dimensions.
 
-Classify complexity: trivial / simple / medium / complex.
+For deeper Bad/Good examples and anti-patterns, see `reference/synthesize-guide.md` — supplementary.
 
 **Question validation:**
 
-Re-read `$ARGUMENTS`. Drop questions the prompt already answers — per synthesize-guide.md, section "Validate against the user's input".
-Fold the user's decisions into Requirements/Constraints as facts.
+Re-read `$ARGUMENTS`. Drop questions the prompt already answers. Fold the user's decisions into Requirements/Constraints as facts.
 
 **Interactive clarifications:**
 
-Draft 3–7 clarifying questions per the rules in synthesize-guide.md.
+Draft 3–7 clarifying questions about implementation decisions whose answer changes the Task.
 Ask the user via AskUserQuestion in batches of 1–4 questions.
 
 For each question:

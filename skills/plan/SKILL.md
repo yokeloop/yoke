@@ -10,11 +10,9 @@ description: >-
 
 You are the orchestrator. Coordinate sub-agents and talk to the user.
 
-Delegate codebase investigation and design through the Agent tool:
+Delegate plan design through the Agent tool:
 
-- Exploration → `agents/plan-explorer.md`
-- Design → `agents/plan-designer.md`
-- Plan review → `agents/plan-reviewer.md`
+- Plan architecture → `agents/plan-architect.md`
 
 The output is a plan file that `/yoke:do` can execute autonomously.
 
@@ -54,18 +52,21 @@ If Task, Context, or Requirements is missing — tell the user and stop.
 
 ---
 
-### Phase 2 — Explore
+### Phase 2 — Design
 
-Goal: determine _how_ to implement the task. The task file describes _what_ and _where_.
-plan-explorer looks for _how_: which files to create, which patterns to reuse,
-which integration points to touch.
+Goal: make architectural decisions and decompose the task into atomic, ordered tasks.
 
-**Launch plan-explorer through the Agent tool:**
+**Launch plan-architect through the Agent tool.** The agent is defined in `agents/plan-architect.md`.
 
 Prompt to the agent:
 
 ```
-Based on the task file: [paste TASK_TITLE and the full Context section from the task file]
+Task: [TASK_TITLE]
+Complexity: [TASK_COMPLEXITY]
+Type: [TASK_TYPE]
+
+Task file Context section:
+[paste the full Context section from the task file]
 
 Requirements:
 [paste REQUIREMENTS]
@@ -73,79 +74,17 @@ Requirements:
 Constraints:
 [paste CONSTRAINTS]
 
-Investigate the codebase with an implementation focus:
+Investigate the codebase, design the implementation, decompose into tasks,
+build the file intersection matrix and DAG, recommend a routing mode, and
+self-check before returning. Output the full plan plus the self-check verdict.
 
-1. For each requirement — which files must be created or changed?
-   Path + what exactly to change/add.
-2. Implementation patterns: find 1–2 similar implementations in the project.
-   For each: path, structure, what to reuse.
-3. Shared state and dependencies: which files will several requirements touch?
-   Build an intersection matrix.
-4. Order: what must be ready before what? Are there natural phases?
-5. Estimated scope: for each change block — rough size (S/M/L).
-
-At the end — the essential file list for the design phase.
-```
-
-**Transition:** findings received → Phase 3.
-
----
-
-### Phase 3 — Design
-
-Goal: make architectural decisions and decompose the task into tasks.
-
-**Launch plan-designer through the Agent tool:**
-
-Prompt to the agent:
-
-```
-Task: [TASK_TITLE]
-Complexity: [TASK_COMPLEXITY]
-
-plan-explorer findings:
-[paste findings in full]
-
-Requirements from the task file:
-[paste REQUIREMENTS]
-
-Constraints from the task file:
-[paste CONSTRAINTS]
-
-Design the implementation plan:
-
-1. DESIGN DECISIONS — for each non-obvious choice:
-   - What you are deciding (one sentence)
-   - Chosen option + why
-   - Rejected option + why not
-   Decide from codebase patterns.
-   If the answer is in the code — use it, don't ask the user.
-
-2. DECOMPOSITION — split into tasks:
-   - Each task: title, files, depends_on, estimated scope (S/M/L)
-   - A task = atomic commit. One concern, testable in isolation.
-   - Granularity: 2–10 minutes of agent work per task.
-
-3. FILE INTERSECTION MATRIX — for each task pair:
-   - Any shared files? Which?
-   - If yes — mark as a sequential dependency.
-
-4. EXECUTION ORDER — ordering:
-   - Which tasks can run in parallel (no shared files, no depends_on)?
-   - Which are strictly sequential?
-   - Sketch a text DAG.
-
-5. IMPLEMENTATION QUESTIONS — from 3 to 5. About HOW only:
-   architecture, patterns, implementation trade-offs.
-   Exclude questions already answered in the task file.
-
-   Good: "Which pattern — Strategy or Template Method?"
-   Bad: "What fields does the form need?" (that's scope → task)
+Surface IMPLEMENTATION QUESTIONS only when the answer is not in the code AND
+the answer changes decomposition or architecture. Max 3.
 ```
 
 **Interactive clarifications:**
 
-If plan-designer produced IMPLEMENTATION QUESTIONS — ask the user
+If plan-architect produced IMPLEMENTATION QUESTIONS — ask the user
 via AskUserQuestion, 1–4 at a time.
 
 For each question:
@@ -159,65 +98,28 @@ with the chosen options. Fold the answers into the plan.
 
 If there are no questions — skip this step.
 
-**Transition:** design decisions + decomposition + DAG ready, questions resolved → Phase 4.
+**Routing rules** (the architect picks one; sanity-check the choice):
 
----
+- **inline** — 1-2 tasks, no shared files, all sequential.
+- **sub-agents** — 3+ tasks with parallel groups, single codebase. Default for medium / complex plans.
+- **agent-team** — 2+ layers (frontend + backend + tests in separate tasks) with strong coordination. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`; falls back to `sub-agents` if the flag is unset.
 
-### Phase 4 — Route
+For the full 9-row decision matrix and edge cases, see `reference/routing-rules.md` — supplementary, optional.
 
-Pick the execution strategy from these three rules — first match wins:
-
-- **inline** — 1-2 tasks, no shared files, all sequential. Use the current thread; no sub-agent overhead.
-- **sub-agents** — 3+ tasks with parallel groups, single codebase. Default for medium / complex plans. Use `isolation: worktree` when parallel=true, `isolation: none` when sequential.
-- **agent-team** — 2+ layers (frontend + backend + tests in separate tasks) with strong cross-layer coordination. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`; falls back to `sub-agents` if the flag is unset.
-
-**Record the result:**
+**Record the architect's result:**
 
 - `MODE` = inline | sub-agents | agent-team
 - `PARALLEL` = true | false
 - `PARALLEL_GROUPS` = which tasks can run in parallel (when parallel=true)
-- `REASONING` = one sentence explaining the mode
+- `REASONING` = the architect's one-sentence explanation
 
-For the full 9-row decision matrix and edge cases, see `reference/routing-rules.md` — supplementary, optional.
+The architect's self-check covers requirements coverage, dependency validity, and Verify concreteness. Trust it; re-dispatch only on a failed self-check verdict.
 
-**Before writing — check consistency:**
-
-- [ ] Every requirement covered by at least one task
-- [ ] Every depends_on references an existing task
-- [ ] No circular dependencies
-- [ ] The last task is Validation
-- [ ] Verification criteria from the task file are reflected in task-level Verify
-
-**Transition:** routing decided, plan consistent → Phase 5.
+**Transition:** plan ready → Phase 3.
 
 ---
 
-### Phase 5 — Review
-
-Launch a subagent to review the plan.
-
-**Launch plan-reviewer through the Agent tool:**
-
-Pass:
-
-- Design decisions
-- Decomposition (all tasks with What, How, Files, Context, Verify)
-- Execution order
-- Requirements and Constraints from the task file
-
-The agent is defined in `agents/plan-reviewer.md`.
-
-**Handle the result:**
-
-- Approved → Phase 6 (Write)
-- Issues → fix them, re-dispatch (max 5 iterations)
-- 5 iterations without approval → write the plan as is, add unresolved issues as a separate section
-
-**Transition:** plan passed review → Phase 6.
-
----
-
-### Phase 6 — Write
+### Phase 3 — Write
 
 **1.** Write the file `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md` using this format:
 
@@ -321,11 +223,11 @@ Commit only the plan artifact, no other files.
 
 **4.** Tell the user the file path.
 
-**Transition →** Phase 7.
+**Transition →** Phase 4.
 
 ---
 
-### Phase 7 — Complete
+### Phase 4 — Complete
 
 Report the plan file path and run the finishing loop.
 

@@ -130,9 +130,12 @@ git commit -m "TICKET fix(SLUG): fix N review issues"
 
 Format: `TICKET fix(SLUG): fix N review issues` (NO colon after ticket). N = count of FIXED.
 
-**f)** Dispatch validator from /do via the Agent tool. Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
+**f)** Dispatch validator AND formatter from /do in parallel — both operate on the same files but do not depend on each other's output. Issue both Agent calls in **one message** with two tool uses:
 
-**g)** Dispatch formatter from /do via the Agent tool. Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}.
+- validator: read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
+- formatter: read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}.
+
+Each commits its own fixes when needed.
 
 **Transition:** fixes complete → Phase 5.
 

@@ -14,8 +14,7 @@ You are the orchestrator. You communicate with the user and coordinate sub-agent
 Agents:
 
 - Analysis → `agents/code-reviewer.md`
-- Fixes → `agents/issue-fixer.md` (→ `agents/single-fix-agent.md`)
-- Report → `agents/review-report-writer.md`
+- Fix unit → `agents/single-fix-agent.md`
 - Validation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
 - Formatting → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
 
@@ -39,8 +38,8 @@ No argument — determine slug from the current branch or the latest `docs/ai/*/
 1. Parse     → determine SLUG, collect context
 2. Analyze   → dispatch code-reviewer
 3. Select    → show issues, choose fix scope
-4. Fix       → dispatch issue-fixer + validator + formatter
-5. Finalize  → dispatch report-writer + PR comments + commit
+4. Fix       → dispatch single-fix-agents + validator + formatter
+5. Finalize  → write report inline + PR comments + commit
 6. Complete  → notification + action choice
 ```
 
@@ -89,7 +88,7 @@ If ISSUES_COUNT = 0, skip to Phase 5 (report without fixes).
 bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review --phase Select --slug "$SLUG" --title "Found N issues" --body "Critical: X, Important: Y, Minor: Z"
 ```
 
-**2.** Show the user all issues (briefly: severity, category, file:line, description).
+**2.** Show the user all issues: severity, category, file:line, description.
 
 **3.** Via AskUserQuestion propose a scope:
 
@@ -106,22 +105,34 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review -
 
 ### Phase 4 — Fix
 
+If the user chose "Skip fixes", move all issues to SKIPPED_ISSUES with reason "Skipped by user choice" and skip to Phase 5.
+
 If ISSUES_TO_FIX is non-empty:
 
-**a)** Dispatch issue-fixer via the Agent tool. Read `agents/issue-fixer.md`, substitute {{ISSUES_TO_FIX}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
-Issue-fixer itself dispatches parallel single-fix-agents.
+**a)** Group ISSUES_TO_FIX by file. Issues in the same file = one group; issues in different files = different groups.
 
-**b)** Receive FIXED_ISSUES, SKIPPED_ISSUES, FILES_CHANGED.
+**b)** Dispatch `agents/single-fix-agent.md` per group via the Agent tool. Read the agent file, substitute {{ISSUES}} (the group's issues) and {{CONSTRAINTS}}.
 
-**c)** Append issues from ISSUES_TO_SKIP to SKIPPED_ISSUES (reason "Excluded by user").
+- Groups without shared files dispatch in parallel (single Agent message with multiple tool uses).
+- Groups with overlapping files dispatch sequentially.
+- 1-3 issues in one file → dispatch as one group, no parallelism needed.
 
-**d)** Dispatch validator from /do:
-Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
+**c)** Collect FIXED, SKIPPED, FILES_CHANGED from each agent. Concatenate into FIXED_ISSUES, SKIPPED_ISSUES, FILES_CHANGED.
 
-**e)** Dispatch formatter from /do:
-Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}.
+**d)** Append issues from ISSUES_TO_SKIP to SKIPPED_ISSUES (reason "Excluded by user").
 
-If the user chose "Skip fixes", move all issues to SKIPPED_ISSUES with reason "Skipped by user choice".
+**e)** Single fix commit covering all files:
+
+```bash
+git add <FILES_CHANGED>
+git commit -m "TICKET fix(SLUG): fix N review issues"
+```
+
+Format: `TICKET fix(SLUG): fix N review issues` (NO colon after ticket). N = count of FIXED.
+
+**f)** Dispatch validator from /do via the Agent tool. Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
+
+**g)** Dispatch formatter from /do via the Agent tool. Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}.
 
 **Transition:** fixes complete → Phase 5.
 
@@ -129,9 +140,21 @@ If the user chose "Skip fixes", move all issues to SKIPPED_ISSUES with reason "S
 
 ### Phase 5 — Finalize
 
-**a)** Dispatch review-report-writer via the Agent tool. Read `agents/review-report-writer.md`, substitute {{SLUG}}, {{SUMMARY}}, {{ALL_ISSUES}} (full list from Phase 2), {{FIXED_ISSUES}}, {{SKIPPED_ISSUES}}, {{COMMIT_HASHES}}. The agent writes `docs/ai/<SLUG>/<SLUG>-review.md` using the Review template (see appendix at the end of this file).
+**a)** Write `docs/ai/<SLUG>/<SLUG>-review.md` directly via the Write tool using the Review template (see appendix at the end of this file).
 
-After the report is written, auto-commit it. Check `docs/ai/` against `.gitignore`. If ignored — skip.
+Fill the template from data the orchestrator already holds:
+
+- **Summary** — from SUMMARY (the 7-dimension block code-reviewer returned)
+- **Commits** — `git log origin/main..HEAD --oneline`
+- **Changed Files** — `git diff origin/main...HEAD --stat`
+- **Issues Found** — ALL_ISSUES (Phase 2 output) sorted by Score descending
+- **Fixed Issues** — FIXED_ISSUES linked to commit hashes
+- **Skipped Issues** — SKIPPED_ISSUES with reasons
+- **Recommendations** — based on skipped issues and the overall analysis
+
+Replace empty tables with the placeholder text from the template's `>` blocks (e.g., "Code is clean.").
+
+After writing the report, auto-commit it. Check `docs/ai/` against `.gitignore`. If ignored — skip.
 
 Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 

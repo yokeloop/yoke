@@ -46,7 +46,7 @@ If the path is missing — request it from the user.
 - `MATERIALS` — links and paths
 
 **3.** Check that Task, Context, and Requirements sections are present.
-If a critical section is missing — tell the user and stop.
+If Task, Context, or Requirements is missing — tell the user and stop.
 
 **4.** Extract `TICKET_ID` from TASK_SLUG (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
@@ -56,7 +56,7 @@ If a critical section is missing — tell the user and stop.
 
 ### Phase 2 — Explore
 
-Goal: determine _how exactly_ to implement the task. The task file describes _what_ and _where_.
+Goal: determine _how_ to implement the task. The task file describes _what_ and _where_.
 plan-explorer looks for _how_: which files to create, which patterns to reuse,
 which integration points to touch.
 
@@ -87,9 +87,7 @@ Investigate the codebase with an implementation focus:
 At the end — the essential file list for the design phase.
 ```
 
-**Read every file from the essential file list.**
-
-**Transition:** findings received, essential files read → Phase 3.
+**Transition:** findings received → Phase 3.
 
 ---
 
@@ -145,12 +143,7 @@ Design the implementation plan:
    Bad: "What fields does the form need?" (that's scope → task)
 ```
 
-**Read additional files** the designer requested.
-
 **Interactive clarifications:**
-
-If plan-designer produced questions — send a notification before AskUserQuestion:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill plan --phase Design --slug "$TASK_SLUG" --title "Implementation questions" --body "<brief list of topics>"`
 
 If plan-designer produced IMPLEMENTATION QUESTIONS — ask the user
 via AskUserQuestion, 1–4 at a time.
@@ -229,14 +222,7 @@ The agent is defined in `agents/plan-reviewer.md`.
 
 **1.** Read `reference/plan-format.md` — the output file format.
 
-**2.** Read the example to calibrate:
-
-- trivial / simple → `examples/simple-plan.md`
-- medium / complex → `examples/complex-plan.md`
-
-**3.** Write the file: `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`
-
-Use the format from plan-format.md. Include:
+**2.** Write the file `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md` using the format from plan-format.md. Include:
 
 - Every design decision with reasoning
 - Every task with files, dependencies, scope
@@ -244,11 +230,28 @@ Use the format from plan-format.md. Include:
 - Execution order (DAG)
 - Verification criteria from the task file
 
-**4.** Launch a subagent to copyedit the plan:
+**3. Self-check the prose** — re-read the file. Edit inline if any sentence violates:
 
-- Pass the plan file path and `reference/elements-of-style-rules.md`
-- The subagent edits prose: active voice, concrete language, drop needless words
-- The subagent overwrites the file
+- Active voice — "the agent reads the file"
+- Positive form — "Add tests" (not "Don't forget tests")
+- Concrete language — files, lines, function names
+- No needless words
+- Imperative mood
+
+**4. Auto-commit the artifact.**
+
+Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
+
+Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+
+```bash
+git add docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md
+git commit -m "TICKET docs(SLUG): add implementation plan"
+```
+
+Format: `TICKET docs(SLUG): add implementation plan` (NO colon after ticket).
+Example: `#86 docs(86-black-jack-page): add implementation plan`.
+Commit only the plan artifact, no other files.
 
 **5.** Tell the user the file path.
 
@@ -256,28 +259,7 @@ Use the format from plan-format.md. Include:
 
 ---
 
-### Phase 7 — Commit Artifact
-
-Auto-commit the plan artifact.
-
-**1.** Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
-
-**2.** If not in gitignore — commit the artifact per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
-
-Commit format: `TICKET docs(SLUG): add implementation plan` (NO colon after ticket).
-
-```bash
-git add docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md
-git commit -m "TICKET docs(SLUG): add implementation plan"
-```
-
-Example: `#86 docs(86-black-jack-page): add implementation plan`
-
-Commit only the plan artifact, no other files.
-
----
-
-### Phase 8 — Complete
+### Phase 7 — Complete
 
 Report the plan file path and run the finishing loop.
 
@@ -308,7 +290,7 @@ Offer 3 options through AskUserQuestion:
 
 - Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
 - Answer is in the code — decide and write the plan immediately.
-- Each task is one atomic commit. Larger than "create file" + "add import", smaller than "do everything".
+- Each task is one atomic commit. Larger than "create file" + "add import", smaller than a full feature.
 - Context isolation: each task contains only the files and context it needs.
 - Routing — based on task count and file-intersection matrix.
 - One task — one plan file, no sub-plans.

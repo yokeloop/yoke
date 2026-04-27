@@ -75,15 +75,15 @@ After each phase's commits, append a new column to the tables below.
 
 | Metric                                          | Baseline | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
 | ----------------------------------------------- | -------- | ------- | ------- | ------- | ------- | ------- | ------- |
-| Total SKILL.md lines (4 skills)                 | 1100     |         |         |         |         |         |         |
-| Phases tracked across 4 skills                  | 27       |         |         |         |         |         |         |
-| Sub-agent files (4 skills, dedicated)           | 16       |         |         |         |         |         |         |
-| Sub-agent dispatches (worst case, 5-task plan)  | ~50      |         |         |         |         |         |         |
-| Sub-agent dispatches (typical, 5-task plan)     | ~25      |         |         |         |         |         |         |
-| Reference + examples LOC loaded per typical run | ~2000    |         |         |         |         |         |         |
-| Sequential review waits in `/do` per task       | up to 6  |         |         |         |         |         |         |
-| Intermediate notification calls                 | 8 across 4 skills |  |     |         |         |         |         |
-| Files changed by /do on synthetic ticket        | 1 (`lib/notify.sh`) target | | |     |         |         |         |
+| Total SKILL.md lines (4 skills)                 | 1100     | 1062    |         |         |         |         |         |
+| Phases tracked across 4 skills                  | 27       | 25      |         |         |         |         |         |
+| Sub-agent files (4 skills, dedicated)           | 16       | 16      |         |         |         |         |         |
+| Sub-agent dispatches (worst case, 5-task plan)  | ~50      | ~48     |         |         |         |         |         |
+| Sub-agent dispatches (typical, 5-task plan)     | ~25      | ~23     |         |         |         |         |         |
+| Reference + examples LOC loaded per typical run | ~2000    | ~1370   |         |         |         |         |         |
+| Sequential review waits in `/do` per task       | up to 6  | up to 6 |         |         |         |         |         |
+| Intermediate notification calls (per skill)     | 2/2/2/2  | 1/1/2/2 |         |         |         |         |         |
+| Files changed by /do on synthetic ticket        | 1 (`lib/notify.sh`) target | not measured | | |     |         |         |
 
 ---
 

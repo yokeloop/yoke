@@ -65,33 +65,20 @@ The task cannot be completed.
 
 ## Review Loop
 
-After each DONE/DONE_WITH_CONCERNS — a two-stage review.
+After each DONE/DONE_WITH_CONCERNS — a single combined review.
 
-### Stage 1 — Spec Compliance Review
+### Combined Review
 
-Dispatch `agents/spec-reviewer.md`:
+Dispatch `agents/task-reviewer.md`:
 
-- Pass: task requirements + implementer report
-- The reviewer verifies against the code, not the report
-
-**Result:**
-
-- ✅ Spec compliant → Stage 2
-- ❌ Issues → implementer fixes → re-dispatch spec reviewer (max 3 iterations)
-- 3 iterations without ✅ → record issues, continue to quality review
-
-### Stage 2 — Code Quality Review
-
-Dispatch `agents/quality-reviewer.md`:
-
-- Pass: BASE_SHA, HEAD_SHA, task requirements
-- Dispatch only after ✅ from the spec reviewer
+- Pass: task requirements, implementer report, BASE_SHA, HEAD_SHA
+- The reviewer verifies against the code, not the report. One pass covers spec compliance and code quality.
 
 **Result:**
 
 - ✅ Approved → task complete
-- ❌ Critical/Important issues → implementer fixes → re-dispatch quality reviewer (max 3 iterations)
-- Minor issues — record, don't block
+- ❌ Critical/Important issues → implementer fixes → re-dispatch task-reviewer (max 3 iterations)
+- Minor issues only → record, do not block
 - 3 iterations without ✅ → record issues, continue
 
 ---

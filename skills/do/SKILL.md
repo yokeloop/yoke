@@ -13,8 +13,7 @@ You are the orchestrator. You coordinate sub-agents.
 Delegate each working phase to a sub-agent via the Agent tool:
 
 - Implementation → `agents/task-executor.md`
-- Spec review → `agents/spec-reviewer.md`
-- Quality review → `agents/quality-reviewer.md`
+- Task review → `agents/task-reviewer.md`
 - Polish → `agents/code-polisher.md`
 - Validate → `agents/validator.md`
 - Document → `agents/doc-updater.md`
@@ -120,16 +119,12 @@ Without parallel groups, run sequentially.
    - BLOCKED → evaluate, re-dispatch with a stronger model or record it
 
 4. Review Loop (for DONE / DONE_WITH_CONCERNS):
-   a. Dispatch agents/spec-reviewer.md
-      - Pass: task requirements + implementer report
-      - OK → step b
-      - FAIL → implementer fixes → re-dispatch spec reviewer (max 3)
-
-   b. Dispatch agents/quality-reviewer.md
-      - Pass: BASE_SHA, HEAD_SHA, task requirements
-      - OK → task complete
-      - FAIL Critical/Important → implementer fixes → re-dispatch (max 3)
-      - Minor → record, don't block
+   - Dispatch agents/task-reviewer.md
+     - Pass: task requirements, implementer report, BASE_SHA, HEAD_SHA
+     - The agent does spec compliance + code quality in one pass.
+     - ✅ Approved → task complete
+     - ❌ Critical/Important issues → implementer fixes → re-dispatch (max 3)
+     - Minor only → record, do not block
 
 5. Guarantee a commit:
    - Check `git status` for uncommitted changes

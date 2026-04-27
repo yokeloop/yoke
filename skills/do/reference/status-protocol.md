@@ -77,9 +77,9 @@ Dispatch `agents/task-reviewer.md`:
 **Result:**
 
 - ✅ Approved → task complete
-- ❌ Critical/Important issues → implementer fixes → re-dispatch task-reviewer (max 3 iterations)
+- ❌ Critical/Important issues → implementer fixes → re-dispatch task-reviewer (max 2 iterations)
 - Minor issues only → record, do not block
-- 3 iterations without ✅ → record issues, continue
+- 2 iterations without ✅ → record issues, continue
 
 ---
 

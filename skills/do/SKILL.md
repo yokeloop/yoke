@@ -18,7 +18,6 @@ Delegate each working phase to a sub-agent via the Agent tool:
 - Validate → `agents/validator.md`
 - Document → `agents/doc-updater.md`
 - Format → `agents/formatter.md`
-- Report → `agents/report-writer.md`
 
 Work from start to finish without stops or confirmations.
 
@@ -233,16 +232,9 @@ Mark in TodoWrite: [x]
 
 ### 6b. Report
 
-Run a sub-agent via the Agent tool. Prompt — from `agents/report-writer.md`.
+Write `docs/ai/<SLUG>/<SLUG>-report.md` directly via the Write tool using the Report template (see appendix at the end of this file).
 
-Pass:
-
-- SLUG
-- Path to the plan file
-- Collected data for the report: task statuses, concerns, blocked, validation results,
-  post-implementation statuses, changes summary
-
-The sub-agent writes `docs/ai/<SLUG>/<SLUG>-report.md` using the Report template (see appendix at the end of this file).
+Fill the template from data the orchestrator already holds: task statuses (DONE / DONE_WITH_CONCERNS / BLOCKED / SKIPPED), commit hashes, concerns text, blocked reasons, post-implementation statuses, validation command results, FILES_CHANGED list. Run `git log origin/main..HEAD --oneline` to collect commits.
 
 After writing the report, auto-commit it. Check `docs/ai/` against `.gitignore`. If ignored — skip.
 

@@ -42,9 +42,9 @@ If there is no path — ask the user.
 ```
 1. Parse        → read the plan, create todos
 2. Execute      → dispatch sub-agents + combined task review
-3. Validate     → dispatch validator sub-agent
+3. Validate     → dispatch validator + formatter in parallel
 4. Document     → opt-in via --update-docs flag or plan frontmatter
-5. Finalize     → format + report
+5. Finalize     → write report + notification
 6. Complete     → review / revdiff / finish
 ```
 
@@ -94,7 +94,7 @@ Read `reference/status-protocol.md` — rules for status handling, review loop, 
 
 Read the Order from the plan:
 
-- **Parallel group** → dispatch all tasks in the group simultaneously via the Agent tool
+- **Parallel group** → dispatch all task executors in the group simultaneously via the Agent tool (single message with multiple tool uses). After the executor wave returns, dispatch their task-reviewers in parallel for the same set — reviewers do not depend on each other's output.
 - **Sequential** → dispatch one at a time
 - **Barrier** → wait for all tasks in the group to finish
 
@@ -151,21 +151,32 @@ Then Phase 5 (Finalize) with status failed → Phase 6 (Complete).
 
 ---
 
-## Phase 3 — Validate
+## Phase 3 — Validate (validator + formatter in parallel)
 
-Run a sub-agent via the Agent tool. Prompt — from `agents/validator.md`.
+Dispatch validator AND formatter via the Agent tool in a **single message** with two tool uses — they operate on the same files but do not depend on each other's output. Each commits its own fixes when needed.
 
-Pass:
+### 3a. Validator
+
+Prompt — from `agents/validator.md`. Pass:
 
 - List of files changed in Phase 2
 - SLUG for the commit convention
 - TICKET_ID for the commit convention
 - CONSTRAINTS from the plan
 
-The sub-agent reads commands from package.json scripts, runs lint/type-check/test/build,
-fixes failures (one attempt), commits fixes, and returns the result of each command.
+The sub-agent reads commands from package.json scripts, runs lint/type-check/test/build, fixes failures (one attempt), commits fixes, and returns the result of each command.
 
-Mark in TodoWrite: [x]
+### 3b. Formatter
+
+Prompt — from `agents/formatter.md`. Pass:
+
+- List of files changed in Phase 2
+- SLUG for the commit convention
+- TICKET_ID for the commit convention
+
+The sub-agent picks the formatter, runs it on the files, commits.
+
+After both return, mark Validate and Format in TodoWrite: [x] [x].
 
 **Transition →** Phase 4.
 
@@ -202,21 +213,7 @@ After completion:
 
 ## Phase 5 — Finalize
 
-### 5a. Format
-
-Run a sub-agent via the Agent tool. Prompt — from `agents/formatter.md`.
-
-Pass:
-
-- List of changed files
-- SLUG for the commit convention
-- TICKET_ID for the commit convention
-
-The sub-agent picks the formatter, runs it on the files, commits.
-
-Mark in TodoWrite: [x]
-
-### 5b. Report
+### 5a. Report
 
 Write `docs/ai/<SLUG>/<SLUG>-report.md` directly via the Write tool using the Report template (see appendix at the end of this file).
 
@@ -234,7 +231,7 @@ git commit -m "TICKET docs(SLUG): add execution report"
 Format: `TICKET docs(SLUG): add execution report` (NO colon after ticket).
 Example: `#86 docs(86-black-jack-page): add execution report`.
 
-### 5c. Notification
+### 5b. Notification
 
 Print a summary: `<SLUG> done (N/M tasks)` or `<SLUG> done with issues (N/M tasks, K blocked)`.
 Path to the report file.
@@ -261,7 +258,7 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
   - If the return is empty, exit.
   - If annotations describe code changes, apply them inline (orchestrator edits — do not dispatch a sub-agent). If prose-only, skip the code-edit step.
   - Append the full annotation text to `docs/ai/<SLUG>/<SLUG>-report.md` under a `## Review notes` heading (create the heading if absent).
-  - Check `.gitignore` for `docs/ai/` (same as Phase 5b). If ignored, skip the auto-commit. Otherwise, run `git add docs/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"` (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`). Exit. (For another pass, the user invokes `/revdiff` manually.)
+  - Check `.gitignore` for `docs/ai/` (same as Phase 5a). If ignored, skip the auto-commit. Otherwise, run `git add docs/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"` (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`). Exit. (For another pass, the user invokes `/revdiff` manually.)
   - If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then exit.
 - **Finish:** report the path to the report file. Exit.
 

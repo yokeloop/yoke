@@ -12,8 +12,7 @@ You are the orchestrator. Coordinate sub-agents and talk to the user.
 
 Delegate codebase investigation through the Agent tool:
 
-- Exploration → `agents/task-explorer.md`
-- Architecture analysis → `agents/task-architect.md`
+- Investigation → `agents/task-investigator.md`
 
 You formulate the task; you do not implement it.
 
@@ -63,42 +62,19 @@ Rule: ID from the URL + 2–4 descriptive words. No URL — description only.
 
 ### Phase 2 — Investigate
 
-Invoke agents through the Agent tool (task-explorer and task-architect are defined in `agents/`).
-The order is strictly sequential: architect depends on explorer findings.
-
-**Step 1 — Launch task-explorer through the Agent tool:**
+**Launch task-investigator through the Agent tool.** The agent is defined in `agents/task-investigator.md`.
 
 Prompt to the agent:
 
 ```
-Investigate the codebase for this task: [paste the ticket essence].
+Investigate the codebase area for this task: [paste the ticket essence].
 
 Find and document:
-1. Every file and function that will be touched (paths + line numbers)
-2. Patterns and conventions in this part of the codebase
-3. Tests covering the area of change
-4. Dependencies — what may break on edit
-5. Similar implementations in the project worth reusing
-
-At the end — produce an essential file list: files REQUIRED to understand the topic.
-```
-
-**Step 2 — Launch task-architect through the Agent tool**
-
-Prompt to the agent:
-
-```
-Based on these task-explorer findings: [paste findings]
-
-Analyze the architecture of the area touched by the task: [task essence].
-
-Determine:
-1. Patterns and conventions to follow
-2. Integration points and data flow
-3. Architectural risks and what may break
-4. If you find multiple incompatible approaches — describe each with trade-offs
-
-Be concrete: files, lines, function names.
+1. Entry points with file:line
+2. Patterns to reuse (1-2 similar implementations)
+3. Tests covering the area, or note their absence
+4. Integration risks and fragile dependencies
+5. Reusable utilities, components, or patterns
 ```
 
 **Stop criteria — Investigate is done when:**
@@ -108,7 +84,7 @@ Be concrete: files, lines, function names.
 - [ ] Tests for the touched area are listed, or you confirm their absence
 - [ ] Risk zones are identified
 
-While any item stays open — launch another task-explorer.
+If any item stays open, re-dispatch task-investigator with a narrower scope.
 
 **Transition:** all four criteria closed → Phase 3.
 

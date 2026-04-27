@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>yoke /task skill — flow explorer</title>
+    <style>
+      :root {
+        --bg: #0f1115;
+        --surface: #171a21;
+        --surface-2: #1d2129;
+        --border: #2a2f3a;
+        --border-strong: #3a4150;
+        --text: #e6e8eb;
+        --muted: #9aa0a9;
+        --dim: #6b7280;
+
+        --phase-1: #5b8dee;
+        --phase-2: #e69045;
+        --phase-3: #a06bd8;
+        --phase-4: #52c28c;
+        --phase-5: #dd6b7a;
+        --phase-6: #5bc2b2;
+
+        --kind-agent: #f59e0b;
+        --kind-ask: #c084fc;
+        --kind-gate: #facc15;
+        --kind-artifact: #4ade80;
+        --kind-notify: #fbbf24;
+        --kind-handoff: #2dd4bf;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+        min-height: 100vh;
+      }
+      code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+      header {
+        padding: 18px 24px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+      header .sub {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      header .spacer { flex: 1; }
+      header .presets {
+        display: flex;
+        gap: 6px;
+      }
+      .preset-btn {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-family: inherit;
+      }
+      .preset-btn:hover { border-color: var(--border-strong); background: var(--surface-2); }
+      .preset-btn.active { border-color: var(--phase-1); color: var(--phase-1); }
+
+      main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 0;
+        min-height: calc(100vh - 62px - 180px);
+      }
+
+      #graph-wrap {
+        padding: 16px 20px;
+        overflow: auto;
+        border-right: 1px solid var(--border);
+      }
+      #graph {
+        width: 100%;
+        min-width: 1000px;
+        display: block;
+      }
+
+      /* SVG node styles */
+      .node rect,
+      .node .pill,
+      .node .diamond,
+      .node .hex {
+        transition: stroke-width 0.12s, filter 0.12s;
+        cursor: pointer;
+      }
+      .node text {
+        pointer-events: none;
+        fill: var(--text);
+        font-size: 11.5px;
+        font-family: system-ui, sans-serif;
+      }
+      .node .title { font-weight: 600; }
+      .node .icon { font-size: 12px; }
+      .node:hover rect,
+      .node:hover .pill,
+      .node:hover .diamond,
+      .node:hover .hex {
+        filter: brightness(1.25);
+      }
+      .node.selected rect,
+      .node.selected .pill,
+      .node.selected .diamond,
+      .node.selected .hex {
+        stroke-width: 3;
+        filter: brightness(1.35) drop-shadow(0 0 6px currentColor);
+      }
+      .node.dimmed { opacity: 0.28; }
+
+      .edge path {
+        fill: none;
+        stroke: var(--border-strong);
+        stroke-width: 1.5;
+        transition: stroke 0.12s, opacity 0.12s;
+      }
+      .edge.loop path { stroke-dasharray: 5 4; }
+      .edge.skip path { stroke-dasharray: 2 3; }
+      .edge.dimmed path { opacity: 0.2; }
+      .edge text {
+        fill: var(--muted);
+        font-size: 10px;
+        font-family: system-ui, sans-serif;
+      }
+
+      /* Sidebar */
+      #sidebar {
+        padding: 18px 22px 24px;
+        background: var(--surface);
+        overflow-y: auto;
+        max-height: calc(100vh - 62px - 180px);
+      }
+      .card {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px 14px 12px;
+        margin-bottom: 16px;
+      }
+      .detail-kind {
+        display: inline-block;
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 2px 7px;
+        border-radius: 4px;
+        background: rgba(255,255,255,0.06);
+        color: var(--muted);
+        margin-right: 6px;
+      }
+      .detail-phase {
+        display: inline-block;
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 2px 7px;
+        border-radius: 4px;
+        color: var(--bg);
+        font-weight: 600;
+      }
+      .detail-title {
+        margin-top: 10px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .detail-desc {
+        margin-top: 8px;
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+      .detail-meta {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--border);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .detail-meta .label {
+        color: var(--dim);
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        margin-right: 6px;
+      }
+      .detail-meta code {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        font-size: 11px;
+      }
+
+      h3.section {
+        margin: 4px 0 10px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .phase-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-bottom: 4px;
+        user-select: none;
+      }
+      .phase-toggle:hover { background: var(--surface-2); }
+      .phase-toggle input { accent-color: var(--phase-1); }
+      .phase-toggle .swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+      }
+      .phase-toggle .name {
+        flex: 1;
+        font-size: 13px;
+      }
+      .phase-toggle .count {
+        color: var(--dim);
+        font-size: 11px;
+      }
+
+      .emphasis-toggles {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .chip:hover { border-color: var(--border-strong); color: var(--text); }
+      .chip.active {
+        background: rgba(192, 132, 252, 0.12);
+        border-color: var(--kind-ask);
+        color: var(--text);
+      }
+
+      /* Prompt bar */
+      #prompt-bar {
+        border-top: 1px solid var(--border);
+        background: var(--surface);
+        padding: 14px 24px 18px;
+      }
+      #prompt-bar .row {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+      }
+      #prompt-bar .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        padding-top: 10px;
+        width: 76px;
+        flex-shrink: 0;
+      }
+      #prompt {
+        flex: 1;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px 14px;
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.55;
+        min-height: 120px;
+        max-height: 260px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        font-family: inherit;
+      }
+      .copy-btn {
+        background: var(--phase-1);
+        color: var(--bg);
+        border: none;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        flex-shrink: 0;
+      }
+      .copy-btn:hover { filter: brightness(1.1); }
+      .copy-btn.copied { background: var(--phase-4); }
+
+      .legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed var(--border);
+      }
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .legend-item .swatch { width: 10px; height: 10px; border-radius: 2px; }
+      .legend-item .swatch.round { border-radius: 999px; }
+      .legend-item .swatch.diamond { transform: rotate(45deg); }
+      .legend-item .swatch.dashed { border: 1.5px dashed; background: transparent; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>yoke <code>/task</code> skill — flow explorer</h1>
+      <span class="sub">Click any node. Toggle phases to shape the prompt.</span>
+      <span class="spacer"></span>
+      <div class="presets" id="presets">
+        <button class="preset-btn" data-preset="full">Full flow</button>
+        <button class="preset-btn" data-preset="agents">Agent delegations</button>
+        <button class="preset-btn" data-preset="asks">User interactions</button>
+        <button class="preset-btn" data-preset="artifacts">Artifacts &amp; commit</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="graph-wrap">
+        <svg id="graph" viewBox="0 0 1020 660" preserveAspectRatio="xMinYMin meet">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+            </marker>
+          </defs>
+          <g id="edges"></g>
+          <g id="nodes"></g>
+        </svg>
+
+        <div class="legend">
+          <div class="legend-item"><span class="swatch" style="background:var(--phase-1)"></span>phase</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--kind-agent)"></span>agent</div>
+          <div class="legend-item"><span class="swatch round" style="background:var(--kind-ask)"></span>AskUserQuestion</div>
+          <div class="legend-item"><span class="swatch diamond" style="background:var(--kind-gate)"></span>gate</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--kind-artifact)"></span>artifact</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--kind-notify)"></span>notification</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--kind-handoff)"></span>handoff</div>
+          <div class="legend-item"><span class="swatch dashed" style="border-color:var(--muted)"></span>loop / skip edge</div>
+        </div>
+      </div>
+
+      <aside id="sidebar">
+        <h3 class="section">Selected</h3>
+        <div class="card" id="detail">
+          <!-- filled by renderSidebar -->
+        </div>
+
+        <h3 class="section">Focus phases in prompt</h3>
+        <div id="phase-toggles"></div>
+
+        <h3 class="section" style="margin-top:18px">Emphasize</h3>
+        <div class="emphasis-toggles" id="emphasis">
+          <label class="chip"><input type="checkbox" hidden data-emph="agents" /><span>sub-agents</span></label>
+          <label class="chip"><input type="checkbox" hidden data-emph="asks" /><span>user interactions</span></label>
+          <label class="chip"><input type="checkbox" hidden data-emph="artifacts" /><span>artifacts</span></label>
+          <label class="chip"><input type="checkbox" hidden data-emph="loops" /><span>loops &amp; gates</span></label>
+        </div>
+      </aside>
+    </main>
+
+    <div id="prompt-bar">
+      <div class="row">
+        <span class="label">Prompt</span>
+        <div id="prompt"></div>
+        <button class="copy-btn" id="copy">Copy</button>
+      </div>
+    </div>
+
+    <script>
+      // -------------------- Data --------------------
+
+      const PHASES = {
+        1: { name: "Parse",       color: "var(--phase-1)", desc: "Turn input into slug + materials." },
+        2: { name: "Investigate", color: "var(--phase-2)", desc: "Sequential sub-agent investigation until stop criteria are met." },
+        3: { name: "Synthesize",  color: "var(--phase-3)", desc: "Apply the 5 dimensions, classify, clarify with the user." },
+        4: { name: "Write",       color: "var(--phase-4)", desc: "Produce the task artifact and copyedit it." },
+        5: { name: "Commit",      color: "var(--phase-5)", desc: "Auto-commit the task artifact." },
+        6: { name: "Complete",    color: "var(--phase-6)", desc: "Notify and offer the next step." },
+      };
+
+      const KIND_COLOR = {
+        phase:        null, // uses phase color
+        step:         null,
+        agent:        "var(--kind-agent)",
+        ask:          "var(--kind-ask)",
+        gate:         "var(--kind-gate)",
+        artifact:     "var(--kind-artifact)",
+        notification: "var(--kind-notify)",
+        handoff:      "var(--kind-handoff)",
+      };
+
+      // x / y are node centers. Width varies by kind.
+      const NODES = [
+        // --- Phase 1: Parse ---
+        { id: "p1",        phase: 1, kind: "phase", x:  80, y:  50, label: "1. Parse",
+          desc: "Fetch the ticket, capture materials, build a slug and TICKET_ID.",
+          ref: "skills/task/SKILL.md — Phase 1" },
+        { id: "p1.fetch",  phase: 1, kind: "step",  x: 220, y:  50, label: "Fetch ticket",
+          desc: "GitHub → gh issue view <url>. Other trackers → user's pasted text; URL used only for the slug." },
+        { id: "p1.mat",    phase: 1, kind: "step",  x: 350, y:  50, label: "Extract materials",
+          desc: "Collect links (Figma, docs, API), file paths, screenshots, snippets. Copied verbatim into the Materials section." },
+        { id: "p1.slug",   phase: 1, kind: "step",  x: 480, y:  50, label: "Build slug",
+          desc: "ID + 2–4 descriptive words in English kebab-case. e.g. 86-black-jack-page, R2-50-user-id-to-db, fix-navbar-overflow." },
+        { id: "p1.id",     phase: 1, kind: "step",  x: 610, y:  50, label: "TICKET_ID",
+          desc: "Extracted per skills/gca/reference/commit-convention.md — used later in the commit message." },
+
+        // --- Phase 2: Investigate ---
+        { id: "p2",        phase: 2, kind: "phase", x:  80, y: 160, label: "2. Investigate",
+          desc: "Delegate codebase investigation to sub-agents. Order is strict: architect depends on explorer findings." },
+        { id: "p2.exp",    phase: 2, kind: "agent", x: 220, y: 160, label: "task-explorer",
+          desc: "Sub-agent. Finds files+lines, patterns, tests, dependencies, similar implementations. Ends with an essential file list.",
+          ref: "skills/task/agents/task-explorer.md" },
+        { id: "p2.read1",  phase: 2, kind: "step",  x: 350, y: 160, label: "Read essentials",
+          desc: "Orchestrator reads every file from the explorer's essential list. Each feeds context into Synthesize." },
+        { id: "p2.arch",   phase: 2, kind: "agent", x: 480, y: 160, label: "task-architect",
+          desc: "Sub-agent. Receives explorer findings. Surfaces patterns, integration points, risks, trade-offs between approaches.",
+          ref: "skills/task/agents/task-architect.md" },
+        { id: "p2.read2",  phase: 2, kind: "step",  x: 610, y: 160, label: "Read additions",
+          desc: "If the architect expanded the file list — read those too." },
+        { id: "p2.gate",   phase: 2, kind: "gate",  x: 740, y: 160, label: "Stop criteria",
+          desc: "Four checkboxes: entry points with line numbers, patterns to reuse, tests (or absence confirmed), risk zones. Any unchecked → another explorer." },
+
+        // --- Phase 3: Synthesize ---
+        { id: "p3",        phase: 3, kind: "phase", x:  80, y: 270, label: "3. Synthesize",
+          desc: "Apply the 5 dimensions from synthesize-guide.md (+ frontend-guide.md for UI). Classify, then clarify with the user." },
+        { id: "p3.guide",  phase: 3, kind: "step",  x: 220, y: 270, label: "Read guides",
+          desc: "synthesize-guide.md, and frontend-guide.md if the task touches React/Vue/CSS/animations/layouts." },
+        { id: "p3.dims",   phase: 3, kind: "step",  x: 350, y: 270, label: "5 dimensions",
+          desc: "One sentence of reasoning aloud (CoT step) per dimension, then the formulation. Starts with Intent Clarity." },
+        { id: "p3.cls",    phase: 3, kind: "step",  x: 480, y: 270, label: "Classify",
+          desc: "trivial / simple / medium / complex — drives which example file is used in Phase 4." },
+        { id: "p3.notify", phase: 3, kind: "notification", x: 610, y: 270, label: "notify ACTION_REQUIRED",
+          desc: "Before the first AskUserQuestion — notify.sh with type ACTION_REQUIRED, so the user sees a Telegram ping.",
+          ref: "lib/notify.sh" },
+        { id: "p3.ask",    phase: 3, kind: "ask",   x: 740, y: 270, label: "AskUserQuestion",
+          desc: "3–7 clarifying questions total, asked in batches of 1–4. Each has 2–4 options — recommended option first, labeled. User may pick “Other” for free-form input." },
+        { id: "p3.fold",   phase: 3, kind: "step",  x: 890, y: 270, label: "Fold answers",
+          desc: "Revise Requirements / Constraints / Context after each batch. Loop back to AskUserQuestion until every question is answered." },
+
+        // --- Phase 4: Write ---
+        { id: "p4",        phase: 4, kind: "phase", x:  80, y: 380, label: "4. Write",
+          desc: "Produce docs/ai/<slug>/<slug>-task.md." },
+        { id: "p4.mkdir",  phase: 4, kind: "step",  x: 220, y: 380, label: "mkdir docs/ai/<slug>",
+          desc: "Create the output directory." },
+        { id: "p4.ex",     phase: 4, kind: "step",  x: 350, y: 380, label: "Read example",
+          desc: "Pick simple-task.md (trivial/simple) or complex-task.md (medium/complex) to calibrate tone and detail." },
+        { id: "p4.file",   phase: 4, kind: "artifact", x: 500, y: 380, label: "<slug>-task.md",
+          desc: "Sections: Task (one sentence), Context (area arch, files, patterns, tests), Requirements, Constraints, Verification, Materials." },
+        { id: "p4.edit",   phase: 4, kind: "agent", x: 650, y: 380, label: "copyedit subagent",
+          desc: "Dispatched with the written file + elements-of-style-rules.md. Edits prose to active voice, concrete language, cuts needless words. Overwrites the file.",
+          ref: "skills/task/reference/elements-of-style-rules.md" },
+
+        // --- Phase 5: Commit ---
+        { id: "p5",        phase: 5, kind: "phase", x:  80, y: 490, label: "5. Commit",
+          desc: "Auto-commit the task artifact. Only the task file, no other changes." },
+        { id: "p5.gi",     phase: 5, kind: "gate",  x: 230, y: 490, label: "docs/ai in .gitignore?",
+          desc: "If the directory is ignored — skip commit, tell the user." },
+        { id: "p5.commit", phase: 5, kind: "artifact", x: 400, y: 490, label: "git commit",
+          desc: "Per commit-convention.md: TICKET docs(SLUG): add task definition — NO colon after ticket. e.g. #86 docs(86-black-jack-page): add task definition.",
+          ref: "skills/gca/reference/commit-convention.md" },
+
+        // --- Phase 6: Complete ---
+        { id: "p6",        phase: 6, kind: "phase", x:  80, y: 590, label: "6. Complete",
+          desc: "Announce readiness and offer the next step." },
+        { id: "p6.notify", phase: 6, kind: "notification", x: 230, y: 590, label: "notify STAGE_COMPLETE",
+          desc: "Telegram alert: Task ready + file path.",
+          ref: "lib/notify.sh" },
+        { id: "p6.ask",    phase: 6, kind: "ask",   x: 400, y: 590, label: "AskUserQuestion",
+          desc: "Three options: /yoke:plan (Recommended) · Review via revdiff · Finish." },
+        { id: "p6.plan",   phase: 6, kind: "handoff", x: 620, y: 550, label: "→ /yoke:plan",
+          desc: "Call the Skill tool with /yoke:plan and the task file path as the argument. Auto-handoff. Exit." },
+        { id: "p6.rev",    phase: 6, kind: "handoff", x: 620, y: 590, label: "→ /revdiff",
+          desc: "Call /revdiff --only <task file>. Apply returned annotations, overwrite the file, return to the option prompt. Missing plugin → print install instructions." },
+        { id: "p6.fin",    phase: 6, kind: "handoff", x: 620, y: 630, label: "Finish",
+          desc: "Report the file path. Exit." },
+      ];
+
+      const EDGES = [
+        // Phase 1
+        ["p1", "p1.fetch"],
+        ["p1.fetch", "p1.mat"],
+        ["p1.mat", "p1.slug"],
+        ["p1.slug", "p1.id"],
+        ["p1.id", "p2", { corner: true }],
+
+        // Phase 2
+        ["p2", "p2.exp"],
+        ["p2.exp", "p2.read1"],
+        ["p2.read1", "p2.arch"],
+        ["p2.arch", "p2.read2"],
+        ["p2.read2", "p2.gate"],
+        ["p2.gate", "p2.exp", { loop: true, label: "criteria unmet" }],
+        ["p2.gate", "p3", { corner: true }],
+
+        // Phase 3
+        ["p3", "p3.guide"],
+        ["p3.guide", "p3.dims"],
+        ["p3.dims", "p3.cls"],
+        ["p3.cls", "p3.notify"],
+        ["p3.notify", "p3.ask"],
+        ["p3.ask", "p3.fold"],
+        ["p3.fold", "p3.ask", { loop: true, label: "more questions" }],
+        ["p3.fold", "p4", { corner: true }],
+
+        // Phase 4
+        ["p4", "p4.mkdir"],
+        ["p4.mkdir", "p4.ex"],
+        ["p4.ex", "p4.file"],
+        ["p4.file", "p4.edit"],
+        ["p4.edit", "p5", { corner: true }],
+
+        // Phase 5
+        ["p5", "p5.gi"],
+        ["p5.gi", "p5.commit", { label: "tracked" }],
+        ["p5.commit", "p6", { corner: true }],
+        ["p5.gi", "p6", { skip: true, label: "ignored — skip commit" }],
+
+        // Phase 6
+        ["p6", "p6.notify"],
+        ["p6.notify", "p6.ask"],
+        ["p6.ask", "p6.plan", { branch: true }],
+        ["p6.ask", "p6.rev", { branch: true }],
+        ["p6.ask", "p6.fin", { branch: true }],
+        ["p6.rev", "p6.ask", { loop: true, label: "after review" }],
+      ];
+
+      // Node widths by kind (heights are uniform)
+      const NODE_W = { phase: 120, step: 112, agent: 112, ask: 120, gate: 120, artifact: 124, notification: 150, handoff: 130 };
+      const NODE_H = 34;
+
+      const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
+
+      // -------------------- Rendering --------------------
+
+      const svgNS = "http://www.w3.org/2000/svg";
+      const edgesG = document.getElementById("edges");
+      const nodesG = document.getElementById("nodes");
+
+      function nodeColor(n) {
+        return KIND_COLOR[n.kind] || PHASES[n.phase].color;
+      }
+      function nodeFill(n) {
+        // Translucent fill derived from stroke color.
+        const c = nodeColor(n);
+        // Using rgba overlay via a <rect> filter isn't straightforward for CSS vars — use opacity on stroke-colored fill.
+        return c;
+      }
+
+      function renderNodes() {
+        nodesG.innerHTML = "";
+        for (const n of NODES) {
+          const g = document.createElementNS(svgNS, "g");
+          g.setAttribute("class", "node");
+          g.setAttribute("data-id", n.id);
+          g.setAttribute("data-kind", n.kind);
+          g.setAttribute("data-phase", n.phase);
+          g.style.color = nodeColor(n); // used by drop-shadow
+
+          const w = NODE_W[n.kind];
+          const h = n.kind === "phase" ? 40 : NODE_H;
+          const x = n.x - w / 2;
+          const y = n.y - h / 2;
+          const color = nodeColor(n);
+
+          let shape;
+          if (n.kind === "ask") {
+            shape = document.createElementNS(svgNS, "rect");
+            shape.setAttribute("class", "pill");
+            shape.setAttribute("rx", h / 2);
+            shape.setAttribute("ry", h / 2);
+          } else if (n.kind === "gate") {
+            // Diamond as a rotated square sized to fit label — use a polygon hexagon-ish shape for wider labels.
+            shape = document.createElementNS(svgNS, "polygon");
+            shape.setAttribute("class", "hex");
+            const inset = 12;
+            const points = [
+              [x + inset, y], [x + w - inset, y],
+              [x + w, y + h / 2],
+              [x + w - inset, y + h], [x + inset, y + h],
+              [x, y + h / 2],
+            ].map(p => p.join(",")).join(" ");
+            shape.setAttribute("points", points);
+          } else {
+            shape = document.createElementNS(svgNS, "rect");
+            shape.setAttribute("rx", n.kind === "phase" ? 8 : 6);
+            shape.setAttribute("ry", n.kind === "phase" ? 8 : 6);
+          }
+
+          if (shape.tagName === "rect") {
+            shape.setAttribute("x", x);
+            shape.setAttribute("y", y);
+            shape.setAttribute("width", w);
+            shape.setAttribute("height", h);
+          }
+
+          shape.setAttribute("fill", color);
+          shape.setAttribute("fill-opacity", n.kind === "phase" ? 0.22 : 0.14);
+          shape.setAttribute("stroke", color);
+          shape.setAttribute("stroke-width", n.kind === "agent" ? 2.5 : 1.6);
+          if (n.kind === "agent") {
+            shape.setAttribute("stroke-dasharray", "0");
+          }
+          g.appendChild(shape);
+
+          // Double-stroke for agent — add inner rect
+          if (n.kind === "agent" && shape.tagName === "rect") {
+            const inner = document.createElementNS(svgNS, "rect");
+            inner.setAttribute("x", x + 3);
+            inner.setAttribute("y", y + 3);
+            inner.setAttribute("width", w - 6);
+            inner.setAttribute("height", h - 6);
+            inner.setAttribute("rx", 4);
+            inner.setAttribute("ry", 4);
+            inner.setAttribute("fill", "none");
+            inner.setAttribute("stroke", color);
+            inner.setAttribute("stroke-width", 1);
+            inner.setAttribute("stroke-opacity", 0.6);
+            g.appendChild(inner);
+          }
+
+          const icon = ICONS[n.kind] || "";
+          const label = (icon ? icon + "  " : "") + n.label;
+
+          const text = document.createElementNS(svgNS, "text");
+          text.setAttribute("x", n.x);
+          text.setAttribute("y", n.y + 4);
+          text.setAttribute("text-anchor", "middle");
+          text.setAttribute("class", n.kind === "phase" ? "title" : "");
+          if (n.kind === "phase") text.setAttribute("font-size", "12.5");
+          text.textContent = label;
+          g.appendChild(text);
+
+          g.addEventListener("click", () => selectNode(n.id));
+          nodesG.appendChild(g);
+        }
+      }
+
+      const ICONS = {
+        phase: "",
+        step: "",
+        agent: "▸▸",
+        ask: "?",
+        gate: "◇",
+        artifact: "▤",
+        notification: "◈",
+        handoff: "➜",
+      };
+
+      function nodeEdge(n, side) {
+        const w = NODE_W[n.kind];
+        const h = n.kind === "phase" ? 40 : NODE_H;
+        if (side === "right") return { x: n.x + w / 2, y: n.y };
+        if (side === "left")  return { x: n.x - w / 2, y: n.y };
+        if (side === "top")   return { x: n.x, y: n.y - h / 2 };
+        if (side === "bottom")return { x: n.x, y: n.y + h / 2 };
+        return { x: n.x, y: n.y };
+      }
+
+      function renderEdges() {
+        edgesG.innerHTML = "";
+        for (const [fromId, toId, opts = {}] of EDGES) {
+          const a = byId[fromId];
+          const b = byId[toId];
+          if (!a || !b) continue;
+
+          const g = document.createElementNS(svgNS, "g");
+          const cls = ["edge"];
+          if (opts.loop) cls.push("loop");
+          if (opts.skip) cls.push("skip");
+          g.setAttribute("class", cls.join(" "));
+          g.setAttribute("data-from", fromId);
+          g.setAttribute("data-to", toId);
+
+          const path = document.createElementNS(svgNS, "path");
+          let d, color = "var(--border-strong)";
+
+          if (opts.corner) {
+            // Down-left: from right of a, across, down, to left of b (next phase anchor on left)
+            const s = nodeEdge(a, "right");
+            const e = nodeEdge(b, "left");
+            const midX = (s.x + e.x) / 2;
+            d = `M ${s.x} ${s.y} C ${s.x + 40} ${s.y}, ${midX} ${s.y + 30}, ${midX} ${(s.y + e.y) / 2} S ${e.x - 40} ${e.y}, ${e.x} ${e.y}`;
+          } else if (opts.loop) {
+            // Curve back — above the row for horizontal loops
+            const s = nodeEdge(a, "top");
+            const e = nodeEdge(b, "top");
+            const dy = Math.min(30, Math.abs(s.x - e.x) / 3);
+            const arcY = Math.min(s.y, e.y) - dy - 8;
+            d = `M ${s.x} ${s.y} C ${s.x} ${arcY}, ${e.x} ${arcY}, ${e.x} ${e.y}`;
+            color = "var(--kind-gate)";
+          } else if (opts.skip) {
+            // Skip edge — arcs below the current phase row, into next phase
+            const s = nodeEdge(a, "bottom");
+            const e = nodeEdge(b, "left");
+            const arcY = s.y + 40;
+            d = `M ${s.x} ${s.y} C ${s.x} ${arcY}, ${e.x - 60} ${arcY}, ${e.x} ${e.y}`;
+            color = "var(--muted)";
+          } else if (opts.branch) {
+            // Branch edge from ask to a handoff — simple curve right
+            const s = nodeEdge(a, "right");
+            const e = nodeEdge(b, "left");
+            const mx = (s.x + e.x) / 2;
+            d = `M ${s.x} ${s.y} C ${mx} ${s.y}, ${mx} ${e.y}, ${e.x} ${e.y}`;
+          } else {
+            // Same-row straight arrow
+            const s = nodeEdge(a, "right");
+            const e = nodeEdge(b, "left");
+            d = `M ${s.x} ${s.y} L ${e.x} ${e.y}`;
+          }
+
+          path.setAttribute("d", d);
+          path.setAttribute("stroke", color);
+          path.setAttribute("marker-end", "url(#arrow)");
+          path.style.color = color;
+          g.appendChild(path);
+
+          if (opts.label) {
+            // Put label near midpoint of path
+            const text = document.createElementNS(svgNS, "text");
+            const mid = pathMid(a, b, opts);
+            text.setAttribute("x", mid.x);
+            text.setAttribute("y", mid.y);
+            text.setAttribute("text-anchor", "middle");
+            text.textContent = opts.label;
+            g.appendChild(text);
+          }
+          edgesG.appendChild(g);
+        }
+      }
+
+      function pathMid(a, b, opts) {
+        if (opts.loop) {
+          return { x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - 22 };
+        }
+        if (opts.skip) {
+          return { x: (a.x + b.x) / 2, y: a.y + 30 };
+        }
+        if (opts.corner) {
+          return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 6 };
+        }
+        return { x: (a.x + b.x) / 2, y: Math.min(a.y, b.y) - 8 };
+      }
+
+      // -------------------- State --------------------
+
+      const state = {
+        selectedId: "p1",
+        phases: { 1: true, 2: true, 3: true, 4: true, 5: true, 6: true },
+        emph: { agents: false, asks: false, artifacts: false, loops: false },
+        activePreset: "full",
+      };
+
+      const PRESETS = {
+        full: {
+          phases: { 1: true, 2: true, 3: true, 4: true, 5: true, 6: true },
+          emph:   { agents: false, asks: false, artifacts: false, loops: false },
+        },
+        agents: {
+          phases: { 1: false, 2: true, 3: false, 4: true, 5: false, 6: false },
+          emph:   { agents: true, asks: false, artifacts: false, loops: false },
+        },
+        asks: {
+          phases: { 1: false, 2: false, 3: true, 4: false, 5: false, 6: true },
+          emph:   { agents: false, asks: true, artifacts: false, loops: true },
+        },
+        artifacts: {
+          phases: { 1: true, 2: false, 3: false, 4: true, 5: true, 6: false },
+          emph:   { agents: false, asks: false, artifacts: true, loops: false },
+        },
+      };
+
+      // -------------------- Wire-up --------------------
+
+      function selectNode(id) {
+        state.selectedId = id;
+        updateAll();
+      }
+
+      function applyHighlight() {
+        const selected = state.selectedId;
+        // Dim/un-dim based on phase toggles
+        document.querySelectorAll(".node").forEach(el => {
+          const id = el.dataset.id;
+          const phase = Number(el.dataset.phase);
+          const isPhaseOn = state.phases[phase];
+          el.classList.toggle("dimmed", !isPhaseOn);
+          el.classList.toggle("selected", id === selected);
+        });
+        document.querySelectorAll(".edge").forEach(el => {
+          const from = byId[el.dataset.from];
+          const to = byId[el.dataset.to];
+          const on = state.phases[from.phase] && state.phases[to.phase];
+          el.classList.toggle("dimmed", !on);
+        });
+      }
+
+      function renderSidebar() {
+        // Selected-node detail
+        const n = byId[state.selectedId] || byId.p1;
+        const phase = PHASES[n.phase];
+        const kindLabel = n.kind.charAt(0).toUpperCase() + n.kind.slice(1);
+
+        const detail = document.getElementById("detail");
+        const ref = n.ref ? `<div class="detail-meta"><span class="label">Reference</span><code>${n.ref}</code></div>` : "";
+        detail.innerHTML = `
+          <span class="detail-kind">${kindLabel}</span>
+          <span class="detail-phase" style="background:${phase.color}">Phase ${n.phase} · ${phase.name}</span>
+          <div class="detail-title">${escapeHtml(n.label)}</div>
+          <div class="detail-desc">${escapeHtml(n.desc)}</div>
+          ${ref}
+        `;
+
+        // Phase toggles
+        const pt = document.getElementById("phase-toggles");
+        pt.innerHTML = "";
+        for (let i = 1; i <= 6; i++) {
+          const p = PHASES[i];
+          const count = NODES.filter(n => n.phase === i && n.kind !== "phase").length;
+          const id = `ph-${i}`;
+          const row = document.createElement("label");
+          row.className = "phase-toggle";
+          row.innerHTML = `
+            <input type="checkbox" id="${id}" ${state.phases[i] ? "checked" : ""} />
+            <span class="swatch" style="background:${p.color}"></span>
+            <span class="name"><b>${i}.</b> ${p.name}</span>
+            <span class="count">${count} steps</span>
+          `;
+          row.querySelector("input").addEventListener("change", (e) => {
+            state.phases[i] = e.target.checked;
+            state.activePreset = null;
+            updateAll();
+          });
+          pt.appendChild(row);
+        }
+
+        // Emphasis chips
+        document.querySelectorAll("#emphasis .chip").forEach(chip => {
+          const input = chip.querySelector("input");
+          const key = input.dataset.emph;
+          input.checked = state.emph[key];
+          chip.classList.toggle("active", state.emph[key]);
+          chip.onclick = (e) => {
+            e.preventDefault();
+            state.emph[key] = !state.emph[key];
+            input.checked = state.emph[key];
+            state.activePreset = null;
+            updateAll();
+          };
+        });
+
+        // Preset buttons
+        document.querySelectorAll("#presets .preset-btn").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.preset === state.activePreset);
+        });
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+        }[c]));
+      }
+
+      // -------------------- Prompt output --------------------
+
+      function updatePrompt() {
+        const selected = byId[state.selectedId];
+        const activePhases = Object.keys(state.phases)
+          .filter(k => state.phases[k])
+          .map(Number)
+          .sort((a, b) => a - b);
+
+        const parts = [];
+        parts.push("Explain how the yoke `/task` skill works.");
+
+        if (activePhases.length === 0) {
+          parts.push("I'll pick a focus later — for now, give me the top-level orchestration and the 6 phases at a glance.");
+        } else if (activePhases.length === 6) {
+          parts.push("Walk me through all 6 phases end-to-end — what each phase receives, does, and hands off.");
+        } else {
+          const names = activePhases.map(p => `Phase ${p} (${PHASES[p].name})`);
+          const phrase = names.length === 1 ? names[0] : names.slice(0, -1).join(", ") + " and " + names.at(-1);
+          parts.push(`Focus on ${phrase} — skip the other phases unless they're essential context.`);
+        }
+
+        const emph = [];
+        if (state.emph.agents) {
+          emph.push("how the orchestrator delegates to the `task-explorer` and `task-architect` sub-agents (when each runs, what prompt they get, how their findings feed the next step, why the order is sequential)");
+        }
+        if (state.emph.asks) {
+          emph.push("the `AskUserQuestion` interactions — the batching rules (3–7 total, 1–4 per batch), the recommended-first option convention, and how answers fold back into Requirements / Constraints / Context");
+        }
+        if (state.emph.artifacts) {
+          emph.push("the artifact itself: the sections of `<slug>-task.md`, the copyedit pass with `elements-of-style-rules.md`, the commit convention (`TICKET docs(SLUG): add task definition`) and the `docs/ai` gitignore check");
+        }
+        if (state.emph.loops) {
+          emph.push("the two loops and the branching gate — the 4 stop criteria in Investigate, the question-answering loop in Synthesize, the `.gitignore` skip in Commit, and the 3-way handoff in Complete");
+        }
+        if (emph.length) {
+          parts.push("I especially want to understand " + emph.join("; and ") + ".");
+        }
+
+        if (selected && selected.id !== "p1") {
+          const loc = selected.kind === "phase"
+            ? `phase anchor "${selected.label}"`
+            : `the node "${selected.label}" in Phase ${selected.phase}`;
+          parts.push(`Start by explaining ${loc}, then zoom out.`);
+        }
+
+        parts.push("Source: `skills/task/SKILL.md`, plus `skills/task/agents/` and `skills/task/reference/` for details. Be concrete — cite file paths and section names.");
+
+        document.getElementById("prompt").textContent = parts.join("\n\n");
+      }
+
+      // -------------------- Preset wiring --------------------
+
+      document.querySelectorAll("#presets .preset-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const p = PRESETS[btn.dataset.preset];
+          if (!p) return;
+          state.phases = { ...p.phases };
+          state.emph = { ...p.emph };
+          state.activePreset = btn.dataset.preset;
+          updateAll();
+        });
+      });
+
+      // Copy button
+      const copyBtn = document.getElementById("copy");
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(document.getElementById("prompt").textContent);
+          copyBtn.textContent = "Copied!";
+          copyBtn.classList.add("copied");
+          setTimeout(() => {
+            copyBtn.textContent = "Copy";
+            copyBtn.classList.remove("copied");
+          }, 1200);
+        } catch (err) {
+          copyBtn.textContent = "Copy failed";
+          setTimeout(() => (copyBtn.textContent = "Copy"), 1200);
+        }
+      });
+
+      // -------------------- Boot --------------------
+
+      function updateAll() {
+        applyHighlight();
+        renderSidebar();
+        updatePrompt();
+      }
+
+      renderEdges();
+      renderNodes();
+      updateAll();
+    </script>
+  </body>
+</html>

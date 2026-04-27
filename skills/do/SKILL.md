@@ -98,7 +98,7 @@ Read the Order from the plan:
 - **Sequential** → dispatch one at a time
 - **Barrier** → wait for all tasks in the group to finish
 
-Without explicit parallel groups — run sequentially in order.
+Without parallel groups, run sequentially.
 
 ### For each task
 
@@ -144,7 +144,7 @@ Without explicit parallel groups — run sequentially in order.
 On BLOCKED — send a notification:
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill do --phase Execute --slug "$SLUG" --title "Task blocked" --body "<block reason and number of skipped tasks>"`
 
-Save the list of changed/created files — you'll need it in Phases 3-5.
+Save the changed/created files list for Phases 3-5.
 
 **Transition:** tasks done (or BLOCKED) → Phase 3
 
@@ -209,7 +209,7 @@ The sub-agent decides what to update:
 - CHANGELOG — when the file exists
 - JSDoc/TSDoc — for new/changed exported functions
 
-**Update existing documentation rather than creating from scratch.**
+**Extend existing documentation.**
 
 After completion:
 
@@ -232,7 +232,7 @@ Pass:
 - SLUG for the commit convention
 - TICKET_ID for the commit convention
 
-The sub-agent determines the formatter, runs it on the files, and commits the result.
+The sub-agent picks the formatter, runs it on the files, commits.
 
 Mark in TodoWrite: [x]
 
@@ -249,22 +249,19 @@ Pass:
 
 The sub-agent reads `reference/report-format.md` and writes `docs/ai/<SLUG>/<SLUG>-report.md`.
 
-### 6c. Commit Report Artifact
+After writing the report, auto-commit it. Check `docs/ai/` against `.gitignore`. If ignored — skip.
 
-Check: is `docs/ai/` under `.gitignore`? If yes — skip.
-
-If not under gitignore — commit the report per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
-
-Format: `TICKET docs(SLUG): add execution report` (NO colon after the ticket).
+Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 
 ```bash
 git add docs/ai/<SLUG>/<SLUG>-report.md
 git commit -m "TICKET docs(SLUG): add execution report"
 ```
 
-Example: `#86 docs(86-black-jack-page): add execution report`
+Format: `TICKET docs(SLUG): add execution report` (NO colon after ticket).
+Example: `#86 docs(86-black-jack-page): add execution report`.
 
-### 6d. Notification
+### 6c. Notification
 
 Print a brief summary: `<SLUG> done (N/M tasks)` or `<SLUG> done with issues (N/M tasks, K blocked)`.
 Path to the report file.
@@ -292,7 +289,7 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
   2. If the Skill return is empty, skip this entire step. Otherwise:
      - If the annotations describe code changes, apply those code changes inline (orchestrator edits — do not dispatch a sub-agent). If the annotations are prose-only, skip the code-edit step.
      - Append the full annotation text to `docs/ai/<SLUG>/<SLUG>-report.md`: if a `## Review notes` heading already exists in the file, append under the existing heading; otherwise create the heading and append under it.
-     - Check `.gitignore` for `docs/ai/` (same as Phase 6c). If ignored, skip the auto-commit. Otherwise, run `git add docs/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"` (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
+     - Check `.gitignore` for `docs/ai/` (same as Phase 6b). If ignored, skip the auto-commit. Otherwise, run `git add docs/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"` (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
   3. Return to the "Offer 3 options" step above.
      If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then return to the "Offer 3 options" step above.
 - **Finish:** report the path to the report file

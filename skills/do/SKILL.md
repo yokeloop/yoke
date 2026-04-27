@@ -184,7 +184,7 @@ Pass:
 - TICKET_ID for the commit convention
 - CONSTRAINTS from the plan
 
-The sub-agent determines the available commands from package.json scripts, runs lint/type-check/test/build,
+The sub-agent reads commands from package.json scripts, runs lint/type-check/test/build,
 fixes failures (one attempt), commits fixes, and returns the result of each command.
 
 Mark in TodoWrite: [x]
@@ -247,7 +247,7 @@ Pass:
 - Collected data for the report: task statuses, concerns, blocked, validation results,
   post-implementation statuses, changes summary
 
-The sub-agent reads `reference/report-format.md` and writes `docs/ai/<SLUG>/<SLUG>-report.md`.
+The sub-agent writes `docs/ai/<SLUG>/<SLUG>-report.md` using the Report template (see appendix at the end of this file).
 
 After writing the report, auto-commit it. Check `docs/ai/` against `.gitignore`. If ignored — skip.
 
@@ -263,7 +263,7 @@ Example: `#86 docs(86-black-jack-page): add execution report`.
 
 ### 6c. Notification
 
-Print a brief summary: `<SLUG> done (N/M tasks)` or `<SLUG> done with issues (N/M tasks, K blocked)`.
+Print a summary: `<SLUG> done (N/M tasks)` or `<SLUG> done with issues (N/M tasks, K blocked)`.
 Path to the report file.
 
 Send a notification:
@@ -307,3 +307,72 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
 - **On BLOCKED — keep going.** Stop only the dependent branch.
 - **CLI output.** Run commands with long output (formatter, lint, build, test) with `2>&1 | tail -20`.
 - Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
+
+---
+
+## Report template
+
+```markdown
+# Report: <slug>
+
+**Plan:** <path to the plan file>
+**Mode:** <inline | sub-agents>
+**Status:** ✅ complete | ⚠️ partial | ❌ failed
+
+## Tasks
+
+| #   | Task   | Status                | Commit    | Concerns          |
+| --- | ------ | --------------------- | --------- | ----------------- |
+| 1   | <name> | ✅ DONE               | `abc1234` | —                 |
+| 2   | <name> | ⚠️ DONE_WITH_CONCERNS | `def5678` | see below         |
+| 3   | <name> | ❌ BLOCKED            | —         | see below         |
+| 4   | <name> | ⏭️ SKIPPED            | —         | depends on Task 3 |
+
+## Post-implementation
+
+| Step          | Status  | Commit    |
+| ------------- | ------- | --------- |
+| Validate      | ✅ pass | —         |
+| Documentation | ✅ done | `ccc3333` |
+| Format        | ✅ done | `ddd4444` |
+
+## Concerns
+
+### Task 2: <name>
+
+<concerns text>
+
+## Blocked
+
+### Task 3: <name>
+
+**Reason:** <reason>
+**Impact:** Task 4 skipped (depends on Task 3)
+
+## Validation
+
+<lint command> ✅
+<type-check command> ✅ (or N/A)
+<test command> ✅ (<N> passed, 0 failed)
+<build command> ✅ (or N/A)
+
+## Changes summary
+
+| File              | Action   | Description |
+| ----------------- | -------- | ----------- |
+| src/path/file.ts  | created  | <what>      |
+| src/path/other.ts | modified | <what>      |
+
+## Commits
+
+- `abc1234` <message>
+- `def5678` <message>
+```
+
+**Status derivation:**
+
+- All DONE → `✅ complete`
+- Some BLOCKED or SKIPPED, majority DONE → `⚠️ partial`
+- Majority BLOCKED → `❌ failed`
+
+Concerns and Blocked sections appear only when matching tasks exist. Commits in chronological order, including post-implementation. For the full template with extended commentary, see `reference/report-format.md` — supplementary, optional.

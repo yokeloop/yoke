@@ -75,15 +75,15 @@ After each phase's commits, append a new column to the tables below.
 
 | Metric                                          | Baseline | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
 | ----------------------------------------------- | -------- | ------- | ------- | ------- | ------- | ------- | ------- |
-| Total SKILL.md lines (4 skills)                 | 1100     | 1062    |         |         |         |         |         |
-| Phases tracked across 4 skills                  | 27       | 25      |         |         |         |         |         |
-| Sub-agent files (4 skills, dedicated)           | 16       | 16      |         |         |         |         |         |
-| Sub-agent dispatches (worst case, 5-task plan)  | ~50      | ~48     |         |         |         |         |         |
-| Sub-agent dispatches (typical, 5-task plan)     | ~25      | ~23     |         |         |         |         |         |
-| Reference + examples LOC loaded per typical run | ~2000    | ~1370   |         |         |         |         |         |
-| Sequential review waits in `/do` per task       | up to 6  | up to 6 |         |         |         |         |         |
-| Intermediate notification calls (per skill)     | 2/2/2/2  | 1/1/2/2 |         |         |         |         |         |
-| Files changed by /do on synthetic ticket        | 1 (`lib/notify.sh`) target | not measured | | |     |         |         |
+| Total SKILL.md lines (4 skills)                 | 1100     | 1062    | 1290    |         |         |         |         |
+| Phases tracked across 4 skills                  | 27       | 25      | 25      |         |         |         |         |
+| Sub-agent files (4 skills, dedicated)           | 16       | 16      | 16      |         |         |         |         |
+| Sub-agent dispatches (worst case, 5-task plan)  | ~50      | ~48     | ~48     |         |         |         |         |
+| Sub-agent dispatches (typical, 5-task plan)     | ~25      | ~23     | ~23     |         |         |         |         |
+| Mandatory reference LOC by orchestrators        | ~620     | ~426    | ~5      |         |         |         |         |
+| Sequential review waits in `/do` per task       | up to 6  | up to 6 | up to 6 |         |         |         |         |
+| Intermediate notification calls (per skill)     | 2/2/2/2  | 1/1/2/2 | 1/1/2/2 |         |         |         |         |
+| Files changed by /do on synthetic ticket        | 1 (`lib/notify.sh`) target | not measured | not measured | |     |         |         |
 
 ---
 
@@ -93,6 +93,13 @@ After each phase's commits, append a new column to the tables below.
 - "Typical" assumes 1 spec-review iteration and 1 quality-review iteration per
   task, no `code-polisher` churn beyond a single dispatch, and `doc-updater`
   running once.
+- "Mandatory reference LOC by orchestrators" = lines the orchestrator must read
+  on every cold run (excluding agent-internal reads — those are inside the
+  sub-agent's context, not the main thread). Baseline: synthesize 265 + style 44
+  + simple-task example 127 + plan-format 94 + routing 119 + plan style 44
+  ≈ ~620 (frontend-guide conditional). Phase 1 dropped style ×2 + examples
+  ≈ -194. Phase 2 inlined synthesize checklist + plan-format template +
+  routing rules; only a handful of cross-references remain ≈ ~5.
 - Re-running each skill on the synthetic ticket would touch `lib/notify.sh`;
   per `docs/skill-optimization-plan.md` §4.2, revert with
   `git checkout -- lib/notify.sh docs/ai/test-baseline/` after each measurement.

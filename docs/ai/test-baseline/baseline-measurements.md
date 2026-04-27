@@ -75,15 +75,16 @@ After each phase's commits, append a new column to the tables below.
 
 | Metric                                          | Baseline | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
 | ----------------------------------------------- | -------- | ------- | ------- | ------- | ------- | ------- | ------- |
-| Total SKILL.md lines (4 skills)                 | 1100     | 1062    | 1290    | 1165    | 1180    | 1158    |         |
-| Phases tracked across 4 skills                  | 27       | 25      | 25      | 22      | 22      | 21      |         |
-| Sub-agent files (4 skills, dedicated)           | 16       | 16      | 16      | 12      | 9       | 9       |         |
-| Sub-agent dispatches (worst case, 5-task plan)  | ~50      | ~48     | ~48     | ~32     | ~29     | ~22     |         |
-| Sub-agent dispatches (typical, 5-task plan)     | ~25      | ~23     | ~23     | ~17     | ~14     | ~12     |         |
-| Mandatory reference LOC by orchestrators        | ~620     | ~426    | ~5      | ~5      | ~5      | ~5      |         |
-| Sequential review waits in `/do` per task       | up to 6  | up to 6 | up to 6 | up to 3 | up to 3 | up to 2 |         |
-| Intermediate notification calls (per skill)     | 2/2/2/2  | 1/1/2/2 | 1/1/2/2 | 1/1/2/2 | 1/1/2/2 | 1/1/2/2 |         |
-| Files changed by /do on synthetic ticket        | 1 (`lib/notify.sh`) target | not measured | not measured | not measured | not measured | not measured |     |
+| Total SKILL.md lines (4 skills)                 | 1100     | 1062    | 1290    | 1165    | 1180    | 1158    | 1158    |
+| Phases tracked across 4 skills                  | 27       | 25      | 25      | 22      | 22      | 21      | 21      |
+| Sub-agent files (4 skills, dedicated)           | 16       | 16      | 16      | 12      | 9       | 9       | 9       |
+| Sub-agent dispatches (worst case, 5-task plan)  | ~50      | ~48     | ~48     | ~32     | ~29     | ~22     | ~22     |
+| Sub-agent dispatches (typical, 5-task plan)     | ~25      | ~23     | ~23     | ~17     | ~14     | ~12     | ~12     |
+| Mandatory reference LOC by orchestrators        | ~620     | ~426    | ~5      | ~5      | ~5      | ~5      | ~5      |
+| Sequential review waits in `/do` per task       | up to 6  | up to 6 | up to 6 | up to 3 | up to 3 | up to 2 | up to 2 |
+| Intermediate notification calls (per skill)     | 2/2/2/2  | 1/1/2/2 | 1/1/2/2 | 1/1/2/2 | 1/1/2/2 | 1/1/2/2 | 1/1/2/2 |
+| Parallel dispatch points                        | 1        | 1       | 1       | 1       | 1       | 1       | 4       |
+| Files changed by /do on synthetic ticket        | 1 (`lib/notify.sh`) target | not measured | not measured | not measured | not measured | not measured | not measured |
 
 ---
 
@@ -100,6 +101,12 @@ After each phase's commits, append a new column to the tables below.
   ≈ ~620 (frontend-guide conditional). Phase 1 dropped style ×2 + examples
   ≈ -194. Phase 2 inlined synthesize checklist + plan-format template +
   routing rules; only a handful of cross-references remain ≈ ~5.
+- "Parallel dispatch points" = places in the orchestration where the spec
+  explicitly directs concurrent Agent calls in a single message. Baseline = 1
+  (parallel groups in /do Phase 2 dispatch executors concurrently — implicit
+  via "dispatch all tasks in the group simultaneously"). Phase 6 = 4: same
+  baseline point + reviewer waves after parallel groups + /do Phase 3
+  validator/formatter pair + /review Phase 4 validator/formatter pair.
 - Re-running each skill on the synthetic ticket would touch `lib/notify.sh`;
   per `docs/skill-optimization-plan.md` §4.2, revert with
   `git checkout -- lib/notify.sh docs/ai/test-baseline/` after each measurement.

@@ -4,7 +4,7 @@ Synthetic ticket: `docs/ai/test-baseline/test-baseline-task.md` (add `--version`
 flag to `lib/notify.sh`).
 
 Wall-clock measurement via `claude --print` is not viable: every core skill
-gates on `AskUserQuestion`, which has no responder in headless mode. Recording
+gates on `AskUserQuestion`, which has no responder in headless mode. We record
 **structural** metrics instead — dispatch count, phase count, file inventory,
 LOC. Structural metrics are exactly what the optimization targets; wall-clock
 is a derivative.
@@ -90,7 +90,7 @@ After each phase's commits, append a new column to the tables below.
 
 ## Notes
 
-- Worst-case dispatch numbers come from the plan's own analysis (§ Goal table).
+- Worst-case dispatch numbers come from the plan's own analysis (Goal table).
 - "Typical" assumes 1 spec-review iteration and 1 quality-review iteration per
   task, no `code-polisher` churn beyond a single dispatch, and `doc-updater`
   running once.

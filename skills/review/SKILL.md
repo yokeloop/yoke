@@ -18,7 +18,7 @@ Agents:
 - Validation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
 - Formatting → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
 
-Work continuously. Two pauses: fix scope selection and final action.
+Run continuously. The flow pauses twice: at fix-scope selection and at the final action.
 
 ---
 
@@ -74,7 +74,7 @@ Dispatch code-reviewer via the Agent tool. Read `agents/code-reviewer.md`, subst
 
 Receive SUMMARY + ISSUES + ISSUES_COUNT.
 
-If ISSUES_COUNT = 0, skip to Phase 5 (report without fixes).
+When ISSUES_COUNT = 0, skip to Phase 5 and report without fixes.
 
 **Transition:** SUMMARY and ISSUES received → Phase 3.
 
@@ -105,7 +105,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review -
 
 ### Phase 4 — Fix
 
-If the user chose "Skip fixes", move all issues to SKIPPED_ISSUES with reason "Skipped by user choice" and skip to Phase 5.
+When the user chose "Skip fixes", move all issues to SKIPPED_ISSUES with reason "Skipped by user choice" and skip to Phase 5.
 
 If ISSUES_TO_FIX is non-empty:
 
@@ -173,13 +173,13 @@ Example: `#44 docs(44-review-with-fixes): add review report`.
 
 Check PR: `gh pr view --json number 2>/dev/null`
 
-PR exists and SKIPPED_ISSUES is non-empty — publish each issue as a PR comment:
+If the PR exists and SKIPPED_ISSUES is non-empty, publish each issue as a PR comment:
 
 ```bash
 gh api --method POST repos/{owner}/{repo}/issues/{number}/comments -f body="[severity] category: file:line — description"
 ```
 
-No PR — skip.
+Otherwise skip.
 
 **Transition:** report written → Phase 6.
 
@@ -205,7 +205,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --
 
 ## Rules
 
-- **Continuous work.** Pauses: scope selection (Phase 3) and final action (Phase 6).
+- **Continuous work.** Pause only at scope selection (Phase 3) and the final action (Phase 6).
 - **Delegation.** Delegate file operations and bash to sub-agents.
 - **Commits by convention.** Format and ticket ID from `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - **Context isolation.** A sub-agent receives only its data, not the whole pipeline.

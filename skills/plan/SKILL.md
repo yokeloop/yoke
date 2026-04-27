@@ -44,7 +44,7 @@ If the path is missing — request it from the user.
 - `MATERIALS` — links and paths
 
 **3.** Check that Task, Context, and Requirements sections are present.
-If Task, Context, or Requirements is missing — tell the user and stop.
+If any of Task, Context, or Requirements is missing, tell the user and stop.
 
 **4.** Extract `TICKET_ID` from TASK_SLUG (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
@@ -96,7 +96,7 @@ For each question:
 After the answers — update design decisions and decomposition
 with the chosen options. Fold the answers into the plan.
 
-If there are no questions — skip this step.
+Skip this step when there are no questions.
 
 **Routing rules** (the architect picks one; sanity-check the choice):
 
@@ -113,7 +113,7 @@ For the full 9-row decision matrix and edge cases, see `reference/routing-rules.
 - `PARALLEL_GROUPS` = which tasks can run in parallel (when parallel=true)
 - `REASONING` = the architect's one-sentence explanation
 
-The architect's self-check covers requirements coverage, dependency validity, and Verify concreteness. Trust it; re-dispatch only on a failed self-check verdict.
+The architect's self-check covers requirements coverage, dependency validity, and Verify concreteness. Trust it; re-dispatch only when the self-check fails.
 
 **Transition:** plan ready → Phase 3.
 

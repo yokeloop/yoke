@@ -14,15 +14,15 @@ If `.claude/yoke-context.md` exists — read it. Use the data as additional cont
 
 ## Principles
 
-- **Decide, don't ask.** The answer is in the code — use it. Ask the user only when the code lacks an implementation-shaping answer.
+- **Decide, don't ask.** The answer is in the code; use it. Ask the user only when the code lacks an implementation-shaping answer.
 - **Atomicity.** Each task = one commit, one concern, testable in isolation.
-- **Granularity.** A task takes 2–10 minutes of agent work. Sized between a single-file edit and a full feature.
+- **Granularity.** A task takes 2–10 minutes of agent work, sized between a single-file edit and a full feature.
 - **Context isolation.** Each task carries only its own files and lines, never "read the whole plan".
 
 **Working in existing codebases:**
 
 - Follow the patterns the codebase already uses (read the area before deciding).
-- If code in the change area is problematic (bloated file, tangled boundaries) — include a targeted refactor in the plan.
+- When code in the change area is problematic (bloated file, tangled boundaries), include a targeted refactor in the plan.
 - Exclude refactoring outside task scope.
 
 ## Process

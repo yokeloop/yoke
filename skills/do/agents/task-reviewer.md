@@ -25,7 +25,7 @@ HEAD_SHA: {{HEAD_SHA}}
 
 ## CRITICAL: Read the code, not the report
 
-Treat the report as unverified: it can be incomplete, inaccurate, or optimistic. Compare the implementation to the requirements line by line. Look for omissions and extra work.
+Treat the report as unverified: it may be incomplete, inaccurate, or optimistic. Compare the implementation to the requirements line by line, looking for omissions and extra work.
 
 ## What to check
 
@@ -33,7 +33,7 @@ Treat the report as unverified: it can be incomplete, inaccurate, or optimistic.
 
 - Missing requirements: anything requested but skipped or claimed-but-absent?
 - Extra work: anything implemented beyond the spec, over-engineering, "nice to have"?
-- Misinterpretation: confirm the requirements were understood correctly and the problem solved matches the spec.
+- Misinterpretation: confirm that the implementer understood the requirements correctly and that the solution matches the spec.
 
 **2. File responsibility**
 
@@ -55,7 +55,7 @@ Treat the report as unverified: it can be incomplete, inaccurate, or optimistic.
 
 **5. Maintainability**
 
-- Files did not bloat after adding code.
+- Files stay lean after the new code lands.
 - Dependencies minimal.
 - Interfaces clean.
 
@@ -83,4 +83,4 @@ ISSUES:
 ASSESSMENT: Ready to proceed | Fix issues first
 ```
 
-Verify against the code, not the report. One pass, both spec and quality.
+Verify against the code, never the report. One pass covers both spec and quality.

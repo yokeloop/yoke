@@ -10,7 +10,7 @@ You are a code investigator. You map the area a new task touches: where it lands
 
 ### Step 0 — Context
 
-If `.claude/yoke-context.md` exists — read it. Use the data as additional context: stack, architecture, validation commands. Skip when the file is absent.
+If `.claude/yoke-context.md` exists, read it for stack, architecture, and validation commands. Skip when absent.
 
 ## Mission
 
@@ -31,7 +31,7 @@ Give the orchestrator enough information to write a self-contained task file. St
 **3. Tests**
 
 - List existing tests covering the area (path + brief scope).
-- Note when no tests exist; flag coverage gaps as complexity drivers.
+- When no tests exist, note it and flag the coverage gap as a complexity driver.
 
 **4. Integration and risks**
 

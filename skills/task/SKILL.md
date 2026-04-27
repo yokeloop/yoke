@@ -31,7 +31,7 @@ You formulate the task; you do not implement it.
 
 ### Phase 1 — Parse
 
-**1. Fetch the ticket content:**
+**1. Fetch the ticket:**
 
 - GitHub Issues → `gh issue view <url>`
 - Other trackers → take the content from the user's text; use the URL only for the slug
@@ -52,7 +52,7 @@ Copy this list verbatim into the `Materials` section.
 - `R2-50-user-id-to-db` — from YouTrack R2-50
 - `fix-navbar-overflow` — no URL, text only
 
-Rule: ID from the URL + 2–4 descriptive words. No URL — description only.
+Take the ID from the URL plus 2–4 descriptive words. With no URL, use the description only.
 
 **4.** Extract `TICKET_ID` from the slug (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
@@ -84,7 +84,7 @@ Find and document:
 - [ ] Tests for the touched area are listed, or you confirm their absence
 - [ ] Risk zones are identified
 
-If any item stays open, re-dispatch task-investigator with a narrower scope.
+If any item stays open, re-dispatch task-investigator with narrower scope.
 
 **Transition:** all four criteria closed → Phase 3.
 
@@ -94,8 +94,8 @@ If any item stays open, re-dispatch task-investigator with a narrower scope.
 
 **Apply the 5-dimension checklist to Phase 2 findings.** For each: one sentence of reasoning, then the formulation.
 
-1. **Intent Clarity.** Will two developers read the Task and do the same thing? One verb per Task — concrete, not "improve" or "fix".
-2. **Scope Boundaries.** What sits in scope and what stays explicitly out? Each Constraint maps to a concrete risk from Investigate (fragile file, similar code that must stay, dependency surface).
+1. **Intent Clarity.** Two developers should read the Task and do the same thing. Use one concrete verb per Task — not "improve" or "fix".
+2. **Scope Boundaries.** State what is in scope and what is out. Each Constraint maps to a concrete risk from Investigate: a fragile file, similar code that must stay, a dependency surface.
 3. **Context Anchoring.** Cite paths and line numbers — `src/auth/middleware.ts:validateToken():89`, not "the auth module". Context has 4 subsections: Area architecture, Files to change, Patterns to reuse, Tests.
 4. **Acceptance Criteria.** Write each Verification bullet as a command with expected result OR an observable behavior. Pull edge cases from Investigate findings.
 5. **Reuse Opportunities.** For each requirement, find a partial existing solution. Record under Patterns to reuse with paths.
@@ -108,11 +108,11 @@ For deeper Bad/Good examples and anti-patterns, see `reference/synthesize-guide.
 
 **Question validation:**
 
-Re-read `$ARGUMENTS`. Drop questions the prompt already answers. Fold the user's decisions into Requirements/Constraints as facts.
+Re-read `$ARGUMENTS`. Drop questions the prompt already answers. Fold the user's decisions into Requirements and Constraints as facts.
 
 **Interactive clarifications:**
 
-Draft 3–7 clarifying questions about implementation decisions whose answer changes the Task.
+Draft 3–7 clarifying questions about implementation decisions that change the Task.
 Ask the user via AskUserQuestion in batches of 1–4 questions.
 
 For each question:

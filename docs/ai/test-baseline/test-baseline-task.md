@@ -28,7 +28,7 @@ The script currently parses flags via getopts and supports `--type`, `--skill`,
 
 ### Tests
 
-- No automated tests for `lib/notify.sh`. Verify manually via curl-style command.
+- No automated tests cover `lib/notify.sh`. Verify manually with a curl-style command.
 
 ## Requirements
 

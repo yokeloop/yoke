@@ -18,9 +18,9 @@ Delegate each working phase to a sub-agent via the Agent tool:
 - Document → `agents/doc-updater.md` (opt-in, see Phase 4)
 - Format → `agents/formatter.md`
 
-Work from start to finish without stops or confirmations.
+Run from start to finish without stops or confirmations.
 
-**Principle:** the developer kicks it off and walks away, returning on notification.
+**Principle:** the developer starts the run, walks away, and returns on notification.
 
 ---
 
@@ -98,7 +98,7 @@ Read the Order from the plan:
 - **Sequential** → dispatch one at a time
 - **Barrier** → wait for all tasks in the group to finish
 
-Without parallel groups, run sequentially.
+Without parallel groups, dispatch sequentially.
 
 ### For each task
 
@@ -135,7 +135,7 @@ Without parallel groups, run sequentially.
 6. Mark in TodoWrite: [x]
 ```
 
-**On BLOCKED:** skip only tasks that depend on the blocked one. Run the rest.
+**On BLOCKED:** skip only the tasks that depend on the blocked one. Run the rest.
 
 On BLOCKED — send a notification:
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill do --phase Execute --slug "$SLUG" --title "Task blocked" --body "<block reason and number of skipped tasks>"`
@@ -269,10 +269,10 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
 - **No stops.** Run end to end without confirmations between steps.
 - **Commits by convention.** Format and ticket ID — from `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - **Current directory.** Worktrees and branch management are not allowed.
-- **Context isolation.** A sub-agent receives the full text of its task, not the whole plan.
+- **Context isolation.** A sub-agent receives the full text of its task, never the whole plan.
 - **Review after each task.** Spec compliance → code quality. Mandatory.
 - **TodoWrite.** Mark each step immediately upon completion.
-- **On BLOCKED — keep going.** Stop only the dependent branch.
+- **On BLOCKED, keep going.** Stop only the dependent branch.
 - **CLI output.** Run commands with long output (formatter, lint, build, test) with `2>&1 | tail -20`.
 - Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
 

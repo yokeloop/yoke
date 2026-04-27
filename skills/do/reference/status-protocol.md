@@ -14,7 +14,7 @@ Task done. Verify passes. Commit made.
 
 **Orchestrator action:**
 
-1. If the sub-agent didn't commit — commit
+1. If the sub-agent didn't commit, commit it
 2. Run spec review → quality review (see Review Loop)
 3. Mark the task in TodoWrite
 4. Move to the next task
@@ -26,10 +26,10 @@ Task done, but the sub-agent has doubts. The code works, Verify passes.
 **Orchestrator action:**
 
 1. Read the concerns
-2. Concern about correctness or scope — evaluate before review:
+2. For a concern about correctness or scope, evaluate before review:
    - Justified → record, continue to review
    - Critical → stop as BLOCKED
-3. Observation-level concern (file bloating, atypical pattern) — record and continue
+3. For an observation-level concern (file bloating, atypical pattern), record and continue
 4. Record concerns in the report data
 5. Commit if not done, run the review loop
 
@@ -39,11 +39,11 @@ The sub-agent ran out of information. Task not completed.
 
 **Orchestrator action:**
 
-1. Read exactly what's needed
+1. Read exactly what is needed
 2. Find the information (files, context from the plan)
 3. Re-dispatch the sub-agent with the added context (max 1 retry)
-4. After retry still NEEDS_CONTEXT → re-dispatch with a stronger model
-5. That didn't help either → BLOCKED
+4. If retry returns NEEDS_CONTEXT again, re-dispatch with a stronger model
+5. If that also fails, mark BLOCKED
 
 ### BLOCKED
 
@@ -59,7 +59,7 @@ The task cannot be completed.
 2. Mark dependent tasks as SKIPPED
 3. Continue with independent tasks
 
-**Don't stop the whole execution.** Block only the tasks depending on the blocked one.
+**Keep the run going.** Block only the tasks that depend on the blocked one.
 
 ---
 
@@ -85,7 +85,7 @@ Dispatch `agents/task-reviewer.md`:
 
 ## Model Escalation
 
-When a sub-agent can't cope:
+When a sub-agent stalls:
 
 1. First dispatch — the model from the agent frontmatter (usually sonnet)
 2. BLOCKED or NEEDS_CONTEXT again → re-dispatch with opus
@@ -110,7 +110,7 @@ Group 2 (sequential): Task 3 → Task 4
 - Sequential: dispatch one at a time in dependency order
 - A task in a parallel group is BLOCKED → keep the remaining tasks in the group running
 
-**Not parallel:**
+**Not eligible for parallel dispatch:**
 
 - Tasks touch the same files (file intersection)
 - Tasks are linked via depends_on

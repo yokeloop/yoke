@@ -165,14 +165,11 @@ If there are no questions — skip this step.
 
 ### Phase 4 — Route
 
-Pick the execution strategy via the table in `reference/routing-rules.md`.
+Pick the execution strategy from these three rules — first match wins:
 
-**Inputs for routing:**
-
-- `TASK_COMPLEXITY` from the task file
-- Task count from decomposition
-- File intersection matrix from architect
-- Presence of cross-layer tasks (frontend + backend + tests in separate tasks)
+- **inline** — 1-2 tasks, no shared files, all sequential. Use the current thread; no sub-agent overhead.
+- **sub-agents** — 3+ tasks with parallel groups, single codebase. Default for medium / complex plans. Use `isolation: worktree` when parallel=true, `isolation: none` when sequential.
+- **agent-team** — 2+ layers (frontend + backend + tests in separate tasks) with strong cross-layer coordination. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`; falls back to `sub-agents` if the flag is unset.
 
 **Record the result:**
 
@@ -180,6 +177,8 @@ Pick the execution strategy via the table in `reference/routing-rules.md`.
 - `PARALLEL` = true | false
 - `PARALLEL_GROUPS` = which tasks can run in parallel (when parallel=true)
 - `REASONING` = one sentence explaining the mode
+
+For the full 9-row decision matrix and edge cases, see `reference/routing-rules.md` — supplementary, optional.
 
 **Before writing — check consistency:**
 
@@ -220,9 +219,76 @@ The agent is defined in `agents/plan-reviewer.md`.
 
 ### Phase 6 — Write
 
-**1.** Read `reference/plan-format.md` — the output file format.
+**1.** Write the file `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md` using this format:
 
-**2.** Write the file `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md` using the format from plan-format.md. Include:
+```markdown
+# <Task title> — implementation plan
+
+**Task:** <path to task file>
+**Complexity:** <trivial | simple | medium | complex>
+**Mode:** <inline | sub-agents | agent-team>
+**Parallel:** <true | false>
+
+## Design decisions
+
+### DD-1: <What you're deciding>
+
+**Decision:** <chosen option>
+**Rationale:** <why, with a code reference>
+**Alternative:** <rejected option — why not>
+
+## Tasks
+
+### Task 1: <title>
+
+- **Files:** `src/path/file.ts` (create), `src/path/other.ts:45-60` (edit)
+- **Depends on:** none
+- **Scope:** S
+- **What:** <1–2 sentences — what to do>
+- **How:** <key implementation steps — concrete, not "add validation">
+- **Context:** <files and lines for the agent to read>
+- **Verify:** `<project test command>` — green
+
+### Task N: Validation
+
+- **Files:** —
+- **Depends on:** all
+- **Scope:** S
+- **What:** Run full validation: lint, types, tests, build
+- **Context:** —
+- **Verify:** `<project lint> && <project type-check> && <project test> && <project build>` — all green
+
+## Execution
+
+- **Mode:** <inline | sub-agents | agent-team>
+- **Parallel:** <true | false>
+- **Reasoning:** <one sentence>
+- **Order:**
+  Group 1 (parallel): Task 1, Task 2
+  ─── barrier ───
+  Group 2 (sequential): Task 3 → Task 4
+
+## Verification
+
+<Criteria from the task file — unchanged>
+
+## Materials
+
+<From the task file — unchanged>
+```
+
+**Format rules:**
+
+- The last task is always Validation. Run the full test suite, lint, type-check, build.
+- Every task contains Verify — a concrete command or observable behavior.
+- Context in a task — minimally sufficient. Concrete paths and lines, no "read the whole project".
+- Design decisions numbered (DD-1, DD-2…) for referencing.
+- Mode and Parallel — required header fields. `/yoke:do` reads them directly.
+- Use commands from `.claude/yoke-context.md` Commands section, or auto-detect from project config files.
+
+For the full template with annotations and barrier/parallel grammar, see `reference/plan-format.md` — supplementary, optional.
+
+**Include in every plan file:**
 
 - Every design decision with reasoning
 - Every task with files, dependencies, scope
@@ -230,7 +296,7 @@ The agent is defined in `agents/plan-reviewer.md`.
 - Execution order (DAG)
 - Verification criteria from the task file
 
-**3. Self-check the prose** — re-read the file. Edit inline if any sentence violates:
+**2. Self-check the prose** — re-read the file. Edit inline if any sentence violates:
 
 - Active voice — "the agent reads the file"
 - Positive form — "Add tests" (not "Don't forget tests")
@@ -238,7 +304,7 @@ The agent is defined in `agents/plan-reviewer.md`.
 - No needless words
 - Imperative mood
 
-**4. Auto-commit the artifact.**
+**3. Auto-commit the artifact.**
 
 Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
 
@@ -253,7 +319,7 @@ Format: `TICKET docs(SLUG): add implementation plan` (NO colon after ticket).
 Example: `#86 docs(86-black-jack-page): add implementation plan`.
 Commit only the plan artifact, no other files.
 
-**5.** Tell the user the file path.
+**4.** Tell the user the file path.
 
 **Transition →** Phase 7.
 

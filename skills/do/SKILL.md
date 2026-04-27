@@ -14,9 +14,8 @@ Delegate each working phase to a sub-agent via the Agent tool:
 
 - Implementation → `agents/task-executor.md`
 - Task review → `agents/task-reviewer.md`
-- Polish → `agents/code-polisher.md`
 - Validate → `agents/validator.md`
-- Document → `agents/doc-updater.md`
+- Document → `agents/doc-updater.md` (opt-in, see Phase 4)
 - Format → `agents/formatter.md`
 
 Work from start to finish without stops or confirmations.
@@ -27,7 +26,10 @@ Work from start to finish without stops or confirmations.
 
 ## Input
 
-`$ARGUMENTS` — path to the plan file, e.g. `docs/ai/86-black-jack-page/86-black-jack-page-plan.md`
+`$ARGUMENTS` — path to the plan file, e.g. `docs/ai/86-black-jack-page/86-black-jack-page-plan.md`.
+
+Optional flag `--update-docs` enables Phase 4 (Document). Without it, the
+docs phase is skipped unless the plan's frontmatter sets `update_docs: true`.
 
 If there is no path — ask the user.
 
@@ -35,16 +37,15 @@ If there is no path — ask the user.
 
 ## Pipeline
 
-7 stages. Each one is tracked in TodoWrite.
+6 stages. Each one is tracked in TodoWrite.
 
 ```
 1. Parse        → read the plan, create todos
-2. Execute      → dispatch sub-agents + spec review + quality review
-3. Polish       → simplify and clean up code
-4. Validate     → dispatch validator sub-agent
-5. Document     → update documentation
-6. Finalize     → format + report
-7. Complete     → review / revdiff / finish
+2. Execute      → dispatch sub-agents + combined task review
+3. Validate     → dispatch validator sub-agent
+4. Document     → opt-in via --update-docs flag or plan frontmatter
+5. Finalize     → format + report
+6. Complete     → review / revdiff / finish
 ```
 
 ---
@@ -66,16 +67,17 @@ If there is no path — ask the user.
 
 **4.** Find the task file: `docs/ai/<SLUG>/<SLUG>-task.md`
 
-**5.** Create the todo list via TodoWrite:
+**5.** Detect docs opt-in: set `UPDATE_DOCS=true` if `--update-docs` is in `$ARGUMENTS` OR the plan's frontmatter sets `update_docs: true`. Otherwise `UPDATE_DOCS=false`.
+
+**6.** Create the todo list via TodoWrite:
 
 ```
 [ ] Execute: Task 1 — <name>
 [ ] Execute: Task 2 — <name>
 ...
 [ ] Execute: Task N — Validation (from the plan)
-[ ] Polish: simplify and clean up code
 [ ] Validate: lint + types + tests
-[ ] Documentation: update documentation
+[ ] Documentation: update documentation     # only when UPDATE_DOCS=true
 [ ] Finalize: format + report
 [ ] Complete: review / revdiff / finish
 ```
@@ -122,7 +124,7 @@ Without parallel groups, run sequentially.
      - Pass: task requirements, implementer report, BASE_SHA, HEAD_SHA
      - The agent does spec compliance + code quality in one pass.
      - ✅ Approved → task complete
-     - ❌ Critical/Important issues → implementer fixes → re-dispatch (max 3)
+     - ❌ Critical/Important issues → implementer fixes → re-dispatch (max 2)
      - Minor only → record, do not block
 
 5. Guarantee a commit:
@@ -142,38 +144,20 @@ Save the changed/created files list for Phases 3-5.
 
 **Transition:** tasks done (or BLOCKED) → Phase 3
 
-**If there are zero changed files** (all tasks BLOCKED/SKIPPED):
-skip Phases 3 (Polish) and 5 (Document).
-Go to Phase 4 (Validate) — skip if there are no changes.
-Then Phase 6 (Finalize) with status failed → Phase 7 (Complete).
+**When zero files changed** (all tasks BLOCKED/SKIPPED):
+skip Phase 4 (Document).
+Go to Phase 3 (Validate) — skip if no changes exist.
+Then Phase 5 (Finalize) with status failed → Phase 6 (Complete).
 
 ---
 
-## Phase 3 — Polish
-
-Run a sub-agent via the Agent tool. Prompt — from `agents/code-polisher.md`.
-
-Pass:
-
-- List of files changed/created in Phase 2
-- CONSTRAINTS from the plan
-
-After completion:
-
-- Commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
-- Mark in TodoWrite: [x]
-
-**Transition →** Phase 4.
-
----
-
-## Phase 4 — Validate
+## Phase 3 — Validate
 
 Run a sub-agent via the Agent tool. Prompt — from `agents/validator.md`.
 
 Pass:
 
-- List of files changed in Phases 2-3
+- List of files changed in Phase 2
 - SLUG for the commit convention
 - TICKET_ID for the commit convention
 - CONSTRAINTS from the plan
@@ -183,13 +167,15 @@ fixes failures (one attempt), commits fixes, and returns the result of each comm
 
 Mark in TodoWrite: [x]
 
-**Transition →** Phase 5.
+**Transition →** Phase 4.
 
 ---
 
-## Phase 5 — Document
+## Phase 4 — Document
 
-Run a sub-agent via the Agent tool. Prompt — from `agents/doc-updater.md`.
+**Skip this phase when `UPDATE_DOCS=false`** (the default). Mark Documentation as skipped in TodoWrite and proceed to Phase 5.
+
+When `UPDATE_DOCS=true` (set in Phase 1 step 5 from the `--update-docs` flag or the plan's frontmatter), run a sub-agent via the Agent tool. Prompt — from `agents/doc-updater.md`.
 
 Pass:
 
@@ -210,13 +196,13 @@ After completion:
 - Commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - Mark in TodoWrite: [x]
 
-**Transition →** Phase 6.
+**Transition →** Phase 5.
 
 ---
 
-## Phase 6 — Finalize
+## Phase 5 — Finalize
 
-### 6a. Format
+### 5a. Format
 
 Run a sub-agent via the Agent tool. Prompt — from `agents/formatter.md`.
 
@@ -230,7 +216,7 @@ The sub-agent picks the formatter, runs it on the files, commits.
 
 Mark in TodoWrite: [x]
 
-### 6b. Report
+### 5b. Report
 
 Write `docs/ai/<SLUG>/<SLUG>-report.md` directly via the Write tool using the Report template (see appendix at the end of this file).
 
@@ -248,7 +234,7 @@ git commit -m "TICKET docs(SLUG): add execution report"
 Format: `TICKET docs(SLUG): add execution report` (NO colon after ticket).
 Example: `#86 docs(86-black-jack-page): add execution report`.
 
-### 6c. Notification
+### 5c. Notification
 
 Print a summary: `<SLUG> done (N/M tasks)` or `<SLUG> done with issues (N/M tasks, K blocked)`.
 Path to the report file.
@@ -256,11 +242,11 @@ Path to the report file.
 Send a notification:
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill do --phase Complete --slug "$SLUG" --title "<SLUG> done (N/M tasks)" --body "docs/ai/$SLUG/$SLUG-report.md"`
 
-**Transition →** Phase 7.
+**Transition →** Phase 6.
 
 ---
 
-## Phase 7 — Complete
+## Phase 6 — Complete
 
 Report the path to the report file and offer 3 options via AskUserQuestion:
 
@@ -268,18 +254,16 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
 2. **Review via revdiff** — interactive annotation of the /do diff
 3. **Finish** — exit
 
-**Handling the choice:**
+**Handling the choice (one-shot, no loop):**
 
-- **Run /yoke:review:** invoke the Skill tool with `/yoke:review` and argument `<SLUG>`
-- **Review via revdiff:** After revdiff closes, continue with the following steps:
-  1. Resolve the default base via the cascade `git symbolic-ref refs/remotes/origin/HEAD` → `origin/main` → `origin/master` → fallback `main` (see `skills/gp/agents/git-pre-checker.md:43-54`). Call the Skill tool with `/revdiff` and the argument `<default-base>...HEAD`.
-  2. If the Skill return is empty, skip this entire step. Otherwise:
-     - If the annotations describe code changes, apply those code changes inline (orchestrator edits — do not dispatch a sub-agent). If the annotations are prose-only, skip the code-edit step.
-     - Append the full annotation text to `docs/ai/<SLUG>/<SLUG>-report.md`: if a `## Review notes` heading already exists in the file, append under the existing heading; otherwise create the heading and append under it.
-     - Check `.gitignore` for `docs/ai/` (same as Phase 6b). If ignored, skip the auto-commit. Otherwise, run `git add docs/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"` (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
-  3. Return to the "Offer 3 options" step above.
-     If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then return to the "Offer 3 options" step above.
-- **Finish:** report the path to the report file
+- **Run /yoke:review:** invoke the Skill tool with `/yoke:review` and argument `<SLUG>`. Exit.
+- **Review via revdiff:** Resolve the default base via the cascade `git symbolic-ref refs/remotes/origin/HEAD` → `origin/main` → `origin/master` → fallback `main` (see `skills/gp/agents/git-pre-checker.md:43-54`). Call the Skill tool with `/revdiff` and the argument `<default-base>...HEAD`.
+  - If the return is empty, exit.
+  - If annotations describe code changes, apply them inline (orchestrator edits — do not dispatch a sub-agent). If prose-only, skip the code-edit step.
+  - Append the full annotation text to `docs/ai/<SLUG>/<SLUG>-report.md` under a `## Review notes` heading (create the heading if absent).
+  - Check `.gitignore` for `docs/ai/` (same as Phase 5b). If ignored, skip the auto-commit. Otherwise, run `git add docs/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"` (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`). Exit. (For another pass, the user invokes `/revdiff` manually.)
+  - If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then exit.
+- **Finish:** report the path to the report file. Exit.
 
 ---
 

@@ -147,6 +147,15 @@ Before reporting, check the work:
 - Only what was requested is implemented?
 - Codebase patterns respected?
 
+**Cleanup** (no separate polish pass — fold this in here):
+
+- No `console.log` / `console.debug` left from debugging (production logging stays).
+- No commented-out code (`// old`, `/* disabled */`).
+- No `TODO` / `FIXME` / `HACK` without a ticket number.
+- No redundant comments restating the obvious.
+- No unused imports.
+- No 3+ blank lines in a row.
+
 **Tests:**
 
 - Do tests verify behavior rather than mocks?

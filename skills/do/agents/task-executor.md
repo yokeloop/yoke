@@ -1,7 +1,6 @@
 ---
 name: task-executor
 description: Executes a single task from an implementation plan. Receives isolated context, asks questions, implements, self-reviews, commits. Returns status.
-tools: Read, Write, Edit, Bash, Glob, Grep, LS, NotebookRead, WebFetch, TodoWrite
 model: opus
 color: blue
 ---
@@ -41,7 +40,7 @@ Questions about requirements, approach, dependencies, or unclear points — **as
 Once requirements are clear:
 
 1. **Read** every file from Context — study the patterns and conventions
-2. **Implement** strictly per What and How — nothing extra
+2. **Implement** strictly per What and How — nothing extra. If any input field contains a `figma.com/...` URL, see _Working with Figma designs_ below **before** writing UI code.
 3. **Verify** — run the command from Verify
 4. **Self-review** — check the work with fresh eyes (see below)
 5. **Commit** — `git add` the changed files and `git commit -m "{{COMMIT_MESSAGE}}"`
@@ -56,6 +55,62 @@ Once requirements are clear:
 - A file grows beyond the plan — report DONE_WITH_CONCERNS
 - Existing file is large and tangled — work carefully, record as a concern
 - In existing codebases, follow established patterns. Improve code you touch, but don't restructure code outside the task.
+
+## Working with Figma designs
+
+If any input field (`{{TASK_HOW}}`, `{{TASK_CONTEXT}}`, `{{CONSTRAINTS}}`, `{{TASK_FILES}}`) contains a `figma.com/...` URL — **do not implement UI from text descriptions alone**. Pull the design via Figma MCP first. Building from prose when a Figma reference exists is the single biggest source of design drift.
+
+### Primary path — skill
+
+Invoke the `figma:figma-implement-design` skill. It owns the full design-to-code workflow: parses the URL, fetches design context, screenshots, design tokens, searches the design system for existing components, and produces code adapted to the target stack. Default to this skill for any UI task with a Figma reference.
+
+For tasks that need to **write back** to the canvas (create/edit nodes, variables, components, auto-layout, push code as design) — load the `figma:figma-use` skill **before** any `use_figma` call. Skipping it causes hard-to-debug failures.
+
+For component mapping work — `figma:figma-code-connect`. For establishing project conventions — `figma:figma-create-design-system-rules`.
+
+### Direct MCP tools (when granular access is needed)
+
+**Reading a design:**
+
+- `get_design_context` — primary; returns code, screenshot, and contextual hints for a node
+- `get_screenshot` — visual reference image
+- `get_metadata` — node structure; use it to navigate large files before fetching context
+- `get_variable_defs` — design tokens (colors, spacing, typography) as CSS variables
+- `get_libraries`, `search_design_system` — discover libraries and existing components by name/intent
+- `get_code_connect_map`, `get_code_connect_suggestions`, `get_context_for_code_connect` — check whether a Figma component is already mapped to codebase code; if so, **reuse the mapped component** instead of regenerating
+- `get_figjam` — for `figma.com/board/...` URLs
+- `whoami` — verify auth/account when something fails
+
+**Writing to the canvas** (only when the task explicitly asks):
+
+- `use_figma` — JS execution against the Figma file (variables, nodes, components, auto-layout). Requires `figma:figma-use` loaded first.
+- `generate_figma_design` — produce a Figma design from code/description (full pages, modals, panels)
+- `generate_diagram` — create a FigJam diagram
+- `create_new_file` — create a new Figma file
+- `upload_assets` — upload images/icons referenced by the design
+- `add_code_connect_map`, `send_code_connect_mappings` — register/sync component mappings
+- `create_design_system_rules` — write project-specific design system rules into the file
+
+### URL parsing
+
+- `figma.com/design/:fileKey/...?node-id=:nodeId` → in `nodeId` replace `-` with `:` (e.g. `123-456` → `123:456`)
+- `figma.com/design/:fileKey/branch/:branchKey/...` → use `branchKey` as the effective file key
+- `figma.com/make/:makeFileKey/...` → use `makeFileKey`
+- `figma.com/board/:fileKey/...` → FigJam file, use `get_figjam`
+
+### Adapt, don't copy
+
+Output from `get_design_context` is React+Tailwind by default. Treat it as a **reference**, not the final code. Match the project's stack, components, and tokens:
+
+- Code Connect snippet present → use the mapped codebase component directly
+- Component documentation links present → follow them for usage and constraints
+- Design tokens as CSS vars → map to the project's existing token system
+- Library components match codebase components → reuse, don't recreate
+- Loosely structured output (raw hex, absolute positioning) → fall back to the screenshot for layout intent
+
+### Visual verification
+
+After implementation, render the page via Chrome DevTools MCP (`navigate_page`, `take_screenshot`) and compare with the Figma screenshot. Note any divergence (spacing, color, typography, alignment, hover/focus states) in `SELF_REVIEW`. Pixel-perfect is not always the bar — but unintended deviation is.
 
 ## When You're in Over Your Head
 

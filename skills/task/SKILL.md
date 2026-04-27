@@ -218,7 +218,7 @@ Report the file path and task slug, then run the finishing loop.
 Send a notification:
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill task --phase Complete --slug "$TASK_SLUG" --title "Task ready" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-task.md"`
 
-**Loop:**
+**Offer next step:**
 
 Offer 3 options through AskUserQuestion:
 
@@ -226,14 +226,11 @@ Offer 3 options through AskUserQuestion:
 2. **Review via revdiff** — interactive review of the task file
 3. **Finish** — exit
 
-**Handle the choice:**
+**Handle the choice (one-shot, no loop):**
 
 - **Run /yoke:plan:** call the Skill tool with `/yoke:plan` and the argument `docs/ai/<task-slug>/<task-slug>-task.md`. Exit.
-- **Review via revdiff:** After revdiff closes, continue with the following steps:
-  1. Call the Skill tool with `/revdiff` and the argument `--only docs/ai/<task-slug>/<task-slug>-task.md`.
-  2. If the Skill return is non-empty, apply the returned annotations to the task file and overwrite `docs/ai/<task-slug>/<task-slug>-task.md`. If the return is empty, skip this step.
-  3. Return to the "Offer 3 options" step above.
-     If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then return to the "Offer 3 options" step above.
+- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only docs/ai/<task-slug>/<task-slug>-task.md`. If the return is non-empty, apply the annotations to the task file and overwrite. Then exit. (For another pass, the user invokes `/revdiff` manually.)
+  If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then exit.
 - **Finish:** report the file path. Exit.
 
 ---

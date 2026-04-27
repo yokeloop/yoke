@@ -234,7 +234,7 @@ Report the plan file path and run the finishing loop.
 Send a notification:
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill plan --phase Complete --slug "$TASK_SLUG" --title "Plan ready" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-plan.md"`
 
-**Loop:**
+**Offer next step:**
 
 Offer 3 options through AskUserQuestion:
 
@@ -242,15 +242,12 @@ Offer 3 options through AskUserQuestion:
 2. **Review via revdiff** — interactive review of the plan file
 3. **Finish** — exit
 
-**Handle the choice:**
+**Handle the choice (one-shot, no loop):**
 
-- **Run /yoke:do:** call the Skill tool with `/yoke:do` and the argument `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit the loop.
-- **Review via revdiff:** After revdiff closes, continue with the following steps:
-  1. Call the Skill tool with `/revdiff` and the argument `--only docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`.
-  2. If the Skill return is non-empty, apply the returned annotations to the plan file and overwrite `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. If the return is empty, skip this step.
-  3. Return to the "Offer 3 options" step above.
-     If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then return to the "Offer 3 options" step above.
-- **Finish:** report the file path. Exit the loop.
+- **Run /yoke:do:** call the Skill tool with `/yoke:do` and the argument `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit.
+- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. If the return is non-empty, apply the annotations to the plan file and overwrite. Then exit. (For another pass, the user invokes `/revdiff` manually.)
+  If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then exit.
+- **Finish:** report the file path. Exit.
 
 ---
 

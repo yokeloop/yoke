@@ -129,7 +129,7 @@ If the user chose "Skip fixes", move all issues to SKIPPED_ISSUES with reason "S
 
 ### Phase 5 — Finalize
 
-**a)** Dispatch review-report-writer via the Agent tool. Read `agents/review-report-writer.md`, substitute {{SLUG}}, {{SUMMARY}}, {{ALL_ISSUES}} (full list from Phase 2), {{FIXED_ISSUES}}, {{SKIPPED_ISSUES}}, {{COMMIT_HASHES}}.
+**a)** Dispatch review-report-writer via the Agent tool. Read `agents/review-report-writer.md`, substitute {{SLUG}}, {{SUMMARY}}, {{ALL_ISSUES}} (full list from Phase 2), {{FIXED_ISSUES}}, {{SKIPPED_ISSUES}}, {{COMMIT_HASHES}}. The agent writes `docs/ai/<SLUG>/<SLUG>-review.md` using the Review template (see appendix at the end of this file).
 
 After the report is written, auto-commit it. Check `docs/ai/` against `.gitignore`. If ignored — skip.
 
@@ -186,3 +186,96 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --
 - **Backward compatibility.** $ARGUMENTS = SLUG. Invocation from /do and /fix unchanged.
 - **Long CLI output.** Run with `2>&1 | tail -20`.
 - Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
+
+---
+
+## Review template
+
+```markdown
+# Code Review: <SLUG>
+
+## Summary
+
+### Context and goal
+
+<1-3 sentences: what was done and why>
+
+### Key code areas for review
+
+1. **`src/path/file.ts:fn()`** — <why it matters>
+
+### Complex decisions
+
+1. **<What>** (`src/path/file.ts:42`) — <trade-off>
+
+### Questions for the reviewer
+
+1. <Concrete question>
+
+### Risks and impact
+
+- <Risk>: <what to watch out for>
+
+### Tests and manual checks
+
+**Auto-tests:**
+
+- <what should be covered>
+
+**Manual scenarios:**
+
+1. <Step> → <expected result>
+
+### Out of scope
+
+- <what the PR intentionally excludes>
+
+## Commits
+
+| Hash    | Description     |
+| ------- | --------------- |
+| abc1234 | feat(slug): ... |
+
+## Changed Files
+
+| File             | +/-     | Description    |
+| ---------------- | ------- | -------------- |
+| src/path/file.ts | +42/-10 | <what changed> |
+
+## Issues Found
+
+| Severity | Score | Category | File:line            | Description            |
+| -------- | ----- | -------- | -------------------- | ---------------------- |
+| Critical | 90    | security | src/auth/login.ts:42 | SQL injection in query |
+
+> No issues — replace the table with: **Code is clean.**
+
+## Fixed Issues
+
+| Issue                        | Commit    | Description         |
+| ---------------------------- | --------- | ------------------- |
+| SQL injection in login.ts:42 | `def5678` | Parameterized query |
+
+> No fixes — replace the table with: **All issues fixed.**
+
+## Skipped Issues
+
+| Issue         | Reason                     |
+| ------------- | -------------------------- |
+| Unused import | Stylistic, out of PR scope |
+
+> No skipped — replace the table with: **All found issues were fixed.**
+
+## Recommendations
+
+- <Recommendation for PR review>
+```
+
+**Format rules:**
+
+- Summary covers 7 dimensions: context and goal, key areas, complex decisions, questions for the reviewer, risks, tests, out of scope.
+- Issues Found sorted by Score descending. Severity: Critical (80-100) / Important (50-79) / Minor (0-49).
+- Fixed Issues and Skipped Issues appear when Issues Found has entries.
+- Replace empty tables with the placeholder text from the `>` blocks above.
+
+For the full template with extended commentary, see `reference/review-format.md` — supplementary, optional.

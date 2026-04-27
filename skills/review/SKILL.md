@@ -55,7 +55,7 @@ No argument — determine slug from the current branch or the latest `docs/ai/*/
 - From the current branch or the latest `docs/ai/*/` directory
 
 **2.** Path to task-file: `docs/ai/<SLUG>/<SLUG>-task.md`.
-If file is absent — pass `—` to sub-agent.
+If the file is absent, pass `—` to the sub-agent.
 
 **3.** Extract `TICKET_ID` from SLUG (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
@@ -63,7 +63,7 @@ If file is absent — pass `—` to sub-agent.
 
 - `docs/ai/<SLUG>/<SLUG>-report.md` — collect KNOWN_ISSUES from Concerns sections and quality review results
 - `docs/ai/<SLUG>/<SLUG>-fixes.md` — append the list of fixes to KNOWN_ISSUES
-- No artifacts — KNOWN_ISSUES = `—`
+- If no artifacts exist, set KNOWN_ISSUES = `—`
 
 **Transition:** SLUG, TICKET_ID, KNOWN_ISSUES determined → Phase 2.
 
@@ -75,7 +75,7 @@ Dispatch code-reviewer via the Agent tool. Read `agents/code-reviewer.md`, subst
 
 Receive SUMMARY + ISSUES + ISSUES_COUNT.
 
-If ISSUES_COUNT = 0 → skip Phases 3-4, move to Phase 5 (report without fixes).
+If ISSUES_COUNT = 0, skip to Phase 5 (report without fixes).
 
 **Transition:** SUMMARY and ISSUES received → Phase 3.
 
@@ -106,7 +106,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review -
 
 ### Phase 4 — Fix
 
-If ISSUES_TO_FIX contains issues:
+If ISSUES_TO_FIX is non-empty:
 
 **a)** Dispatch issue-fixer via the Agent tool. Read `agents/issue-fixer.md`, substitute {{ISSUES_TO_FIX}}, {{SLUG}}, {{TICKET_ID}}, {{CONSTRAINTS}}.
 Issue-fixer itself dispatches parallel single-fix-agents.
@@ -121,7 +121,7 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`, substitute {{FILES_L
 **e)** Dispatch formatter from /do:
 Read `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`, substitute {{FILES_LIST}}, {{SLUG}}, {{TICKET_ID}}.
 
-If the user chose "Skip fixes" — all issues go to SKIPPED_ISSUES, reason "Skipped by user choice".
+If the user chose "Skip fixes", move all issues to SKIPPED_ISSUES with reason "Skipped by user choice".
 
 **Transition:** fixes complete → Phase 5.
 
@@ -130,6 +130,18 @@ If the user chose "Skip fixes" — all issues go to SKIPPED_ISSUES, reason "Skip
 ### Phase 5 — Finalize
 
 **a)** Dispatch review-report-writer via the Agent tool. Read `agents/review-report-writer.md`, substitute {{SLUG}}, {{SUMMARY}}, {{ALL_ISSUES}} (full list from Phase 2), {{FIXED_ISSUES}}, {{SKIPPED_ISSUES}}, {{COMMIT_HASHES}}.
+
+After the report is written, auto-commit it. Check `docs/ai/` against `.gitignore`. If ignored — skip.
+
+Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
+
+```bash
+git add docs/ai/<SLUG>/<SLUG>-review.md
+git commit -m "TICKET docs(SLUG): add review report"
+```
+
+Format: `TICKET docs(SLUG): add review report` (NO colon after ticket).
+Example: `#44 docs(44-review-with-fixes): add review report`.
 
 **b)** PR comments:
 
@@ -142,17 +154,6 @@ gh api --method POST repos/{owner}/{repo}/issues/{number}/comments -f body="[sev
 ```
 
 No PR — skip.
-
-**c)** Commit report artifact:
-
-Make sure `.gitignore` allows `docs/ai/`. If it does:
-
-```bash
-git add docs/ai/<SLUG>/<SLUG>-review.md
-git commit -m "TICKET docs(SLUG): add review report"
-```
-
-Example: `#44 docs(44-review-with-fixes): add review report`
 
 **Transition:** report written → Phase 6.
 

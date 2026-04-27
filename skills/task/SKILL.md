@@ -83,10 +83,7 @@ Find and document:
 At the end — produce an essential file list: files REQUIRED to understand the topic.
 ```
 
-**Step 2 — Read every file from the agent's essential file list.**
-Each file feeds context into Synthesize.
-
-**Step 3 — Launch task-architect through the Agent tool**
+**Step 2 — Launch task-architect through the Agent tool**
 
 Prompt to the agent:
 
@@ -104,13 +101,11 @@ Determine:
 Be concrete: files, lines, function names.
 ```
 
-**Step 4 — Read additional files** if task-architect expanded the list.
-
 **Stop criteria — Investigate is done when:**
 
 - [ ] Entry points are identified with line numbers
 - [ ] Patterns to reuse are found with example files
-- [ ] Tests for the touched area are found, or their absence is confirmed
+- [ ] Tests for the touched area are listed, or you confirm their absence
 - [ ] Risk zones are identified
 
 While any item stays open — launch another task-explorer.
@@ -126,7 +121,7 @@ While any item stays open — launch another task-explorer.
 **If the task involves UI components, styles, or frontend work** (React, Vue, Svelte, CSS, Tailwind, animations, layouts, pages): also read `reference/frontend-guide.md`.
 Read both files before starting.
 
-Apply the 5 dimensions from synthesize-guide to the Phase 2 findings. For each dimension: one sentence of reasoning aloud, then the formulation.
+Apply the 5 dimensions from synthesize-guide to Phase 2 findings. For each: one sentence of reasoning, then the formulation.
 
 **If the task involves frontend work:** for the Requirements, Constraints, and Verification dimensions, also apply the frontend checklists from frontend-guide.
 
@@ -134,15 +129,12 @@ Classify complexity: trivial / simple / medium / complex.
 
 **Question validation:**
 
-Re-read `$ARGUMENTS`. Filter out questions already answered in the prompt — per synthesize-guide.md, section "Validate against the user's input".
+Re-read `$ARGUMENTS`. Drop questions the prompt already answers — per synthesize-guide.md, section "Validate against the user's input".
 Fold the user's decisions into Requirements/Constraints as facts.
 
 **Interactive clarifications:**
 
 Draft 3–7 clarifying questions per the rules in synthesize-guide.md.
-Before the first AskUserQuestion call — send a notification:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill task --phase Synthesize --slug "$TASK_SLUG" --title "Clarifying questions" --body "<brief list of question topics>"`
-
 Ask the user via AskUserQuestion in batches of 1–4 questions.
 
 For each question:
@@ -151,10 +143,9 @@ For each question:
 - Recommended option first, labeled `(Recommended)`
 - The user may pick "Other" for free-form input
 
-After each batch of answers — revise Requirements, Constraints, and Context.
-Fold the answers into the section wording.
+After each batch, revise Requirements, Constraints, and Context. Fold the answers into the section wording.
 
-Repeat until every question is answered.
+Repeat until the user answers every question.
 
 **Transition:** 5 dimensions applied, questions asked and answers folded in → Phase 4.
 
@@ -164,12 +155,7 @@ Repeat until every question is answered.
 
 **1.** `mkdir -p docs/ai/<task-slug>`
 
-**2.** Read the example to calibrate tone and detail level:
-
-- trivial / simple → `examples/simple-task.md`
-- medium / complex → `examples/complex-task.md`
-
-**3.** Write `docs/ai/<task-slug>/<task-slug>-task.md`:
+**2.** Write `docs/ai/<task-slug>/<task-slug>-task.md`:
 
 ```
 # <Task title>
@@ -220,38 +206,34 @@ Repeat until every question is answered.
 - `path/to/file`
 ```
 
-**4.** Dispatch a subagent to copyedit the task file:
+**3. Self-check the prose** — re-read the file. Edit inline if any sentence violates:
 
-- Pass the path to the written file and `reference/elements-of-style-rules.md`
-- The subagent edits prose: active voice, concrete language, drop needless words
-- The subagent overwrites the file with the edits
+- Active voice — "the agent reads the file"
+- Positive form — "Add tests" (not "Don't forget tests")
+- Concrete language — files, lines, function names
+- No needless words
+- Imperative mood
 
-**Transition →** Phase 5.
+**4. Auto-commit the artifact.**
 
----
+Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
 
-### Phase 5 — Commit Artifact
-
-Auto-commit the task artifact.
-
-**1.** Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
-
-**2.** If not — commit the artifact per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
-
-Commit format: `TICKET docs(SLUG): add task definition` (NO colon after ticket).
+Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 
 ```bash
 git add docs/ai/<task-slug>/<task-slug>-task.md
 git commit -m "TICKET docs(SLUG): add task definition"
 ```
 
-Example: `#86 docs(86-black-jack-page): add task definition`
-
+Format: `TICKET docs(SLUG): add task definition` (NO colon after ticket).
+Example: `#86 docs(86-black-jack-page): add task definition`.
 Commit only the task artifact, no other files.
+
+**Transition →** Phase 5.
 
 ---
 
-### Phase 6 — Complete
+### Phase 5 — Complete
 
 Report the file path and task slug, then run the finishing loop.
 

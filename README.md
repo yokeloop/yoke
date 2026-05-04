@@ -1,12 +1,46 @@
 # yoke
 
-![yoke — command and workflow overview](yoke.png)
+```mermaid
+flowchart LR
+  task --> plan --> do --> review --> gca --> gp --> pr
+  do --> fix
+  fix --> do
+  subgraph utility
+    gst
+    explore
+    bootstrap
+    help
+  end
+```
 
 A marketplace of skills and commands for Claude Code, inspired by:
 
 - [obra/superpowers](https://github.com/obra/superpowers).
 - [obra/the-elements-of-style](https://github.com/obra/the-elements-of-style)
 - [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official)
+
+## Installation
+
+```bash
+# Add the marketplace
+claude marketplace add github:yokeloop/yoke
+
+# Locally (for development)
+git clone https://github.com/yokeloop/yoke.git
+claude --plugin-dir ./yoke
+```
+
+## How to use
+
+After install, start with the help skill, prepare the project, then run the pipeline:
+
+```
+/yoke:help               # overview of skills
+/yoke:bootstrap          # detect stack, generate CLAUDE.md
+/yoke:task <ticket>      # define the first task
+```
+
+See **Full cycle** below for the complete pipeline.
 
 ## Skills
 
@@ -240,17 +274,6 @@ yoke/
 └── docs/                    # per-skill documentation
 ```
 
-## Installation
-
-```bash
-# Add the marketplace
-claude marketplace add github:yokeloop/yoke
-
-# Locally (for development)
-git clone https://github.com/yokeloop/yoke.git
-claude --plugin-dir ./yoke
-```
-
 ## Planned skills
 
 `/polish` `/qa` `/memorize` `/merge`
@@ -321,12 +344,6 @@ Each yoke skill that produces an artifact offers "Review via revdiff" at its Com
 revdiff returns structured annotations on quit. For task and plan files, yoke applies the annotations in place and overwrites the file. For /do code review, yoke appends the annotations to the execution report at `docs/ai/<slug>/<slug>-report.md` under a `## Review notes` heading.
 
 See https://github.com/umputun/revdiff (MIT) for binary install paths and deeper documentation.
-
-## References
-
-- https://github.com/Q00/ouroboros
-- https://github.com/Yeachan-Heo/oh-my-claudecode
-- superpowers-lab
 
 ## License
 

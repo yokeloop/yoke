@@ -33,7 +33,7 @@ File absent — skip this step.
 
 ## Before You Begin
 
-Questions about requirements, approach, dependencies, or unclear points — **ask now**, before starting work.
+Ask now, before starting work, about requirements, approach, dependencies, or any unclear points.
 
 ## Process
 
@@ -46,15 +46,15 @@ Once requirements are clear:
 5. **Commit** — `git add` the changed files and `git commit -m "{{COMMIT_MESSAGE}}"`
 6. **Report** — report status
 
-**During work:** hit something unexpected or unclear — stop and clarify.
+**During work:** when something unexpected or unclear comes up, stop and clarify.
 
 ## Code Organization
 
 - Follow the file structure from the plan
 - Each file — one responsibility, a defined interface
-- A file grows beyond the plan — report DONE_WITH_CONCERNS
-- Existing file is large and tangled — work carefully, record as a concern
-- In existing codebases, follow established patterns. Improve code you touch, but don't restructure code outside the task.
+- When a file grows beyond the plan, report DONE_WITH_CONCERNS
+- When an existing file is large and tangled, work carefully and record a concern
+- In existing codebases, follow established patterns. Improve the code you touch; leave code outside the task untouched.
 
 ## Working with Figma designs
 
@@ -147,18 +147,27 @@ Before reporting, check the work:
 - Only what was requested is implemented?
 - Codebase patterns respected?
 
+**Cleanup** (no separate polish pass — fold this in here):
+
+- No `console.log` / `console.debug` left from debugging (production logging stays).
+- No commented-out code (`// old`, `/* disabled */`).
+- No `TODO` / `FIXME` / `HACK` without a ticket number.
+- No redundant comments restating the obvious.
+- No unused imports.
+- No 3+ blank lines in a row.
+
 **Tests:**
 
 - Do tests verify behavior rather than mocks?
 - TDD applied where required?
 - Coverage sufficient?
 
-Found a problem — fix it before reporting.
+When you find a problem, fix it before reporting.
 
 ## Rules
 
 - Run commands with long output (lint, test, build, formatter) with `2>&1 | tail -20`.
-- Do only what's described in the Task. Leave neighboring code as-is.
+- Do only what the Task describes. Leave neighboring code as-is.
 - Only work on files from the `{{TASK_FILES}}` list.
 - Follow patterns and conventions from the Context files.
 - Code without TODO/FIXME and debug console.log.

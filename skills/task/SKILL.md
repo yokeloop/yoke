@@ -12,8 +12,7 @@ You are the orchestrator. Coordinate sub-agents and talk to the user.
 
 Delegate codebase investigation through the Agent tool:
 
-- Exploration → `agents/task-explorer.md`
-- Architecture analysis → `agents/task-architect.md`
+- Investigation → `agents/task-investigator.md`
 
 You formulate the task; you do not implement it.
 
@@ -32,7 +31,7 @@ You formulate the task; you do not implement it.
 
 ### Phase 1 — Parse
 
-**1. Fetch the ticket content:**
+**1. Fetch the ticket:**
 
 - GitHub Issues → `gh issue view <url>`
 - Other trackers → take the content from the user's text; use the URL only for the slug
@@ -53,7 +52,7 @@ Copy this list verbatim into the `Materials` section.
 - `R2-50-user-id-to-db` — from YouTrack R2-50
 - `fix-navbar-overflow` — no URL, text only
 
-Rule: ID from the URL + 2–4 descriptive words. No URL — description only.
+Take the ID from the URL plus 2–4 descriptive words. With no URL, use the description only.
 
 **4.** Extract `TICKET_ID` from the slug (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
@@ -63,57 +62,29 @@ Rule: ID from the URL + 2–4 descriptive words. No URL — description only.
 
 ### Phase 2 — Investigate
 
-Invoke agents through the Agent tool (task-explorer and task-architect are defined in `agents/`).
-The order is strictly sequential: architect depends on explorer findings.
-
-**Step 1 — Launch task-explorer through the Agent tool:**
+**Launch task-investigator through the Agent tool.** The agent is defined in `agents/task-investigator.md`.
 
 Prompt to the agent:
 
 ```
-Investigate the codebase for this task: [paste the ticket essence].
+Investigate the codebase area for this task: [paste the ticket essence].
 
 Find and document:
-1. Every file and function that will be touched (paths + line numbers)
-2. Patterns and conventions in this part of the codebase
-3. Tests covering the area of change
-4. Dependencies — what may break on edit
-5. Similar implementations in the project worth reusing
-
-At the end — produce an essential file list: files REQUIRED to understand the topic.
+1. Entry points with file:line
+2. Patterns to reuse (1-2 similar implementations)
+3. Tests covering the area, or note their absence
+4. Integration risks and fragile dependencies
+5. Reusable utilities, components, or patterns
 ```
-
-**Step 2 — Read every file from the agent's essential file list.**
-Each file feeds context into Synthesize.
-
-**Step 3 — Launch task-architect through the Agent tool**
-
-Prompt to the agent:
-
-```
-Based on these task-explorer findings: [paste findings]
-
-Analyze the architecture of the area touched by the task: [task essence].
-
-Determine:
-1. Patterns and conventions to follow
-2. Integration points and data flow
-3. Architectural risks and what may break
-4. If you find multiple incompatible approaches — describe each with trade-offs
-
-Be concrete: files, lines, function names.
-```
-
-**Step 4 — Read additional files** if task-architect expanded the list.
 
 **Stop criteria — Investigate is done when:**
 
 - [ ] Entry points are identified with line numbers
 - [ ] Patterns to reuse are found with example files
-- [ ] Tests for the touched area are found, or their absence is confirmed
+- [ ] Tests for the touched area are listed, or you confirm their absence
 - [ ] Risk zones are identified
 
-While any item stays open — launch another task-explorer.
+If any item stays open, re-dispatch task-investigator with narrower scope.
 
 **Transition:** all four criteria closed → Phase 3.
 
@@ -121,28 +92,27 @@ While any item stays open — launch another task-explorer.
 
 ### Phase 3 — Synthesize
 
-**WARNING:** Read `reference/synthesize-guide.md` before writing.
+**Apply the 5-dimension checklist to Phase 2 findings.** For each: one sentence of reasoning, then the formulation.
 
-**If the task involves UI components, styles, or frontend work** (React, Vue, Svelte, CSS, Tailwind, animations, layouts, pages): also read `reference/frontend-guide.md`.
-Read both files before starting.
+1. **Intent Clarity.** Two developers should read the Task and do the same thing. Use one concrete verb per Task — not "improve" or "fix".
+2. **Scope Boundaries.** State what is in scope and what is out. Each Constraint maps to a concrete risk from Investigate: a fragile file, similar code that must stay, a dependency surface.
+3. **Context Anchoring.** Cite paths and line numbers — `src/auth/middleware.ts:validateToken():89`, not "the auth module". Context has 4 subsections: Area architecture, Files to change, Patterns to reuse, Tests.
+4. **Acceptance Criteria.** Write each Verification bullet as a command with expected result OR an observable behavior. Pull edge cases from Investigate findings.
+5. **Reuse Opportunities.** For each requirement, find a partial existing solution. Record under Patterns to reuse with paths.
 
-Apply the 5 dimensions from synthesize-guide to the Phase 2 findings. For each dimension: one sentence of reasoning aloud, then the formulation.
+**Complexity:** trivial (1 file, ≤5 lines) / simple (1-2 files, clear scope) / medium (3-7 files, possible regressions) / complex (architecture, multiple layers, no tests, public API).
 
-**If the task involves frontend work:** for the Requirements, Constraints, and Verification dimensions, also apply the frontend checklists from frontend-guide.
+**If the task touches UI components, styles, or frontend work** (React, Vue, Svelte, CSS, Tailwind, animations, layouts, pages): read `reference/frontend-guide.md` and apply its checklists to the Requirements, Constraints, and Verification dimensions.
 
-Classify complexity: trivial / simple / medium / complex.
+For deeper Bad/Good examples and anti-patterns, see `reference/synthesize-guide.md` — supplementary.
 
 **Question validation:**
 
-Re-read `$ARGUMENTS`. Filter out questions already answered in the prompt — per synthesize-guide.md, section "Validate against the user's input".
-Fold the user's decisions into Requirements/Constraints as facts.
+Re-read `$ARGUMENTS`. Drop questions the prompt already answers. Fold the user's decisions into Requirements and Constraints as facts.
 
 **Interactive clarifications:**
 
-Draft 3–7 clarifying questions per the rules in synthesize-guide.md.
-Before the first AskUserQuestion call — send a notification:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill task --phase Synthesize --slug "$TASK_SLUG" --title "Clarifying questions" --body "<brief list of question topics>"`
-
+Draft 3–7 clarifying questions about implementation decisions that change the Task.
 Ask the user via AskUserQuestion in batches of 1–4 questions.
 
 For each question:
@@ -151,10 +121,9 @@ For each question:
 - Recommended option first, labeled `(Recommended)`
 - The user may pick "Other" for free-form input
 
-After each batch of answers — revise Requirements, Constraints, and Context.
-Fold the answers into the section wording.
+After each batch, revise Requirements, Constraints, and Context. Fold the answers into the section wording.
 
-Repeat until every question is answered.
+Repeat until the user answers every question.
 
 **Transition:** 5 dimensions applied, questions asked and answers folded in → Phase 4.
 
@@ -164,12 +133,7 @@ Repeat until every question is answered.
 
 **1.** `mkdir -p docs/ai/<task-slug>`
 
-**2.** Read the example to calibrate tone and detail level:
-
-- trivial / simple → `examples/simple-task.md`
-- medium / complex → `examples/complex-task.md`
-
-**3.** Write `docs/ai/<task-slug>/<task-slug>-task.md`:
+**2.** Write `docs/ai/<task-slug>/<task-slug>-task.md`:
 
 ```
 # <Task title>
@@ -220,45 +184,41 @@ Repeat until every question is answered.
 - `path/to/file`
 ```
 
-**4.** Dispatch a subagent to copyedit the task file:
+**3. Self-check the prose** — re-read the file. Edit inline if any sentence violates:
 
-- Pass the path to the written file and `reference/elements-of-style-rules.md`
-- The subagent edits prose: active voice, concrete language, drop needless words
-- The subagent overwrites the file with the edits
+- Active voice — "the agent reads the file"
+- Positive form — "Add tests" (not "Don't forget tests")
+- Concrete language — files, lines, function names
+- No needless words
+- Imperative mood
 
-**Transition →** Phase 5.
+**4. Auto-commit the artifact.**
 
----
+Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
 
-### Phase 5 — Commit Artifact
-
-Auto-commit the task artifact.
-
-**1.** Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
-
-**2.** If not — commit the artifact per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
-
-Commit format: `TICKET docs(SLUG): add task definition` (NO colon after ticket).
+Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 
 ```bash
 git add docs/ai/<task-slug>/<task-slug>-task.md
 git commit -m "TICKET docs(SLUG): add task definition"
 ```
 
-Example: `#86 docs(86-black-jack-page): add task definition`
-
+Format: `TICKET docs(SLUG): add task definition` (NO colon after ticket).
+Example: `#86 docs(86-black-jack-page): add task definition`.
 Commit only the task artifact, no other files.
+
+**Transition →** Phase 5.
 
 ---
 
-### Phase 6 — Complete
+### Phase 5 — Complete
 
 Report the file path and task slug, then run the finishing loop.
 
 Send a notification:
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill task --phase Complete --slug "$TASK_SLUG" --title "Task ready" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-task.md"`
 
-**Loop:**
+**Offer next step:**
 
 Offer 3 options through AskUserQuestion:
 
@@ -266,14 +226,11 @@ Offer 3 options through AskUserQuestion:
 2. **Review via revdiff** — interactive review of the task file
 3. **Finish** — exit
 
-**Handle the choice:**
+**Handle the choice (one-shot, no loop):**
 
 - **Run /yoke:plan:** call the Skill tool with `/yoke:plan` and the argument `docs/ai/<task-slug>/<task-slug>-task.md`. Exit.
-- **Review via revdiff:** After revdiff closes, continue with the following steps:
-  1. Call the Skill tool with `/revdiff` and the argument `--only docs/ai/<task-slug>/<task-slug>-task.md`.
-  2. If the Skill return is non-empty, apply the returned annotations to the task file and overwrite `docs/ai/<task-slug>/<task-slug>-task.md`. If the return is empty, skip this step.
-  3. Return to the "Offer 3 options" step above.
-     If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then return to the "Offer 3 options" step above.
+- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only docs/ai/<task-slug>/<task-slug>-task.md`. If the return is non-empty, apply the annotations to the task file and overwrite. Then exit. (For another pass, the user invokes `/revdiff` manually.)
+  If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then exit.
 - **Finish:** report the file path. Exit.
 
 ---

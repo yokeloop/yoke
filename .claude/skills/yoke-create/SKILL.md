@@ -364,7 +364,7 @@ Create `docs/<name>.md` from the template:
 
 ### 6b. README.md
 
-Add a section for the new skill in README.md before `### /hi`. Format:
+Add a section for the new skill in README.md before `### /help`. Format:
 
 ```markdown
 ### /<name> — <short description>

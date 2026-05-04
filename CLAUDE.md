@@ -68,7 +68,7 @@ claude --plugin-dir .
 - `/pr` — create and update GitHub pull requests
 - `/gst` — development status: branch, changes, diff, hot files
 - `/fix` — quick fix or follow-up (1–3 files, opus on code phases)
-- `/hi` — welcome and overview of available skills
+- `/help` — how to use yoke and overview of available skills
 - `/explore` — codebase exploration: read-only Q&A loop with a summary chain
 - `/bootstrap` — prepare a project for yoke flow: stack detection, CLAUDE.md generation, `.claude/yoke-context.md` creation
 

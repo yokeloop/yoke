@@ -157,12 +157,12 @@ Detects the project stack, analyzes architecture, scans conventions, and generat
 
 **Output:** `CLAUDE.md` + `.claude/yoke-context.md`
 
-### /hi — skills overview
+### /help — usage guide
 
-Welcome skill — explains available skills and the recommended workflow. Entry point for new users. [Details →](docs/hi.md)
+Help skill — explains how to use yoke, lists available skills, and the recommended workflow. Entry point for new users. [Details →](docs/help.md)
 
 ```
-/yoke:hi
+/yoke:help
 ```
 
 ## Local skills (development)
@@ -223,7 +223,7 @@ yoke/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # marketplace registry
 ├── skills/
-│   ├── hi/                  # welcome and skills overview
+│   ├── help/                # how to use yoke
 │   ├── bootstrap/           # prepare project for yoke flow
 │   │   ├── SKILL.md
 │   │   ├── agents/          # stack-detector, architecture-mapper, convention-scanner, etc.

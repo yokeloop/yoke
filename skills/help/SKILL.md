@@ -1,6 +1,6 @@
 ---
 name: help
-description: Explains how to use yoke and lists the available skills; also greets new users. Activate when the user writes "help", "how do I use yoke", "how to use", "what skills are available", "hi", "hello", "where do I start", or on first contact with yoke.
+description: Explains how to use yoke and lists the available skills; also greets new users. Activated when the user writes "help", "how do I use yoke", "how to use", "what skills are available", "hi", "hello", "where do I start", or on first contact with yoke.
 ---
 
 # Welcome to yoke

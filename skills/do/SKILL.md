@@ -1,7 +1,7 @@
 ---
 name: do
 description: >-
-  Execute a task per plan. Triggered when the user writes "execute", "do",
+  Executes a task per plan. Triggered when the user writes "execute", "do",
   "run the plan", "implement", or passes a path to a plan file and asks to
   execute it.
 ---

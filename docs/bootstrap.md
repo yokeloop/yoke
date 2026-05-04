@@ -14,7 +14,7 @@ Fires on prompts like: "bootstrap", "configure yoke", "prepare the project", "in
 
 ## Output
 
-- `CLAUDE.md` — instructions for Claude Code, generated from the project's stack and conventions
+- `CLAUDE.md` — instructions for Claude Code; the skill generates it from the project's stack and conventions
 - `.claude/yoke-context.md` — project context for yoke flow
 
 ## Phases

@@ -1,7 +1,7 @@
 ---
 name: plan
 description: >-
-  Build an implementation plan from a task file. Triggered when the user writes
+  Builds an implementation plan from a task file. Triggered when the user writes
   "build a plan", "make a plan", "plan", "plan the implementation", "prepare a plan",
   or passes a path to a task file and asks to plan execution.
 ---

@@ -1,7 +1,7 @@
 ---
 name: bootstrap
 description: >-
-  Prepare a project for the yoke flow — stack detection, generation of CLAUDE.md
+  Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md
   and yoke-context.md. Used when the user writes "bootstrap", "set up yoke",
   "prepare the project", "yoke init", "setup yoke", "first run",
   "connect yoke", "create CLAUDE.md".

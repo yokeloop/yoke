@@ -6,13 +6,13 @@ and inlining work that does not need a sub-agent.
 
 **Current state (lines of orchestration only):**
 
-| Skill     | SKILL.md | Phases | Sub-agents declared           | Agent files      | Reference files | Examples |
-| --------- | -------- | ------ | ----------------------------- | ---------------- | --------------- | -------- |
-| `/task`   | 286      | 6      | 2 + 1 copyeditor              | 2                | 3               | 2        |
-| `/plan`   | 315      | 8      | 3 + 1 copyeditor              | 3                | 3               | 2        |
-| `/do`     | 312      | 7      | 8 (per task: up to 7 calls)   | 7                | 2               | 0        |
-| `/review` | 187      | 6      | 4 (issue-fixer fans out)      | 4 + 2 reused     | 1               | 0        |
-| **Total** | 1100     | 27     | 17 unique agents              | 16 files         | 9               | 4        |
+| Skill     | SKILL.md | Phases | Sub-agents declared         | Agent files  | Reference files | Examples |
+| --------- | -------- | ------ | --------------------------- | ------------ | --------------- | -------- |
+| `/task`   | 286      | 6      | 2 + 1 copyeditor            | 2            | 3               | 2        |
+| `/plan`   | 315      | 8      | 3 + 1 copyeditor            | 3            | 3               | 2        |
+| `/do`     | 312      | 7      | 8 (per task: up to 7 calls) | 7            | 2               | 0        |
+| `/review` | 187      | 6      | 4 (issue-fixer fans out)    | 4 + 2 reused | 1               | 0        |
+| **Total** | 1100     | 27     | 17 unique agents            | 16 files     | 9               | 4        |
 
 **Worst-case agent dispatch count for a 5-task plan running end-to-end
 (`/task` → `/plan` → `/do` → `/review`):**
@@ -24,7 +24,7 @@ and inlining work that does not need a sub-agent.
 - `/review`: 1 reviewer + 1 issue-fixer (fans out N) + 1 validator + 1 formatter + 1 report-writer = **5+ dispatches**
 
 **Total worst case: ~50 sub-agent calls** for one feature, with most of them
-strictly sequential. This is the dominant source of latency.
+strictly sequential — the dominant source of latency.
 
 ---
 
@@ -40,12 +40,12 @@ Three sequential agents do overlapping work:
 
 - **`/task` → `task-architect`** (`skills/task/agents/task-architect.md:19-28`):
   "Codebase pattern analysis. Identify the stack, module boundaries, abstraction layers...
-  Find similar features." Then writes a *full implementation plan with build order*
+  Find similar features." Then writes a _full implementation plan with build order_
   — duplicating what `/plan` will do later.
 
 - **`/plan` → `plan-explorer`** (`skills/plan/agents/plan-explorer.md:9-12`): explicitly
-  says "task-explorer looks for *what exists and how it works*. You look for *how to
-  implement it*." But it also re-runs Glob/Grep over the same area.
+  says "task-explorer looks for _what exists and how it works_. You look for _how to
+  implement it_." But it also re-runs Glob/Grep over the same area.
 
 - **`/plan` → `plan-designer`** (`skills/plan/agents/plan-designer.md:39-65`): repeats
   "Codebase pattern analysis" (step 1), produces design decisions, file structure,
@@ -104,7 +104,7 @@ formatter).
 ### 6. `doc-updater` is risky default-on automation
 
 `/do` Phase 5 (`skills/do/SKILL.md:196-220`) runs `doc-updater` after every plan.
-The agent (`skills/do/agents/doc-updater.md:24-71`) tries to update README, CHANGELOG,
+The agent (`skills/do/agents/doc-updater.md:24-71`) updates README, CHANGELOG,
 and JSDoc/docstrings on every public symbol it can detect. For most plugin work,
 internal refactors, and bug fixes, this is unwanted noise that creates diffs the
 human did not ask for.
@@ -136,7 +136,7 @@ excerpts. Reading them again multiplies tokens and round-trips.
 
 That is ~1500-2000 lines of reference + examples on every cold run. Most of the
 content is style rules and templates that the orchestrator already follows. Only a
-small fraction (the 5-dimension checklist, the plan format spec) is actually
+small fraction (the 5-dimension checklist, the plan format spec) is
 load-bearing. The rest can be inlined or removed.
 
 ### 10. Notification spam
@@ -306,7 +306,7 @@ Phase 3 — Write        # ask material implementation Qs, write plan file with
 
 3. **Make `doc-updater` opt-in.** Default off. Only run when:
    - the plan explicitly contains a "Documentation" task, OR
-   - the user passed `--update-docs` (or some equivalent flag), OR
+   - the user passed `--update-docs`, OR
    - the plan touches a public API surface flagged in CONSTRAINTS.
    - Modify: `skills/do/SKILL.md` Phase 5 → conditional, default skip.
    - **Saves:** 1 dispatch per `/do` run by default.
@@ -410,19 +410,19 @@ Drop the per-phase notifications currently scattered through the SKILL.md files.
 
 ### B. Reference file diet
 
-| File                                              | Action                                                       |
-| ------------------------------------------------- | ------------------------------------------------------------ |
-| `skills/task/reference/synthesize-guide.md`       | Inline the 5-dimension checklist into SKILL.md; demote file. |
-| `skills/task/reference/frontend-guide.md`         | Load conditionally only on frontend stack.                   |
-| `skills/task/reference/elements-of-style-rules.md`| Inline a 5-bullet checklist into SKILL.md; stop loading.     |
-| `skills/plan/reference/routing-rules.md`          | Replace with 3 inline rules.                                 |
-| `skills/plan/reference/plan-format.md`            | Inline minimal template into SKILL.md.                       |
-| `skills/plan/reference/elements-of-style-rules.md`| Same as task — inline checklist.                             |
-| `skills/do/reference/status-protocol.md`          | Keep — it is genuine protocol. Trim review iterations to 2.  |
-| `skills/do/reference/report-format.md`            | Inline minimal template into SKILL.md.                       |
-| `skills/review/reference/review-format.md`        | Inline minimal template into SKILL.md.                       |
-| `skills/task/examples/*.md`                       | Keep as documentation, stop preloading.                      |
-| `skills/plan/examples/*.md`                       | Keep as documentation, stop preloading.                      |
+| File                                               | Action                                                       |
+| -------------------------------------------------- | ------------------------------------------------------------ |
+| `skills/task/reference/synthesize-guide.md`        | Inline the 5-dimension checklist into SKILL.md; demote file. |
+| `skills/task/reference/frontend-guide.md`          | Load conditionally only on frontend stack.                   |
+| `skills/task/reference/elements-of-style-rules.md` | Inline a 5-bullet checklist into SKILL.md; stop loading.     |
+| `skills/plan/reference/routing-rules.md`           | Replace with 3 inline rules.                                 |
+| `skills/plan/reference/plan-format.md`             | Inline minimal template into SKILL.md.                       |
+| `skills/plan/reference/elements-of-style-rules.md` | Same as task — inline checklist.                             |
+| `skills/do/reference/status-protocol.md`           | Keep — it is genuine protocol. Trim review iterations to 2.  |
+| `skills/do/reference/report-format.md`             | Inline minimal template into SKILL.md.                       |
+| `skills/review/reference/review-format.md`         | Inline minimal template into SKILL.md.                       |
+| `skills/task/examples/*.md`                        | Keep as documentation, stop preloading.                      |
+| `skills/plan/examples/*.md`                        | Keep as documentation, stop preloading.                      |
 
 ### C. Auto-commit pattern
 
@@ -546,21 +546,21 @@ Risk: medium. Requires care around git state.
 
 For a typical 5-task feature flow (`/task` → `/plan` → `/do` → `/review`):
 
-| Metric                                | Before  | After   | Reduction |
-| ------------------------------------- | ------- | ------- | --------- |
-| Sub-agent dispatches (worst case)     | ~50     | ~17     | 66%       |
-| Sub-agent dispatches (typical)        | ~25     | ~14     | 44%       |
-| Phases tracked across 4 skills        | 27      | 14      | 48%       |
-| Reference file lines loaded per run   | ~2000   | ~400    | 80%       |
-| Sequential waits in `/do` per task    | 3       | 1       | 66%       |
-| Wall-clock for typical run            | 1.0×    | ~0.4×   | ~60%      |
+| Metric                              | Before | After | Reduction |
+| ----------------------------------- | ------ | ----- | --------- |
+| Sub-agent dispatches (worst case)   | ~50    | ~17   | 66%       |
+| Sub-agent dispatches (typical)      | ~25    | ~14   | 44%       |
+| Phases tracked across 4 skills      | 27     | 14    | 48%       |
+| Reference file lines loaded per run | ~2000  | ~400  | 80%       |
+| Sequential waits in `/do` per task  | 3      | 1     | 66%       |
+| Wall-clock for typical run          | 1.0×   | ~0.4× | ~60%      |
 
 The wall-clock estimate is based on:
 
 - Most agent dispatches dominated by codebase exploration + LLM round-trip,
   ~30-90s each.
-- Sequential waits dominate; parallelism on independent tasks has been left on
-  the table.
+- Sequential waits dominate; independent tasks could run in parallel but the
+  current design runs them sequentially.
 - Cache misses on reference files have multiplicative cost when the cache
   refreshes between phases.
 
@@ -568,16 +568,16 @@ The wall-clock estimate is based on:
 
 ## Risks and mitigations
 
-| Risk                                                                          | Mitigation                                                                                                                                          |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Merging spec+quality reviewer reduces strictness and lets bugs slip through.  | Keep both checklists in the merged agent; require both to pass before DONE. Add an end-to-end smoke test on a known buggy plan.                     |
-| Dropping `code-polisher` lets cruft accumulate.                               | Move the cleanup bullets into `task-executor` self-review; rely on project formatter/linter. Cruft that escapes self-review is caught by `/review`. |
-| Inlined report writing loses structure.                                       | Keep a minimal markdown template in SKILL.md and a Write call; the structure is identical, only the agent dispatch goes away.                       |
-| Removing `plan-reviewer` lets weak plans through.                             | Keep the 6-bullet self-check in `plan-architect`'s output. The same checklist runs, just inside the architect.                                      |
-| Conditional `doc-updater` confuses users who relied on auto-docs.             | Document the change; add a one-line opt-in flag (`--update-docs`) and reference it in `/do` SKILL.md.                                               |
-| Style drift after dropping copyedit agent.                                    | Inline checklist + occasional manual `/yoke:fix` pass. The drift is limited to ~1-2 page markdowns.                                                 |
-| Lost agent-team mode for cross-layer plans.                                   | Keep `agent-team` as a third routing rule. Most users do not enable the feature flag — the rule is dormant for them anyway.                         |
-| revdiff users miss the auto-loop.                                             | Document `/revdiff <path>` as the manual replacement; keep one-shot offer in Complete.                                                              |
+| Risk                                                                         | Mitigation                                                                                                                                          |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merging spec+quality reviewer reduces strictness and lets bugs slip through. | Keep both checklists in the merged agent; require both to pass before DONE. Add an end-to-end smoke test on a known buggy plan.                     |
+| Dropping `code-polisher` lets cruft accumulate.                              | Move the cleanup bullets into `task-executor` self-review; rely on project formatter/linter. Cruft that escapes self-review is caught by `/review`. |
+| Inlined report writing loses structure.                                      | Keep a minimal markdown template in SKILL.md and a Write call; the structure is identical, only the agent dispatch goes away.                       |
+| Removing `plan-reviewer` lets weak plans through.                            | Keep the 6-bullet self-check in `plan-architect`'s output. The same checklist runs, just inside the architect.                                      |
+| Conditional `doc-updater` confuses users who relied on auto-docs.            | Document the change; add a one-line opt-in flag (`--update-docs`) and reference it in `/do` SKILL.md.                                               |
+| Style drift after dropping copyedit agent.                                   | Inline checklist + occasional manual `/yoke:fix` pass. The drift is limited to ~1-2 page markdowns.                                                 |
+| Lost agent-team mode for cross-layer plans.                                  | Keep `agent-team` as a third routing rule. Most users do not enable the feature flag — the rule is dormant for them anyway.                         |
+| revdiff users miss the auto-loop.                                            | Document `/revdiff <path>` as the manual replacement; keep one-shot offer in Complete.                                                              |
 
 ---
 
@@ -684,25 +684,32 @@ patterns, tests, risks, reusable code.
 ## Output format
 
 \`\`\`
+
 ## Entry points
+
 - `<path>:<line>` (`<fn or symbol>`) — <role>
 
 ## Patterns to reuse
+
 - `<path>` — <pattern name>: <what to reuse>
 
 ## Tests
+
 - `<path>` — <scope>
 - Coverage gap: <area without tests, if any>
 
 ## Integration and risks
+
 - <interface or shared state>: <consumers / fragility>
 
 ## Reusable building blocks
+
 - `<path>:<line>` — <utility or component>
 
 ## Essential reads (for the writing phase)
+
 - `<path>` — <why>
-\`\`\`
+  \`\`\`
 
 Cite paths and line numbers. Active voice. Concrete files instead of
 "the auth module".
@@ -765,14 +772,14 @@ Breaking a cross-skill reference silently breaks a downstream skill at runtime.
 **Files referenced across skills (as of plan writing — verify with grep before
 editing):**
 
-| File                                                | Referenced from                                              | Notes                                                                                |
-| --------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| `skills/gca/reference/commit-convention.md`         | `task` (×2), `plan` (×2), `do` (×6), `review` (×2)            | **Do not touch.** All four core skills depend on it.                                 |
-| `skills/do/agents/validator.md`                     | `review/SKILL.md:19`, `review/SKILL.md:119`                   | If renamed, moved, or inlined into `/do`, **`/review` Phase 4d must be updated**.    |
-| `skills/do/agents/formatter.md`                     | `review/SKILL.md:20`, `review/SKILL.md:122`                   | Same as validator. `/review` Phase 4e depends on it.                                 |
-| `skills/gp/agents/git-pre-checker.md:43-54`         | `do/SKILL.md:291`                                             | Used in revdiff path for default-base resolution. Read-only reference.               |
-| `lib/notify.sh`                                     | All four skills (multiple call sites)                        | Script stays. **Stop calling it from intermediate phases**, keep at terminal phases. |
-| `hooks/notify.sh` and `hooks/hooks.json`            | Plugin loader (auto-discovered)                               | Hooks are independent from skill notifications. **Do not touch.**                    |
+| File                                        | Referenced from                                    | Notes                                                                                |
+| ------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `skills/gca/reference/commit-convention.md` | `task` (×2), `plan` (×2), `do` (×6), `review` (×2) | **Do not touch.** All four core skills depend on it.                                 |
+| `skills/do/agents/validator.md`             | `review/SKILL.md:19`, `review/SKILL.md:119`        | If renamed, moved, or inlined into `/do`, **`/review` Phase 4d must be updated**.    |
+| `skills/do/agents/formatter.md`             | `review/SKILL.md:20`, `review/SKILL.md:122`        | Same as validator. `/review` Phase 4e depends on it.                                 |
+| `skills/gp/agents/git-pre-checker.md:43-54` | `do/SKILL.md:291`                                  | Used in revdiff path for default-base resolution. Read-only reference.               |
+| `lib/notify.sh`                             | All four skills (multiple call sites)              | Script stays. **Stop calling it from intermediate phases**, keep at terminal phases. |
+| `hooks/notify.sh` and `hooks/hooks.json`    | Plugin loader (auto-discovered)                    | Hooks are independent from skill notifications. **Do not touch.**                    |
 
 **Implication for Phase 4 (inline single-purpose agents):** if `/do`'s
 `report-writer` is inlined into the orchestrator, that does **not** affect
@@ -981,7 +988,7 @@ keep the working tree in a runnable state at every commit boundary:
 5. **Commit.** Use a conventional message:
    `optimize(task): replace explorer+architect with task-investigator`.
 6. **Delete the old agent files.** `git rm skills/task/agents/task-explorer.md
-   skills/task/agents/task-architect.md`.
+skills/task/agents/task-architect.md`.
 7. **Run validation checklist** from the main plan.
 8. **Commit the deletions.** Same scope, separate message:
    `optimize(task): remove deprecated explorer and architect agents`.
@@ -1060,13 +1067,13 @@ Annotate each as keep / drop in your scratch notes before Phase 1 commit.
 
 Each phase has a different risk profile. Rollback strategies:
 
-| Phase | Rollback                                                                                                                  |
+| Phase | Rollback                                                                                                                   |
 | ----- | -------------------------------------------------------------------------------------------------------------------------- |
 | 1     | `git revert <commit-range>` for the phase's commits. Cosmetic changes only — low risk.                                     |
 | 2     | Same as Phase 1. Reference inlining is reversible.                                                                         |
 | 3     | Most fragile. Per merge, revert the deletion commit first (restores files), then the replacement commit (restores wiring). |
-| 4     | `git revert` per inline. Each report inline is one commit — granular revert.                                                |
-| 5     | The behavior-visible phase. If users push back: `git revert` `code-polisher` removal first; `doc-updater` removal second.   |
+| 4     | `git revert` per inline. Each report inline is one commit — granular revert.                                               |
+| 5     | The behavior-visible phase. If users push back: `git revert` `code-polisher` removal first; `doc-updater` removal second.  |
 | 6     | Parallel dispatch. If parallelism causes git races, revert and re-do as sequential — still wins from agent merges.         |
 
 **If multiple phases need rollback,** revert in reverse order (latest phase
@@ -1159,47 +1166,47 @@ A fresh Claude session starting this work will load:
 
 ## §12. Quick reference — file inventory and what happens to each
 
-| Path                                              | Phase | Action                                                                       |
-| ------------------------------------------------- | ----- | ---------------------------------------------------------------------------- |
-| `skills/task/SKILL.md`                            | 1,2,3 | Edit: drop copyedit, drop file-read pass, inline checklist, single dispatch. |
-| `skills/task/agents/task-explorer.md`             | 3     | Delete after `task-investigator` ships.                                       |
-| `skills/task/agents/task-architect.md`            | 3     | Delete after `task-investigator` ships.                                       |
-| `skills/task/agents/task-investigator.md`         | 3     | **Create.** See §1 for full template.                                          |
-| `skills/task/reference/synthesize-guide.md`       | 2     | Demote — inline checklist into SKILL.md, stop loading.                        |
-| `skills/task/reference/frontend-guide.md`         | 2     | Conditional load only.                                                         |
-| `skills/task/reference/elements-of-style-rules.md`| 1     | Stop loading; inline 5-bullet checklist.                                       |
-| `skills/task/examples/*.md`                       | 2     | Stop preloading.                                                               |
-| `skills/plan/SKILL.md`                            | 1,2,3 | Edit: drop copyedit, drop reviewer phase, inline routing, single dispatch.   |
-| `skills/plan/agents/plan-explorer.md`             | 3     | Delete after `plan-architect` ships.                                          |
-| `skills/plan/agents/plan-designer.md`             | 3     | Delete after `plan-architect` ships.                                          |
-| `skills/plan/agents/plan-reviewer.md`             | 3     | Delete; checks fold into `plan-architect` self-review.                       |
-| `skills/plan/agents/plan-architect.md`            | 3     | **Create** as 3-way merge.                                                    |
-| `skills/plan/reference/routing-rules.md`          | 2     | Replace 9-row matrix with 3 inline rules.                                     |
-| `skills/plan/reference/plan-format.md`            | 2     | Inline minimal template into SKILL.md.                                        |
-| `skills/plan/examples/*.md`                       | 2     | Stop preloading.                                                               |
-| `skills/do/SKILL.md`                              | 3,4,5,6 | Edit: combined reviewer, drop polish, opt-in doc-updater, parallel valid+fmt.|
-| `skills/do/agents/task-executor.md`               | 5     | Edit: add cleanup bullets to self-review.                                     |
-| `skills/do/agents/spec-reviewer.md`               | 3     | Delete after `task-reviewer` ships.                                          |
-| `skills/do/agents/quality-reviewer.md`            | 3     | Delete after `task-reviewer` ships.                                          |
-| `skills/do/agents/task-reviewer.md`               | 3     | **Create** as 2-way merge.                                                    |
-| `skills/do/agents/code-polisher.md`               | 5     | Delete.                                                                       |
-| `skills/do/agents/doc-updater.md`                 | 5     | Keep file; SKILL.md makes its dispatch conditional.                           |
-| `skills/do/agents/report-writer.md`               | 4     | Delete; orchestrator writes report inline.                                    |
-| `skills/do/agents/validator.md`                   | —     | **Do not move or rename** — `/review` depends on the path.                    |
-| `skills/do/agents/formatter.md`                   | —     | **Do not move or rename** — `/review` depends on the path.                    |
-| `skills/do/reference/status-protocol.md`          | 3,5   | Edit: combined review, iterations 3→2.                                        |
-| `skills/do/reference/report-format.md`            | 2     | Inline minimal template into SKILL.md.                                        |
-| `skills/review/SKILL.md`                          | 4,6   | Edit: drop issue-fixer layer, inline report-writer, parallel valid+fmt.       |
-| `skills/review/agents/code-reviewer.md`           | —     | Keep.                                                                         |
-| `skills/review/agents/issue-fixer.md`             | 4     | Delete; orchestrator dispatches single-fix-agent directly.                   |
-| `skills/review/agents/single-fix-agent.md`        | —     | Keep — genuine parallelizable unit of work.                                   |
-| `skills/review/agents/review-report-writer.md`    | 4     | Delete; orchestrator writes report inline.                                    |
-| `skills/review/reference/review-format.md`        | 2     | Inline minimal template into SKILL.md.                                        |
-| `lib/notify.sh`                                   | —     | **Do not touch.** Reduce call sites in SKILL.md instead.                       |
-| `hooks/`                                          | —     | **Do not touch.**                                                              |
-| `skills/gca/reference/commit-convention.md`       | —     | **Do not touch.**                                                              |
-| `skills/gp/agents/git-pre-checker.md`             | —     | **Do not touch** (read-only reference from `/do`).                             |
-| `.claude-plugin/plugin.json`                      | —     | **Do not bump version.**                                                       |
-| `.claude-plugin/marketplace.json`                 | —     | **Do not bump version.**                                                       |
-| `docs/ai/test-baseline/test-baseline-task.md`     | pre-1 | **Create** as baseline. See §4.1.                                              |
-| `docs/ai/test-baseline/baseline-measurements.md`  | pre-1, after each phase | Append measurements. See §4.2.                            |
+| Path                                               | Phase                   | Action                                                                        |
+| -------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------- |
+| `skills/task/SKILL.md`                             | 1,2,3                   | Edit: drop copyedit, drop file-read pass, inline checklist, single dispatch.  |
+| `skills/task/agents/task-explorer.md`              | 3                       | Delete after `task-investigator` ships.                                       |
+| `skills/task/agents/task-architect.md`             | 3                       | Delete after `task-investigator` ships.                                       |
+| `skills/task/agents/task-investigator.md`          | 3                       | **Create.** See §1 for full template.                                         |
+| `skills/task/reference/synthesize-guide.md`        | 2                       | Demote — inline checklist into SKILL.md, stop loading.                        |
+| `skills/task/reference/frontend-guide.md`          | 2                       | Conditional load only.                                                        |
+| `skills/task/reference/elements-of-style-rules.md` | 1                       | Stop loading; inline 5-bullet checklist.                                      |
+| `skills/task/examples/*.md`                        | 2                       | Stop preloading.                                                              |
+| `skills/plan/SKILL.md`                             | 1,2,3                   | Edit: drop copyedit, drop reviewer phase, inline routing, single dispatch.    |
+| `skills/plan/agents/plan-explorer.md`              | 3                       | Delete after `plan-architect` ships.                                          |
+| `skills/plan/agents/plan-designer.md`              | 3                       | Delete after `plan-architect` ships.                                          |
+| `skills/plan/agents/plan-reviewer.md`              | 3                       | Delete; checks fold into `plan-architect` self-review.                        |
+| `skills/plan/agents/plan-architect.md`             | 3                       | **Create** as 3-way merge.                                                    |
+| `skills/plan/reference/routing-rules.md`           | 2                       | Replace 9-row matrix with 3 inline rules.                                     |
+| `skills/plan/reference/plan-format.md`             | 2                       | Inline minimal template into SKILL.md.                                        |
+| `skills/plan/examples/*.md`                        | 2                       | Stop preloading.                                                              |
+| `skills/do/SKILL.md`                               | 3,4,5,6                 | Edit: combined reviewer, drop polish, opt-in doc-updater, parallel valid+fmt. |
+| `skills/do/agents/task-executor.md`                | 5                       | Edit: add cleanup bullets to self-review.                                     |
+| `skills/do/agents/spec-reviewer.md`                | 3                       | Delete after `task-reviewer` ships.                                           |
+| `skills/do/agents/quality-reviewer.md`             | 3                       | Delete after `task-reviewer` ships.                                           |
+| `skills/do/agents/task-reviewer.md`                | 3                       | **Create** as 2-way merge.                                                    |
+| `skills/do/agents/code-polisher.md`                | 5                       | Delete.                                                                       |
+| `skills/do/agents/doc-updater.md`                  | 5                       | Keep file; SKILL.md makes its dispatch conditional.                           |
+| `skills/do/agents/report-writer.md`                | 4                       | Delete; orchestrator writes report inline.                                    |
+| `skills/do/agents/validator.md`                    | —                       | **Do not move or rename** — `/review` depends on the path.                    |
+| `skills/do/agents/formatter.md`                    | —                       | **Do not move or rename** — `/review` depends on the path.                    |
+| `skills/do/reference/status-protocol.md`           | 3,5                     | Edit: combined review, iterations 3→2.                                        |
+| `skills/do/reference/report-format.md`             | 2                       | Inline minimal template into SKILL.md.                                        |
+| `skills/review/SKILL.md`                           | 4,6                     | Edit: drop issue-fixer layer, inline report-writer, parallel valid+fmt.       |
+| `skills/review/agents/code-reviewer.md`            | —                       | Keep.                                                                         |
+| `skills/review/agents/issue-fixer.md`              | 4                       | Delete; orchestrator dispatches single-fix-agent directly.                    |
+| `skills/review/agents/single-fix-agent.md`         | —                       | Keep — genuine parallelizable unit of work.                                   |
+| `skills/review/agents/review-report-writer.md`     | 4                       | Delete; orchestrator writes report inline.                                    |
+| `skills/review/reference/review-format.md`         | 2                       | Inline minimal template into SKILL.md.                                        |
+| `lib/notify.sh`                                    | —                       | **Do not touch.** Reduce call sites in SKILL.md instead.                      |
+| `hooks/`                                           | —                       | **Do not touch.**                                                             |
+| `skills/gca/reference/commit-convention.md`        | —                       | **Do not touch.**                                                             |
+| `skills/gp/agents/git-pre-checker.md`              | —                       | **Do not touch** (read-only reference from `/do`).                            |
+| `.claude-plugin/plugin.json`                       | —                       | **Do not bump version.**                                                      |
+| `.claude-plugin/marketplace.json`                  | —                       | **Do not bump version.**                                                      |
+| `docs/ai/test-baseline/test-baseline-task.md`      | pre-1                   | **Create** as baseline. See §4.1.                                             |
+| `docs/ai/test-baseline/baseline-measurements.md`   | pre-1, after each phase | Append measurements. See §4.2.                                                |

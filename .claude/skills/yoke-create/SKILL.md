@@ -369,7 +369,7 @@ Add a section for the new skill in README.md before `### /help`. Format:
 ```markdown
 ### /<name> — <short description>
 
-<2-3 sentences>. [More →](docs/<name>.md)
+<2-3 sentences>. [Details →](docs/<name>.md)
 
 ```
 /yoke:<name> <example>

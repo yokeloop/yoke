@@ -1,6 +1,6 @@
 ---
 name: pr
-description: Create or update a GitHub Pull Request. Activated on "pr", "pull request", "create pr", "update pr", "open pr", or after /gp.
+description: Creates or updates a GitHub Pull Request. Activated on "pr", "pull request", "create pr", "update pr", "open pr", or after /gp.
 ---
 
 # Creating and updating Pull Requests
@@ -138,8 +138,7 @@ AskUserQuestion — what's next:
 
 - **Finish (Recommended)** → exit
 
-> Note: integration with `/code-review` will appear in a future version.
-> Until implemented — finish without additional suggestions.
+> Integration with `/code-review` is not yet implemented — finish without additional suggestions.
 
 ---
 

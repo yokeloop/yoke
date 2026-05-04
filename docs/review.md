@@ -5,7 +5,7 @@ and produces a report with key areas, complex decisions, risks, and questions fo
 
 ## Input
 
-`$ARGUMENTS` — task slug or path to a task file. When no argument is provided, the skill resolves the slug
+`$ARGUMENTS` — task slug or path to a task file. Without an argument, the skill resolves the slug
 from the branch or the latest directory under `docs/ai/`.
 
 ```

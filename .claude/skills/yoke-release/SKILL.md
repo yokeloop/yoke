@@ -175,7 +175,7 @@ Agent prompt:
 > Checks:
 >
 > 1. **README — skills**: each skill from `skills/` must have a section in README (heading `### /<name>`).
-> 2. **README — links**: each skill section must contain `[More →](docs/<name>.md)`, and the file `docs/<name>.md` must exist.
+> 2. **README — links**: each skill section must contain `[Details →](docs/<name>.md)`, and the file `docs/<name>.md` must exist.
 > 3. **README — project structure**: the "Structure" section must contain all skill directories.
 > 4. **CLAUDE.md — Implemented skills**: the section must list all skills from `skills/`.
 > 5. **CLAUDE.md — Planned skills**: must not contain skills that are already implemented (present in `skills/`).

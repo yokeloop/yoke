@@ -1,6 +1,6 @@
 ---
 name: help
-description: Greets the user and explains how to use yoke. Activate when the user writes "help", "how do I use yoke", "how to use", "what skills are available", "hi", "hello", "where do I start", or on first contact with yoke.
+description: Explains how to use yoke and lists the available skills; also greets new users. Activate when the user writes "help", "how do I use yoke", "how to use", "what skills are available", "hi", "hello", "where do I start", or on first contact with yoke.
 ---
 
 # Welcome to yoke
@@ -49,21 +49,6 @@ Analyzes changes against origin/main. Produces a report: key areas, complex deci
 
 ```
 /yoke:review 86-black-jack-page
-```
-
-## Full cycle
-
-```
-/yoke:explore <topic>                # explore the codebase
-/yoke:task <ticket or description>   # formulate the task
-  → answer questions in the file
-/yoke:plan <path to task file>       # build the plan
-  → answer questions in the file
-/yoke:do <path to plan file>         # execute the plan
-/yoke:fix <description>              # quick fix after /do
-/yoke:review <slug>                  # prepare review
-/yoke:gp                             # push to remote
-/yoke:pr                             # create pull request
 ```
 
 ### /gca — git commit with smart grouping
@@ -119,6 +104,21 @@ Read-only Q&A loop for codebase exploration and brainstorming. Classifies questi
 ```
 /yoke:explore how authentication works
 /yoke:explore compare Framer Motion and react-spring for our animations
+```
+
+## Full cycle
+
+```
+/yoke:explore <topic>                # explore the codebase
+/yoke:task <ticket or description>   # formulate the task
+  → answer questions in the file
+/yoke:plan <path to task file>       # build the plan
+  → answer questions in the file
+/yoke:do <path to plan file>         # execute the plan
+/yoke:fix <description>              # quick fix after /do
+/yoke:review <slug>                  # prepare review
+/yoke:gp                             # push to remote
+/yoke:pr                             # create pull request
 ```
 
 ## Planned skills

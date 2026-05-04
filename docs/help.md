@@ -1,6 +1,6 @@
-# Skill /hi
+# Skill /help
 
-Welcome skill — explains the yoke marketplace layout, available skills, and the recommended workflow.
+How to use yoke — the help skill explains the marketplace layout, available skills, and the recommended workflow.
 Entry point for new users of the plugin.
 
 ## Input
@@ -9,7 +9,7 @@ Fires automatically on prompts like: "how do I use yoke?", "what is the marketpl
 "which skills are available?", or on first contact with the plugin. No parameters.
 
 ```
-/yoke:hi
+/yoke:help
 ```
 
 ## Output
@@ -30,7 +30,7 @@ A structured overview:
 ## Example
 
 ```
-/yoke:hi
+/yoke:help
 ```
 
 Result: an overview of the yoke marketplace and available skills.

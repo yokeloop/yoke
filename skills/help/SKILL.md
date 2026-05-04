@@ -1,6 +1,6 @@
 ---
-name: hi
-description: Greets the user and explains available yoke skills. Activate when the user writes "hi", "hello", "what can you do", "help", "where do I start", "what skills are available", or on first contact with yoke.
+name: help
+description: Greets the user and explains how to use yoke. Activate when the user writes "help", "how do I use yoke", "how to use", "what skills are available", "hi", "hello", "where do I start", or on first contact with yoke.
 ---
 
 # Welcome to yoke

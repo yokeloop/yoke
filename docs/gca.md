@@ -18,9 +18,9 @@ Works in two modes: yoke flow (commit an artifact) and standalone (group files).
 
 | Phase | Name                | What happens                                                                      |
 | ----- | ------------------- | --------------------------------------------------------------------------------- |
-| 1     | **Collect context** | Parallel queries: git status, diff, branch, ls-files                              |
+| 1     | **Collect context** | Single call: branch, git status (porcelain), diff --stat                          |
 | 2     | **Mode**            | Detect yoke flow (task/plan/do/review artifact) or standalone                     |
-| 3     | **Ticket ID**       | Cascade: arguments → slug (yoke) → branch (standalone) → ask the user             |
+| 3     | **Ticket ID**       | Cascade: arguments → slug (yoke) → branch (standalone) → no ticket                |
 | 4     | **Staging**         | yoke flow: artifact only. Standalone: classify into 6 groups, plan atomic commits |
 | 5     | **Commit message**  | Format: `TICKET type(SCOPE): description` — English, imperative mood              |
 | 6     | **Commit**          | Stage specific files, commit, display the result                                  |
@@ -43,7 +43,7 @@ Examples: `#86 feat(pages): add blackjack page`, `R2-50 fix: save user ID to dat
 | Mode           | When                                 | Behavior                                                  |
 | -------------- | ------------------------------------ | --------------------------------------------------------- |
 | **yoke flow**  | Invoked from `/task`, `/plan`, `/do` | Commit only the current stage artifact, no classification |
-| **Standalone** | Direct user invocation               | Classify files into 6 groups, determine atomic commits    |
+| **Standalone** | Direct user invocation               | Classify into 6 groups, commit atomically — no prompts    |
 
 ## File groups (standalone)
 

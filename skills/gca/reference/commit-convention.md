@@ -69,12 +69,9 @@ Within yoke flow (`/task` -> `/plan` -> `/do` -> `/review`) the ticket ID is ext
 | Starts with `R\d+-\d+`: `R2-50-user-id-db` | `R2-50`   | `R2-50` |
 | Without ID: `fix-navbar-overflow`          | none      | omit    |
 
-### Ask the user
+### No ticket found
 
-If the cascade did not determine a ticket — ask via AskUserQuestion:
-
-- **No ticket** — commit without a link
-- **Enter number** — user supplies the ticket ID
+If the cascade yields nothing, commit without a ticket — omit the ticket and its trailing space. Do not ask.
 
 ---
 

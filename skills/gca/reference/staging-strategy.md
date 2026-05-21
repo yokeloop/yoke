@@ -8,16 +8,16 @@ Grouping files into atomic commits. Applied on standalone `/gca` invocations (ou
 
 ### Step 1: Collection and classification
 
-Collect all modified/new files via `git status --porcelain`. Classify each file:
+Collect all modified/new files via `git status --porcelain` (untracked files appear as `??`). Classify each file:
 
-| Group            | Criterion                                                                           | Commit type                 |
-| ---------------- | ----------------------------------------------------------------------------------- | --------------------------- |
-| `feature`        | Main task files (src/, components/, pages/, lib/, app/)                             | `feat` / `fix` / `refactor` |
-| `test`           | Test files (`*.test.*`, `*.spec.*`, `__tests__/`, `*.cy.*`)                         | `test`                      |
-| `docs`           | Documentation (`.md`, `docs/`, README, CHANGELOG)                                   | `docs`                      |
-| `style`          | Formatting only (result of project formatter/linter, no logical changes)            | `style`                     |
-| `chore`          | Configs, dependencies (`package.json`, `*.config.*`, `.eslintrc`, CI)               | `chore`                     |
-| `yoke-artifacts` | Yoke flow files (`docs/ai/**/*-task.md`, `*-plan.md`, `*-report.md`, `*-review.md`) | `docs`                      |
+| Group            | Criterion                                                                | Commit type                 |
+| ---------------- | ------------------------------------------------------------------------ | --------------------------- |
+| `feature`        | Main task files (src/, components/, pages/, lib/, app/)                  | `feat` / `fix` / `refactor` |
+| `test`           | Test files (`*.test.*`, `*.spec.*`, `__tests__/`, `*.cy.*`)              | `test`                      |
+| `docs`           | Documentation (`.md`, `docs/`, README, CHANGELOG)                        | `docs`                      |
+| `style`          | Formatting only (result of project formatter/linter, no logical changes) | `style`                     |
+| `chore`          | Configs, dependencies (`package.json`, `*.config.*`, `.eslintrc`, CI)    | `chore`                     |
+| `yoke-artifacts` | Yoke flow files under `docs/ai/**`                                       | `docs`                      |
 
 ### Step 2: Determining atomic commits
 
@@ -36,26 +36,9 @@ Collect all modified/new files via `git status --porcelain`. Classify each file:
 4. `docs` (documentation)
 5. `yoke-artifacts` (planning artifacts — last)
 
-### Step 4: Confirmation
+### Step 4: Execute
 
-Before executing, show the commit plan to the user:
-
-```
-Planned commits:
-  1. chore: update linter config
-  2. #86 feat(86-black-jack-page): add game page with basic layout
-  3. #86 test(86-black-jack-page): add unit tests for score calculation
-  4. style: apply code formatting
-  5. #86 docs(86-black-jack-page): add task definition
-
-Proceed? [Y/n]
-```
-
-Show via AskUserQuestion with options:
-
-- **Proceed** — run all planned commits
-- **Edit** — user adjusts the grouping or messages
-- **Cancel** — abort
+Standalone runs autonomously — no confirmation. Execute the planned commits in order and report each one: hash, message, files.
 
 ---
 
@@ -67,6 +50,6 @@ Exclude from staging:
 - Files containing credentials, tokens, keys
 - Large binary files (images, videos, archives > 1MB)
 
-When such files are detected, list them to the user and ask whether to include them in the commit.
+When you detect such files, exclude them and list them in the final report. Do not ask.
 
 Stage files by name (not `git add -A` and not `git add .`).

@@ -5,124 +5,103 @@ description: Git staging and commit with smart file grouping. Activated when the
 
 # Git Commit with smart grouping
 
-Commit orchestrator: determines context, classifies files, groups them into atomic commits, forms messages.
+Commit orchestrator: determines context, classifies files, groups them into atomic commits, forms messages. Standalone mode runs autonomously — no confirmation prompts.
 
 ---
 
-## Step 1 — Context collection
+## Step 1 — Context
 
-Run in parallel:
+One call:
 
 ```bash
-git status --porcelain
+git branch --show-current; echo "==="; git status --porcelain; echo "==="; git diff HEAD --stat
 ```
 
-```bash
-git diff HEAD --stat
-```
-
-```bash
-git branch --show-current
-```
-
-```bash
-git ls-files --others --exclude-standard
-```
-
-If there are no changes — tell the user and stop.
+`git status --porcelain` already lists untracked files (`??`). No changes — tell the user and stop.
 
 ---
 
-## Step 2 — Context detection
+## Step 2 — Mode
 
-Determine the mode: yoke flow or standalone.
-
-### Yoke flow detection
-
-Does `$ARGUMENTS` contain a path under `docs/ai/` or a slug? Are there recent artifacts in `docs/ai/*/`? If yes:
-
-- `MODE = yoke-flow`
-- `SLUG` = from the path or directory name
-- `TICKET_ID` = extracted from the slug per `reference/commit-convention.md`
-
-### Standalone mode
-
-If yoke flow is not detected:
-
-- `MODE = standalone`
-- `SLUG` = current branch name without prefix (`feature/`, `fix/`, `hotfix/`, `bugfix/`, `release/`). If the branch is `main`/`master`/`develop` — omit the slug.
+- **yoke-flow** — `$ARGUMENTS` is a path under `docs/ai/` (or a slug), or recent artifacts exist in `docs/ai/*/`. `SLUG` = path or directory name.
+- **standalone** — otherwise. `SLUG` = current branch without prefix (`feature/`, `fix/`, `hotfix/`, `bugfix/`, `release/`). On `main`/`master`/`develop` — no slug.
 
 ---
 
-## Step 3 — Ticket ID detection
+## Step 3 — Ticket ID (no questions)
 
-Apply the cascade from `reference/commit-convention.md`:
+Cascade, first match wins. If none matches — commit without a ticket; never ask.
 
-1. **From `$ARGUMENTS`** — user passed a ticket ID or URL
-2. **From the slug** (yoke flow) — extract from the slug pattern
-3. **From the branch name** (standalone) — extract via regex patterns
-4. **Ask the user** — via AskUserQuestion: "No ticket" / "Enter number"
+1. **`$ARGUMENTS`** — `86`/`#86` → `#86`; `R2-50` → `R2-50`; issue URL → `#86`; YouTrack `/issue/PROJ-123` → `PROJ-123`.
+2. **slug** (yoke-flow) — leading `\d+` → `#NN`; leading `R\d+-\d+` → as-is.
+3. **branch** (standalone) — `^(\d+)-` or `\/(\d+)-` → `#NN`; `(R\d+-\d+)` → as-is; `([A-Z]+-\d+)` → as-is.
 
----
-
-## Step 4 — Classification and staging
-
-### Yoke flow mode
-
-After a task/plan/do/review skill, commit only the artifact of that stage:
-
-```
-#86 docs(86-black-jack-page): add task definition
-#86 docs(86-black-jack-page): add implementation plan
-#86 docs(86-black-jack-page): add execution report
-#86 docs(86-black-jack-page): add review report
-```
-
-### Standalone mode
-
-Read `reference/staging-strategy.md` and apply it:
-
-1. Collect all modified/new files
-2. Classify them into groups (feature, test, docs, style, chore, yoke-artifacts)
-3. Determine atomic commits by group
-4. Exclude .env, credentials, large binaries — warn the user about excluded files
-5. Show the commit plan to the user via AskUserQuestion
+Edge cases (anti-patterns, URL forms): `reference/commit-convention.md`.
 
 ---
 
-## Step 5 — Message formation
+## Step 4 — Staging
 
-Read `reference/commit-convention.md`. For each planned commit:
+### yoke-flow
 
-- Format: `TICKET type(SLUG): description` (NO colon after the ticket)
-- Language: ALWAYS English
-- Ticket ID first (if present)
-- Description: one sentence, imperative mood
+Stage only the artifact of the just-completed stage under `docs/ai/<SLUG>/`, matched by filename suffix. Leave non-artifact changes (code, configs) uncommitted — they are out of scope here. If no matching artifact changed, say so and stop.
+
+| Stage   | Artifact suffix | Message                                                 |
+| ------- | --------------- | ------------------------------------------------------- |
+| /task   | `*-task.md`     | `#86 docs(86-black-jack-page): add task definition`     |
+| /plan   | `*-plan.md`     | `#86 docs(86-black-jack-page): add implementation plan` |
+| /do     | `*-report.md`   | `#86 docs(86-black-jack-page): add execution report`    |
+| /review | `*-review.md`   | `#86 docs(86-black-jack-page): add review report`       |
+
+### standalone (autonomous)
+
+Classify each file by path, then group into atomic commits — no confirmation:
+
+| Group          | Path pattern                                    | Type                    |
+| -------------- | ----------------------------------------------- | ----------------------- |
+| feature        | `src/`, `app/`, `lib/`, `pages/`, `components/` | `feat`/`fix`/`refactor` |
+| test           | `*.test.*`, `*.spec.*`, `__tests__/`, `*.cy.*`  | `test`                  |
+| docs           | `*.md`, `docs/`, README, CHANGELOG              | `docs`                  |
+| style          | formatter-only output, no logic change          | `style`                 |
+| chore          | `package.json`, `*.config.*`, `.eslintrc`, CI   | `chore`                 |
+| yoke-artifacts | `docs/ai/**`                                    | `docs`                  |
+
+Precedence when a file matches several rows: yoke-artifacts > test > style > chore > docs > feature. `perf` and `style` are content-judgement types, not path-derivable — apply them only when the diff clearly warrants it.
+
+Grouping: feature + test of one feature → one commit; chore, style, yoke-artifacts → separate. Order: chore → feature → style → docs → yoke-artifacts. Full algorithm: `reference/staging-strategy.md`.
+
+Exclude `.env`, credentials, keys, and binaries over 1MB silently; list them in the final report.
 
 ---
 
-## Step 6 — Executing commits
+## Step 5 — Messages
 
-For each planned commit:
+Format `TICKET type(SLUG): description` — NO colon after the ticket; omit the ticket or slug when absent. English, imperative mood, one sentence: what, not how. Types: feat, fix, refactor, docs, test, chore, style, perf.
 
-1. `git add` specific files by name (not `git add -A`)
-2. `git commit -m "<message>"` — no Co-Authored-By, no trailers
-3. Show the result: hash, message, list of files
+---
+
+## Step 6 — Commit
+
+For each planned commit, batched in one turn:
+
+1. `git add <files by name>` — never `git add -A` or `git add .`
+2. `git commit -m "<message>"` — no trailers, no Co-Authored-By
+3. Report: hash, message, files. Note any excluded files.
 
 ---
 
 ## Rules
 
-- Commits in English. No exceptions.
+- English commits, no exceptions.
 - One commit — one logical change.
-- Ticket ID first in the message (if present).
-- Stage files by name, not `git add -A`.
-- Exclude secrets, credentials, large binaries.
+- Ticket first when present; never a colon after it.
+- Stage files by name.
+- Exclude secrets, credentials, binaries.
 - Avoid `wip`, `temp`, `misc`.
-- Exclude Co-Authored-By, Signed-off-by and any trailer lines.
-- In standalone mode, request confirmation before executing multiple commits.
+- No `Co-Authored-By`, `Signed-off-by`, or trailer lines.
+- Standalone commits run without confirmation.
 
-## Reference files
+## Reference
 
-- **`reference/commit-convention.md`** — message format, ticket ID extraction, type table, slug logic
-- **`reference/staging-strategy.md`** — file classification, grouping algorithm, commit order (standalone mode only)
+- `reference/commit-convention.md` — format edge cases, ticket forms, type table, yoke-artifact messages.
+- `reference/staging-strategy.md` — full classification and grouping algorithm, order, safeguards (standalone).

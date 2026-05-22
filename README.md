@@ -249,11 +249,10 @@ yoke/
 │   │   ├── SKILL.md
 │   │   └── reference/       # commit-convention, staging-strategy
 │   ├── gp/                  # git push with checks
-│   │   ├── SKILL.md
-│   │   └── agents/          # git-pre-checker, git-pusher
+│   │   └── SKILL.md
 │   ├── pr/                  # create and update PR
 │   │   ├── SKILL.md
-│   │   ├── agents/          # pr-data-collector, pr-body-generator
+│   │   ├── agents/          # pr-body-generator
 │   │   └── reference/       # pr-body-format
 │   ├── fix/                 # quick fix (1–3 files)
 │   │   ├── SKILL.md
@@ -269,7 +268,10 @@ yoke/
 │   ├── hooks.json           # Stop hook registration (Telegram notifications)
 │   └── notify.sh            # delivery script: reads the queue → sends to Telegram
 ├── lib/
-│   └── notify.sh            # write library: skills call it to enqueue messages
+│   ├── notify.sh            # write library: skills call it to enqueue messages
+│   ├── gp-precheck.sh       # gp: read-only pre-push state
+│   ├── gp-push.sh           # gp: runs git push, collects report
+│   └── pr-collect.sh        # pr: read-only data collection (paths, not contents)
 ├── commands/
 └── docs/                    # per-skill documentation
 ```

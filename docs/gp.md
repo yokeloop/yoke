@@ -1,8 +1,8 @@
 # Skill /gp
 
-Git push with pre-push checks and a post-push report. Inspects the repository state, handles edge
-cases (detached HEAD, no remote, uncommitted changes, default branch protection), pushes to the remote,
-and prints a report with pushed commits, diff stat, branch link, and PR status.
+Git push with pre-push checks and a post-push report. Inspects repository state, handles edge
+cases (detached HEAD, no remote, nothing to push), pushes to the remote, and prints a report with
+pushed commits, diff stat, branch link, and PR status. Runs autonomously — no confirmation prompts.
 
 ## Input
 
@@ -13,27 +13,24 @@ and prints a report with pushed commits, diff stat, branch link, and PR status.
 /yoke:gp --force-with-lease
 ```
 
-## Phases
+## Steps
 
-| Phase | Name          | What happens                                                                      |
-| ----- | ------------- | --------------------------------------------------------------------------------- |
-| 1     | **Pre-check** | Sub-agent collects data: branch, upstream, unpushed commits, uncommitted, gh auth |
-| 2     | **Decide**    | Orchestrator handles blocking errors and interactive decisions                    |
-| 3     | **Push**      | Sub-agent runs push, collects pushed commits, diff stat, branch URL, PR           |
-| 4     | **Report**    | Orchestrator shows the report to the user                                         |
+| Step | Name          | What happens                                                                     |
+| ---- | ------------- | -------------------------------------------------------------------------------- |
+| 1    | **Pre-check** | `lib/gp-precheck.sh` collects state: branch, upstream, unpushed, uncommitted, gh |
+| 2    | **Decide**    | Orchestrator: blocking errors and PUSH_MODE — no prompts                         |
+| 3    | **Push**      | `lib/gp-push.sh` runs push, collects pushed commits, diff stat, URL, PR          |
+| 4    | **Report**    | Orchestrator prints the report and suggests `/yoke:pr`                           |
 
-## Checks (Phase 2)
+## Checks (Step 2)
 
-Strict order — from blocking to interactive:
-
-| Check               | Condition                                  | Action                                  |
-| ------------------- | ------------------------------------------ | --------------------------------------- |
-| Detached HEAD       | Branch not determined                      | Error: check out a branch               |
-| gh CLI              | Not installed or not authenticated         | Error with instructions                 |
-| No remote           | `origin` missing                           | Error: add a remote                     |
-| Nothing to push     | 0 unpushed, upstream exists, 0 uncommitted | Message and exit                        |
-| Default branch      | Push to main/master                        | AskUserQuestion: continue?              |
-| Uncommitted changes | Uncommitted files present                  | AskUserQuestion: commit / push / cancel |
+| Check           | Condition                          | Action                            |
+| --------------- | ---------------------------------- | --------------------------------- |
+| Detached HEAD   | Branch not determined              | Error: check out a branch, stop   |
+| No remote       | `origin` missing                   | Error: add a remote, stop         |
+| Nothing to push | 0 unpushed and upstream exists     | Message and stop                  |
+| gh CLI          | Not installed or not authenticated | Non-blocking: skip PR/URL info    |
+| Uncommitted     | Uncommitted files present          | Non-blocking: note them in report |
 
 ## Push modes
 
@@ -50,14 +47,15 @@ A text report:
 - **Pushed commits** — up to 20 commits with hash and message
 - **Stats** — files changed, insertions, deletions
 - **Link** — branch URL on GitHub
-- **PR** — existing PR (URL, title) or "PR not found"
+- **PR** — existing PR (URL, title) or a suggestion to create one
+- **Uncommitted** — files not pushed (if any)
 
-## Sub-agents
+## Scripts
 
-| Agent             | Model | Role                                               |
-| ----------------- | ----- | -------------------------------------------------- |
-| `git-pre-checker` | haiku | Collects data before push (read-only)              |
-| `git-pusher`      | haiku | Runs the push, collects the report (only mutation) |
+| Script               | Role                                               |
+| -------------------- | -------------------------------------------------- |
+| `lib/gp-precheck.sh` | Collects state before push (read-only)             |
+| `lib/gp-push.sh`     | Runs the push, collects the report (only mutation) |
 
 ## Example
 
@@ -65,7 +63,7 @@ A text report:
 /yoke:gp
 ```
 
-Result: push the current branch to origin, report with commits and stats.
+Result: pushes the current branch to origin and prints a report with commits and stats.
 
 ## Connections
 

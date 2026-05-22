@@ -14,18 +14,27 @@ Form a markdown PR body from the provided data.
 
 ## Input
 
-The orchestrator passes:
+The orchestrator passes paths and small fields:
 
 - **DATA_SOURCE** — `yoke_full` | `yoke_partial` | `fallback`
-- **REVIEW_CONTENT** — contents of the review file (for yoke_full)
-- **REPORT_CONTENT** — contents of the report file (for yoke_full or yoke_partial)
-- **PR_TEMPLATE_CONTENT** — contents of the PR template (if present)
+- **MODE** — `CREATE` | `UPDATE`
+- **TICKET_ID** — ticket ID or `none`
+- **REVIEW_FILE** — path to the review file or `NOT_FOUND`
+- **REPORT_FILE** — path to the report file or `NOT_FOUND`
+- **PR_TEMPLATE** — path to the PR template or `NOT_FOUND`
+- **PR_BODY_FILE** — path to the current PR body (on update) or `empty`
+- **PR_HAS_YOKE_MARKERS** — `true` | `false` (on update)
 - **COMMITS** — list of commits
 - **DIFF_STAT** — change statistics
-- **TICKET_ID** — ticket ID or `none`
-- **PR_BODY** — current body (on update)
-- **PR_HAS_YOKE_MARKERS** — `true` | `false` (on update)
-- **MODE** — `CREATE` | `UPDATE`
+
+## Read inputs
+
+Read each provided path with the Read tool (skip `NOT_FOUND` / `empty`):
+
+- `REVIEW_FILE` → review content
+- `REPORT_FILE` → report content
+- `PR_TEMPLATE` → template content
+- `PR_BODY_FILE` → current PR body (for marker-aware update)
 
 ---
 
@@ -48,7 +57,7 @@ Read the format from `${CLAUDE_PLUGIN_ROOT}/skills/pr/reference/pr-body-format.m
 
 ### When DATA_SOURCE = fallback
 
-1. Generate a summary from commits: what was done in 1-3 sentences
+1. Generate a summary from commits: what changed, in 1-3 sentences
 2. Changes — from diff stat
 3. Commits — list of commits
 4. Test plan — generic checkboxes based on the logic of the changes
@@ -57,7 +66,7 @@ Read the format from `${CLAUDE_PLUGIN_ROOT}/skills/pr/reference/pr-body-format.m
 
 ## PR template integration
 
-If PR_TEMPLATE_CONTENT is passed:
+If a PR template was read (`PR_TEMPLATE` ≠ `NOT_FOUND`):
 
 1. Fill template sections with data using the heading mapping (see reference)
 2. Sections without a mapping — leave empty for the user
@@ -70,11 +79,11 @@ If PR_TEMPLATE_CONTENT is passed:
 When `MODE = UPDATE`:
 
 1. If `PR_HAS_YOKE_MARKERS = true`:
-   - Take the current PR_BODY
+   - Take the current PR body (from `PR_BODY_FILE`)
    - Replace the content between `<!-- yoke:start -->` and `<!-- yoke:end -->`
    - Preserve text outside the markers
 2. If `PR_HAS_YOKE_MARKERS = false`:
-   - Insert the yoke section before PR_BODY
+   - Insert the yoke section before the current PR body
 
 ---
 

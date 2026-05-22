@@ -8,12 +8,7 @@ description: >-
 
 # Git push with checks and report
 
-You are the orchestrator. Delegate bash commands to agents via the Agent tool:
-
-- Pre-check → `agents/git-pre-checker.md`
-- Push + Report → `agents/git-pusher.md`
-
----
+Push orchestrator: collect state, push, report. Runs autonomously — no confirmation prompts.
 
 ## Input
 
@@ -21,136 +16,78 @@ You are the orchestrator. Delegate bash commands to agents via the Agent tool:
 
 ---
 
-## Phase 1 — Pre-check
+## Step 1 — Pre-check
 
-Run `git-pre-checker` via the Agent tool:
+One call:
 
-- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/gp/agents/git-pre-checker.md`
-- Prompt: "Collect repository state before push"
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/gp-precheck.sh
+```
 
-The agent returns structured data. Transition → Phase 2.
+Parse the structured block. Single-value fields are `KEY: value`; list fields (`UNCOMMITTED_LIST`) span from the line after `KEY:` to the next top-level `KEY:`.
 
 ---
 
-## Phase 2 — Decide
+## Step 2 — Decide
 
-Process the pre-checker data. Checks go from blocking to interactive.
+Blocking (report and stop):
 
-### 1. Blocking errors — exit
+- `ERRORS` contains `detached HEAD` → "Checkout a branch before push".
+- `ERRORS` contains `no remote` → "Add a remote: `git remote add origin <url>`".
+- `UNPUSHED_COMMITS = 0` and `HAS_UPSTREAM = true` → "Nothing to push" (if `UNCOMMITTED_FILES > 0`, add: commit first with `/yoke:gca`).
 
-- `BRANCH = DETACHED` → report: "Checkout a branch before push", exit
-- `GH_AUTH = not_installed` → report: "Install gh CLI: https://cli.github.com", exit
-- `GH_AUTH = not_authenticated` → report: "Authenticate: `gh auth login`", exit
-- `REMOTE_URL` empty → report: "Add remote: `git remote add origin <url>`", exit
-- `UNPUSHED_COMMITS = 0` and `HAS_UPSTREAM = true` and `UNCOMMITTED_FILES = 0` → report: "Nothing to push", exit
+Non-blocking:
 
-### 2. Default branch protection
+- `GH_AUTH != ok` → push still proceeds; only PR/URL info is skipped in the report.
+- `UNCOMMITTED_FILES > 0` → never blocks. `git push` sends only commits; note them in the report.
 
-If `IS_DEFAULT_BRANCH = true` → AskUserQuestion:
-
-> Push to `<BRANCH>` — default branch. Continue?
-
-Options:
-
-- **Continue**
-- **Cancel** → exit
-
-### 3. Uncommitted changes
-
-If `UNCOMMITTED_FILES > 0` → AskUserQuestion:
-
-> Uncommitted changes (N files):
-
-Show the list of files from `UNCOMMITTED_LIST`.
-
-Options:
-
-- **Commit and push** → request a commit message via AskUserQuestion, stage files from `UNCOMMITTED_LIST` by name (not `git add -A`), run `git commit -m "<message>"`
-- **Push only committed** → continue
-- **Cancel** → exit
-
-### 4. Nothing to push after commit
-
-If the user chose "Push only committed" and `UNPUSHED_COMMITS = 0` → report: "Nothing to push", exit.
-
-### 5. Determine PUSH_MODE
+PUSH_MODE:
 
 - `HAS_UPSTREAM = false` → `set-upstream`
 - `$ARGUMENTS` contains `--force-with-lease` → `force-with-lease`
-- Otherwise → `normal`
-
-Transition → Phase 3.
+- otherwise → `normal`
 
 ---
 
-## Phase 3 — Push + Report
+## Step 3 — Push
 
-Run `git-pusher` via the Agent tool:
+One call:
 
-- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/gp/agents/git-pusher.md`
-- Prompt: "Run push and collect the report. BRANCH: `<BRANCH>`, PUSH_MODE: `<PUSH_MODE>`, SLUG: `<SLUG>`"
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/gp-push.sh "<BRANCH>" "<PUSH_MODE>"
+```
 
-### If PUSH_STATUS = FAILED
-
-Show `PUSH_ERROR`.
-
-If the error contains "non-fast-forward" → suggest:
-
-> `git pull --rebase` or `/yoke:gp --force-with-lease`
-
-Exit.
-
-Transition → Phase 4.
+If `PUSH_STATUS = FAILED` → show `PUSH_ERROR`. If it contains "non-fast-forward" → suggest `git pull --rebase` or `/yoke:gp --force-with-lease`. Stop.
 
 ---
 
-## Phase 4 — Report
+## Step 4 — Report
 
-Print the report to the user:
+Fill from the `gp-push.sh` block; `Commits:` ← `PUSHED_LIST`:
 
 ```
-Pushed to origin/<BRANCH>: +N commits
+Pushed to origin/<BRANCH>: +<PUSHED_COMMITS> commits
 
 Commits:
-  <hash> <message>
-  <hash> <message>
+  <PUSHED_LIST>
 
 Stats: <DIFF_STAT>
-
 Link: <BRANCH_URL>
 ```
 
-If `PR_EXISTS = true` — add:
+- Omit the `Link:` line when `BRANCH_URL = empty`.
+- `PR_EXISTS = true` → add `PR: <PR_TITLE> (<PR_URL>)` and suggest `/yoke:pr` to update it.
+- `PR_EXISTS = false` → suggest `/yoke:pr` to create one.
+- `UNCOMMITTED_FILES` (carried from Step 1) `> 0` → add `Uncommitted (not pushed): <N> files`.
 
-```
-PR: <PR_TITLE> (<PR_URL>)
-```
-
-If `PR_EXISTS = false` — add:
-
-```
-PR not found.
-```
-
-AskUserQuestion — what's next:
-
-If `PR_EXISTS = true`:
-
-- **Update PR via /yoke:pr (Recommended)** — `<PR_TITLE>` (`<PR_URL>`)
-- **Finish** → exit
-
-If `PR_EXISTS = false`:
-
-- **Create PR via /yoke:pr (Recommended)**
-- **Finish** → exit
-
-Handling: `/yoke:pr` → invoke the Skill tool with `/yoke:pr`. Finish → exit.
+Print the report and the suggestion — do not ask a follow-up question.
 
 ---
 
 ## Rules
 
-- Delegate bash commands to agents.
-- AskUserQuestion — only in the orchestrator.
+- Runs autonomously: no confirmation prompts.
 - Remote: `origin`. When multiple remotes exist — push to origin.
-- Output limits: max 20 commits, max 30 files.
+- `gh` is optional; its absence only removes PR/URL info, never blocks the push.
+- The only mutation is `git push` (inside `lib/gp-push.sh`).
+- Output limit: max 20 commits.

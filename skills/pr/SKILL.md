@@ -5,12 +5,7 @@ description: Creates or updates a GitHub Pull Request. Activated on "pr", "pull 
 
 # Creating and updating Pull Requests
 
-You are the orchestrator. Delegate to agents via the Agent tool:
-
-- Data collection → `agents/pr-data-collector.md`
-- Body generation → `agents/pr-body-generator.md`
-
----
+Orchestrator: collect data, generate the body, create or update the PR. Runs autonomously — no confirmation prompts.
 
 ## Input
 
@@ -18,139 +13,99 @@ You are the orchestrator. Delegate to agents via the Agent tool:
 
 ---
 
-## Phase 1 — Collect
+## Step 1 — Collect
 
-Run `pr-data-collector` via the Agent tool:
-
-- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-data-collector.md`
-- Prompt: "Collect data for creating a PR"
-
-The agent returns structured data. Transition → Phase 2.
-
----
-
-## Phase 2 — Decide
-
-Process the collector's data strictly in order.
-
-### 1. Blocking errors — exit
-
-- `GH_AUTH = not_installed` → report: "Install gh CLI: https://cli.github.com", exit
-- `GH_AUTH = not_authenticated` → report: "Authenticate: `gh auth login`", exit
-- `BRANCH` matches `DEFAULT_BRANCH` → report: "PR from default branch is not possible", exit
-- `COMMITS_COUNT = 0` and `PR_EXISTS = false` → report: "No commits. Push first: `/yoke:gp`", exit
-
-### 2. Create vs Update
-
-- `PR_EXISTS = true` → `MODE = UPDATE`
-- `PR_EXISTS = false` → `MODE = CREATE`
-
-### 3. Draft (CREATE only)
-
-If `$ARGUMENTS` contains `--draft` → `IS_DRAFT = true`, skip the question.
-
-Send a notification before the PR type question:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill pr --phase Decide --slug "$TICKET_ID" --title "PR type selection" --body "Ready for review or Draft?"`
-
-Otherwise → AskUserQuestion:
-
-> Create PR as...
-
-Options:
-
-- **Ready for review (Recommended)**
-- **Draft**
-
-### 4. Determine DATA_SOURCE
-
-- `REVIEW_FILE` found → `DATA_SOURCE = yoke_full`
-- Only `REPORT_FILE` found → `DATA_SOURCE = yoke_partial`
-- Neither found → `DATA_SOURCE = fallback`
-
-### 5. Base branch
-
-If `$ARGUMENTS` contains `--base <branch>` → `BASE_BRANCH = <branch>`.
-Otherwise → `BASE_BRANCH = DEFAULT_BRANCH`.
-
-Transition → Phase 3.
-
----
-
-## Phase 3 — Generate body
-
-Run `pr-body-generator` via the Agent tool:
-
-- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-body-generator.md`
-- Pass: DATA_SOURCE, REVIEW_CONTENT, REPORT_CONTENT, PR_TEMPLATE_CONTENT, COMMITS, DIFF_STAT, TICKET_ID, PR_BODY (on update), PR_HAS_YOKE_MARKERS, MODE
-
-The agent returns ready markdown. Transition → Phase 4.
-
----
-
-## Phase 4 — Execute
-
-### PR title
-
-Form the title: `<TICKET_ID> <short description from summary>`.
-If `MODE = UPDATE` — do not change the title.
-
-### CREATE
+One call (returns small fields and file **paths**, not contents):
 
 ```bash
-gh pr create --title "$TITLE" --body "$BODY" --base "$BASE_BRANCH" [--draft]
+bash ${CLAUDE_PLUGIN_ROOT}/lib/pr-collect.sh
 ```
 
-After creation — add labels:
+Parse the structured block. Single-value fields are `KEY: value`; list fields (`COMMITS`, `AVAILABLE_LABELS`) span from the line after `KEY:` to the next top-level `KEY:`.
+
+---
+
+## Step 2 — Decide
+
+Blocking errors (from `ERRORS`) — report and stop:
+
+- `gh: not_installed` → "Install gh CLI: https://cli.github.com"
+- `gh: not_authenticated` → "Authenticate: `gh auth login`"
+- `on default branch` → "PR from the default branch is not possible"
+- `no commits` → "No commits. Push first: `/yoke:gp`"
+
+Decisions:
+
+- **MODE** — `PR_EXISTS = true` → `UPDATE`; otherwise `CREATE`.
+- **DATA_SOURCE** — `REVIEW_FILE` ≠ `NOT_FOUND` → `yoke_full`; `REVIEW_FILE` = `NOT_FOUND` and `REPORT_FILE` ≠ `NOT_FOUND` → `yoke_partial`; neither → `fallback`.
+- **IS_DRAFT** (CREATE only) — `true` if `$ARGUMENTS` contains `--draft`, else `false`. Do not ask.
+- **BASE_BRANCH** — `--base <branch>` from `$ARGUMENTS`, else `DEFAULT_BRANCH`.
+
+---
+
+## Step 3 — Generate body
+
+Run `pr-body-generator` (Sonnet) via the Agent tool:
+
+- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-body-generator.md`
+- Pass: `DATA_SOURCE`, `MODE`, `TICKET_ID`, `REVIEW_FILE`, `REPORT_FILE`, `PR_TEMPLATE`, `PR_BODY_FILE`, `PR_HAS_YOKE_MARKERS`, `COMMITS`, `DIFF_STAT`
+
+The agent reads the artifact files itself (by path) and returns ready markdown. Large content never enters the orchestrator.
+
+---
+
+## Step 4 — Execute
+
+Write the returned markdown to a temp file (e.g. `/tmp/yoke-pr-body.md`) and use `--body-file` to avoid shell-escaping issues.
+
+**Title** — `<TICKET_ID> <subject of the first commit in COMMITS>` (omit ticket if `none`; derive it from data the orchestrator already has, not from the generated body). On `UPDATE`, keep the existing title and leave the draft state unchanged.
+
+**CREATE:**
 
 ```bash
-# Mapping from COMMIT_TYPES → labels (only those existing in AVAILABLE_LABELS)
+gh pr create --title "$TITLE" --body-file /tmp/yoke-pr-body.md --base "$BASE_BRANCH" [--draft]
+```
+
+**UPDATE:**
+
+```bash
+gh pr edit "$PR_NUMBER" --body-file /tmp/yoke-pr-body.md
+```
+
+**Labels** — map `COMMIT_TYPES` → labels, add only those present in `AVAILABLE_LABELS`:
+
+```bash
 gh pr edit <NUMBER> --add-label "<label>"
 ```
 
-### UPDATE
+**Notify** (final artifact of the cycle):
 
 ```bash
-gh pr edit <PR_NUMBER> --body "$NEW_BODY"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill pr --phase Complete --slug "$TICKET_ID" --title "PR $MODE" --body "$PR_URL"
 ```
 
-Add labels if needed.
-
-### Print the result
+**Print:**
 
 ```
-PR created: <URL>              # or "PR updated: <URL>"
+PR <created|updated>: <URL>
   Title: <title>
   Labels: <labels>
-  Ticket: <ticket_id>
+  Ticket: <TICKET_ID>
   Source: <DATA_SOURCE>
 ```
 
-Send a notification (with URL — final artifact of the cycle):
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill pr --phase Complete --slug "$TICKET_ID" --title "PR $MODE" --body "$PR_URL"`
-
-Transition → Phase 5.
-
----
-
-## Phase 5 — Next step
-
-AskUserQuestion — what's next:
-
-- **Finish (Recommended)** → exit
-
-> Integration with `/code-review` is not yet implemented — finish without additional suggestions.
+Do not ask a follow-up question.
 
 ---
 
 ## Rules
 
-- Delegate bash commands to agents. Exception: `gh pr create/edit` in Phase 4.
-- AskUserQuestion — only in the orchestrator.
-- Wrap PR body in `<!-- yoke:start/end -->` markers.
-- On update — preserve user text outside the markers.
+- Runs autonomously: no confirmation prompts.
+- Delegate body synthesis to `pr-body-generator` (Sonnet); it reads artifact files itself, so large content never enters the orchestrator.
+- Wrap the PR body in `<!-- yoke:start/end -->` markers; on update, preserve text outside them.
 - Assign only labels that exist in the repository.
-- Limits: max 30 commits.
+- Limit: max 30 commits.
 
 ## Reference files
 
-- **`reference/pr-body-format.md`** — PR body format, review/report section mapping, markers, template integration, auto-link, auto-labels
+- **`reference/pr-body-format.md`** — PR body format, section mapping, markers, template integration, auto-link, auto-labels (read by the generator).

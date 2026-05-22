@@ -254,7 +254,7 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
 **Handling the choice (one-shot, no loop):**
 
 - **Run /yoke:review:** invoke the Skill tool with `/yoke:review` and argument `<SLUG>`. Exit.
-- **Review via revdiff:** Resolve the default base via the cascade `git symbolic-ref refs/remotes/origin/HEAD` → `origin/main` → `origin/master` → fallback `main` (see `skills/gp/agents/git-pre-checker.md:43-54`). Call the Skill tool with `/revdiff` and the argument `<default-base>...HEAD`.
+- **Review via revdiff:** Resolve the default base via the cascade `git symbolic-ref refs/remotes/origin/HEAD` → `origin/main` → `origin/master` → fallback `main`. Call the Skill tool with `/revdiff` and the argument `<default-base>...HEAD`.
   - If the return is empty, exit.
   - If annotations describe code changes, apply them inline (orchestrator edits — do not dispatch a sub-agent). If prose-only, skip the code-edit step.
   - Append the full annotation text to `docs/ai/<SLUG>/<SLUG>-report.md` under a `## Review notes` heading (create the heading if absent).

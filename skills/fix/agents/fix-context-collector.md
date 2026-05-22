@@ -25,7 +25,7 @@ if [ -z "$BRANCH" ]; then
 fi
 ```
 
-Determine the default branch via a cascade (analogous to `gp/agents/git-pre-checker.md`):
+Determine the default branch via a cascade:
 
 ```bash
 DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')

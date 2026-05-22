@@ -2,8 +2,7 @@
 
 Executes a task from a plan end to end without stopping. Reads the plan file,
 runs tasks, runs the post-implementation pipeline (simplify, cleanup, validate,
-document), and writes a report. The developer kicks it off and comes back to a
-notification.
+document), and writes a report. The developer starts it and returns on notification.
 
 ## Input
 

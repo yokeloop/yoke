@@ -2,7 +2,7 @@
 
 **Goal:** cut wall-clock latency of the four core yoke skills by reducing sub-agent
 dispatches, removing redundant phases, eliminating duplicate codebase exploration,
-and inlining work that does not need a sub-agent.
+and inlining single-purpose steps.
 
 **Current state (lines of orchestration only):**
 

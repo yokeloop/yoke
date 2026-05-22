@@ -147,7 +147,7 @@ TodoWrite: "Exploration log written".
 ## Rules
 
 - Delegate file operations to agents — the orchestrator never touches files directly.
-- Work without confirmations between phases; AskUserQuestion in Init and Loop.
+- Run phases without confirmations; use AskUserQuestion in Init and Loop.
 - Wait for questions from the user.
 - Accumulate findings in EXPLORATION_SUMMARY and pass to the agent as context.
 - Mark phases via TodoWrite (Init, Finalize), not every question.

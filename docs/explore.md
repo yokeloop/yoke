@@ -41,8 +41,8 @@ Each Q&A entry contains structured sections: question context, answer, details (
 /yoke:explore how does the notification system work
 ```
 
-Result: an interactive Q&A session that accumulates context. On completion, an exploration log with findings.
+Result: an interactive Q&A session that accumulates context, then writes an exploration log with the findings.
 
 ## Connections
 
-Independent skill. After exploration, `/yoke:task` is recommended to create a task based on the findings.
+Independent skill. After exploration, use `/yoke:task` to create a task from the findings.

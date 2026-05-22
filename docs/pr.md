@@ -1,7 +1,7 @@
 # Skill /pr
 
 Creates or updates a GitHub Pull Request. Builds the description from yoke flow artifacts
-(review + report), focusing on "what to check during review". Falls back to commits and diff when
+(review + report) to highlight what to check during review. Falls back to commits and diff when
 artifacts are absent. Supports PR templates, auto-labels, and update markers. Runs autonomously —
 no confirmation prompts.
 

@@ -23,7 +23,7 @@ Delegate each phase to an agent via the Agent tool:
 
 Work end-to-end without stopping.
 
-**Principle:** the developer writes a fix description and walks away. Opus on code phases replaces the review loop.
+**Principle:** the developer writes a fix description and walks away. Opus on the implementation phases replaces the review loop.
 
 ---
 
@@ -163,7 +163,7 @@ Pass the prompt prepared in Phase 3 (TASK_WHAT, TASK_HOW, TASK_FILES, TASK_CONTE
 - **NEEDS_CONTEXT** → add context, re-dispatch (1 retry). Repeated → BLOCKED
 - **BLOCKED** → record the reason, Phase 6 (artifact with status BLOCKED)
 
-Opus on code phases makes fewer mistakes; the validator catches regressions — the review loop is redundant.
+Opus produces fewer implementation errors; the validator catches regressions — the review loop is redundant.
 
 Task-executor commits using COMMIT_MESSAGE from the prompt. If its status is DONE — the commit is guaranteed.
 
@@ -173,7 +173,7 @@ Transition → Phase 5.
 
 ## Phase 5 — Post-process
 
-Runs the full /do post-processing pipeline in one pass. Save the list of files changed in Phase 4.
+Runs the full /do post-processing pipeline. Save the list of files changed in Phase 4.
 
 ### 5a. Polish
 

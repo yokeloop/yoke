@@ -1,6 +1,6 @@
 # Skill /fix
 
-Compressed pipeline for small changes and fixes (1–3 files). Replaces ad-hoc
+Compressed pipeline for small changes and fixes (1–3 files). Replaces
 "just fix it in chat" with a structured flow: investigation, implementation (opus), post-processing, artifact.
 Two modes: post-flow (after task/plan/do) and standalone. Supports chains of fixes and "fix from PR comment URL".
 

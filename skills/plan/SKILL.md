@@ -14,7 +14,7 @@ Delegate plan design through the Agent tool:
 
 - Plan architecture → `agents/plan-architect.md`
 
-The output is a plan file that `/yoke:do` can execute autonomously.
+The output is a plan file that `/yoke:do` executes.
 
 ---
 
@@ -254,7 +254,7 @@ Offer 3 options through AskUserQuestion:
 ## Rules
 
 - Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
-- If the answer is in the code — decide and write the plan immediately.
+- If the answer is in the code — decide and write the plan.
 - Each task is one atomic commit. Larger than "create file" + "add import", smaller than a full feature.
 - Context isolation: each task contains only the files and context it needs.
 - Routing — based on task count and file-intersection matrix.

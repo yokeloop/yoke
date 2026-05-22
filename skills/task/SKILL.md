@@ -14,7 +14,7 @@ Delegate codebase investigation through the Agent tool:
 
 - Investigation → `agents/task-investigator.md`
 
-You formulate the task only — implementation belongs to other skills.
+You formulate the task; implementation belongs to other skills.
 
 ---
 
@@ -112,7 +112,7 @@ Re-read `$ARGUMENTS`. Keep only questions the prompt leaves open. Fold the user'
 
 **Interactive clarifications:**
 
-Draft 3–7 clarifying questions about implementation decisions that change the Task.
+Draft 3–7 clarifying questions whose answers change requirements, scope, or architecture.
 Ask the user via AskUserQuestion in batches of 1–4 questions.
 
 For each question:

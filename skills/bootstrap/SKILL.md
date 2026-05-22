@@ -34,7 +34,7 @@ Work from start to finish.
 
 `$ARGUMENTS` — optional project description.
 
-If empty — the skill auto-detects stack, architecture and conventions.
+If empty — the skill detects stack, architecture, and conventions.
 
 ---
 
@@ -72,7 +72,7 @@ Result false or error → tell the user: "/bootstrap only runs inside a git proj
 test -f .claude-plugin/plugin.json && echo "YOKE_REPO" || echo "OK"
 ```
 
-YOKE_REPO → tell the user: "/bootstrap is meant for target projects, not for yoke plugins." Exit.
+YOKE_REPO → tell the user: "/bootstrap runs in target projects, not for yoke plugins." Exit.
 
 Both conditions passed → transition to Phase 1.
 

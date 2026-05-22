@@ -269,7 +269,7 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
 - **No stops.** Run end to end without confirmations between steps.
 - **Commits by convention.** Format and ticket ID — from `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
 - **Current directory.** Worktrees and branch management are not allowed.
-- **Context isolation.** A sub-agent receives the full text of its task, never the whole plan.
+- **Context isolation.** A sub-agent receives only its own task text, not the whole plan.
 - **Review after each task.** Spec compliance → code quality. Mandatory.
 - **TodoWrite.** Mark each step immediately upon completion.
 - **On BLOCKED, keep going.** Stop only the dependent branch.

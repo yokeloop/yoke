@@ -18,7 +18,7 @@ Agents:
 - Validation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
 - Formatting → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
 
-Run continuously. The flow pauses twice: at fix-scope selection and at the final action.
+The flow pauses twice: at fix-scope selection and at the final action.
 
 ---
 

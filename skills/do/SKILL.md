@@ -20,7 +20,7 @@ Delegate each working phase to a sub-agent via the Agent tool:
 
 Run from start to finish without stops or confirmations.
 
-**Principle:** the developer starts the run, walks away, and returns on notification.
+**Principle:** the developer starts the run and returns on notification.
 
 ---
 
@@ -28,8 +28,8 @@ Run from start to finish without stops or confirmations.
 
 `$ARGUMENTS` — path to the plan file, e.g. `docs/ai/86-black-jack-page/86-black-jack-page-plan.md`.
 
-Optional flag `--update-docs` enables Phase 4 (Document). Without it, the
-docs phase is skipped unless the plan's frontmatter sets `update_docs: true`.
+Optional flag `--update-docs` enables Phase 4 (Document). Without it, /do skips
+the docs phase unless the plan's frontmatter sets `update_docs: true`.
 
 If there is no path — ask the user.
 
@@ -37,7 +37,7 @@ If there is no path — ask the user.
 
 ## Pipeline
 
-6 stages. Each one is tracked in TodoWrite.
+6 stages, each tracked in TodoWrite.
 
 ```
 1. Parse        → read the plan, create todos
@@ -186,7 +186,7 @@ After both return, mark Validate and Format in TodoWrite: [x] [x].
 
 **Skip this phase when `UPDATE_DOCS=false`** (the default). Mark Documentation as skipped in TodoWrite and proceed to Phase 5.
 
-When `UPDATE_DOCS=true` (set in Phase 1 step 5 from the `--update-docs` flag or the plan's frontmatter), run a sub-agent via the Agent tool. Prompt — from `agents/doc-updater.md`.
+When `UPDATE_DOCS=true` (from the `--update-docs` flag or the plan's frontmatter), run a sub-agent via the Agent tool. Prompt — from `agents/doc-updater.md`.
 
 Pass:
 
@@ -343,4 +343,4 @@ Report the path to the report file and offer 3 options via AskUserQuestion:
 - Some BLOCKED or SKIPPED, majority DONE → `⚠️ partial`
 - Majority BLOCKED → `❌ failed`
 
-Concerns and Blocked sections appear only when matching tasks exist. Commits in chronological order, including post-implementation. For the full template with extended commentary, see `reference/report-format.md` — supplementary, optional.
+Render Concerns and Blocked sections only when matching tasks exist. Commits in chronological order, including post-implementation. For the full template with extended commentary, see `reference/report-format.md` — supplementary, optional.

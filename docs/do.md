@@ -2,8 +2,8 @@
 
 Executes a task from a plan end to end without stopping. Reads the plan file,
 runs tasks, runs the post-implementation pipeline (simplify, cleanup, validate,
-document), and writes a report. The developer kicks it off and walks away —
-and comes back to a notification.
+document), and writes a report. The developer kicks it off and comes back to a
+notification.
 
 ## Input
 
@@ -15,7 +15,7 @@ and comes back to a notification.
 
 ## Pipeline
 
-7 stages. Each is tracked in TodoWrite. Stages 1–6 run without confirmations; Stage 7 has a Complete loop with an AskUserQuestion.
+7 stages, each tracked in TodoWrite. Stages 1–6 run without confirmations; Stage 7 has a Complete loop with an AskUserQuestion.
 
 | Stage | Name         | What happens                                                                                                                |
 | ----- | ------------ | --------------------------------------------------------------------------------------------------------------------------- |
@@ -48,7 +48,7 @@ File `docs/ai/<slug>/<slug>-report.md` with the following structure:
 | `inline`                | trivial / simple | Sequential in the current thread, minimum overhead                  |
 | `sub-agents sequential` | medium / complex | Each task is a separate sub-agent via Agent tool, context isolation |
 
-V1 runs everything sequentially. `Parallel: true` in the plan is ignored.
+V1 runs everything sequentially and ignores `Parallel: true` in the plan.
 `Mode: agent-team` → falls back to sub-agents sequential.
 
 ## Status protocol
@@ -87,4 +87,4 @@ Sub-agents return a status after running a task:
 /yoke:task → /yoke:plan → /yoke:do → /yoke:review
 ```
 
-`/task` defines the task. `/plan` builds the plan. `/do` executes the plan. `/review` prepares the report.
+`/task` defines, `/plan` builds, `/do` executes, `/review` prepares the report.

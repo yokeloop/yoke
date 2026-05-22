@@ -55,4 +55,4 @@ Result: `docs/ai/86-black-jack-page/86-black-jack-page-review.md`
 /yoke:task → /yoke:plan → /yoke:do → /yoke:review
 ```
 
-`/review` closes the development cycle. Analyzes the `/task`, `/plan`, `/do` artifacts and the code changes.
+`/review` closes the development cycle by analyzing the `/task`, `/plan`, `/do` artifacts and the code changes.

@@ -14,7 +14,7 @@ Delegate codebase investigation through the Agent tool:
 
 - Investigation → `agents/task-investigator.md`
 
-You formulate the task; you do not implement it.
+You formulate the task only — implementation belongs to other skills.
 
 ---
 
@@ -62,7 +62,7 @@ Take the ID from the URL plus 2–4 descriptive words. With no URL, use the desc
 
 ### Phase 2 — Investigate
 
-**Launch task-investigator through the Agent tool.** The agent is defined in `agents/task-investigator.md`.
+**Launch task-investigator through the Agent tool.** The agent definition lives in `agents/task-investigator.md`.
 
 Prompt to the agent:
 
@@ -108,7 +108,7 @@ For deeper Bad/Good examples and anti-patterns, see `reference/synthesize-guide.
 
 **Question validation:**
 
-Re-read `$ARGUMENTS`. Drop questions the prompt already answers. Fold the user's decisions into Requirements and Constraints as facts.
+Re-read `$ARGUMENTS`. Keep only questions the prompt leaves open. Fold the user's decisions into Requirements and Constraints as facts.
 
 **Interactive clarifications:**
 

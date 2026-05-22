@@ -43,8 +43,8 @@ If the path is missing — request it from the user.
 - `VERIFICATION` — verification criteria
 - `MATERIALS` — links and paths
 
-**3.** Check that Task, Context, and Requirements sections are present.
-If any of Task, Context, or Requirements is missing, tell the user and stop.
+**3.** Task, Context, and Requirements sections must all be present.
+If any is missing, tell the user and stop.
 
 **4.** Extract `TICKET_ID` from TASK_SLUG (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
@@ -56,7 +56,7 @@ If any of Task, Context, or Requirements is missing, tell the user and stop.
 
 Goal: make architectural decisions and decompose the task into atomic, ordered tasks.
 
-**Launch plan-architect through the Agent tool.** The agent is defined in `agents/plan-architect.md`.
+**Launch plan-architect through the Agent tool.** The agent definition lives in `agents/plan-architect.md`.
 
 Prompt to the agent:
 
@@ -254,7 +254,7 @@ Offer 3 options through AskUserQuestion:
 ## Rules
 
 - Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
-- Answer is in the code — decide and write the plan immediately.
+- If the answer is in the code — decide and write the plan immediately.
 - Each task is one atomic commit. Larger than "create file" + "add import", smaller than a full feature.
 - Context isolation: each task contains only the files and context it needs.
 - Routing — based on task count and file-intersection matrix.

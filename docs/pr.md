@@ -34,18 +34,18 @@ no confirmation prompts.
 
 ## PR body
 
-Generated content is wrapped in `<!-- yoke:start -->` / `<!-- yoke:end -->` markers.
-On update, only the content between the markers is replaced — the user's text is preserved.
+Yoke wraps generated content in `<!-- yoke:start -->` / `<!-- yoke:end -->` markers.
+On update, yoke replaces only the content between the markers and preserves the user's text.
 The generator reads artifact files itself (by path), so their content never enters the orchestrator.
 
-Principle: the description answers "what to check during review".
+The description answers "what to check during review".
 
 ## Auto-link and auto-labels
 
 Ticket ID from slug: `86-feature` → `Closes #86`, `R2-208-feature` → `Ticket: R2-208`.
 
 Labels from commit types: `feat` → `enhancement`, `fix` → `bug`, `refactor` → `maintenance`.
-Only labels that exist in the repository are applied.
+The skill applies only labels that exist in the repository.
 
 ## Components
 

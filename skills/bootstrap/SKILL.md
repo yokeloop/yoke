@@ -120,7 +120,7 @@ Dispatch 6 agents **in parallel** via the Agent tool (6 calls at once):
    ```
 
 6. **domain-analyzer** (sonnet) — read `agents/domain-analyzer.md`, pass the prompt to the agent.
-   domain-analyzer explores the domain model, API, abstractions and environment variables.
+   Reads the domain model, API, abstractions, and environment variables.
    Result → DOMAIN_FINDINGS:
 
    ```text
@@ -129,7 +129,7 @@ Dispatch 6 agents **in parallel** via the Agent tool (6 calls at once):
 
 Wait for all 6.
 
-If an agent returns an error or an empty result — use empty values for that section and record the issue in VERIFY_NOTES.
+If an agent returns an error or empty result — record the issue in VERIFY_NOTES and use empty values for that section.
 
 Mark in TodoWrite: `[x] Detect`
 
@@ -288,7 +288,7 @@ AskUserQuestion with 3 options:
 
 - **Commit** → transition to Phase 6
 - **Review and edit** → wait for the user's signal, re-dispatch bootstrap-verifier, return to Confirm
-- **Cancel** → tell the user "Bootstrap cancelled. The CLAUDE.md and .claude/yoke-context.md files remain on disk." Exit.
+- **Cancel** → tell the user "Bootstrap cancelled. CLAUDE.md and .claude/yoke-context.md remain on disk." Exit.
 
 Mark in TodoWrite: `[x] Confirm`
 

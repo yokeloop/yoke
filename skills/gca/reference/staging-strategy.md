@@ -8,7 +8,7 @@ Grouping files into atomic commits. Applied on standalone `/gca` invocations (ou
 
 ### Step 1: Collection and classification
 
-Collect all modified/new files via `git status --porcelain` (untracked files appear as `??`). Classify each file:
+Collect **all** modified/new files via `git status --porcelain` (untracked files appear as `??`) — `git status` is the single source of truth. Every entry is in scope regardless of who produced it (this session, another session, or the user editing by hand); git has no per-session authorship for unstaged changes, so do not invent one. Classify each file:
 
 | Group            | Criterion                                                                | Commit type                 |
 | ---------------- | ------------------------------------------------------------------------ | --------------------------- |
@@ -18,6 +18,8 @@ Collect all modified/new files via `git status --porcelain` (untracked files app
 | `style`          | Formatting only (result of project formatter/linter, no logical changes) | `style`                     |
 | `chore`          | Configs, dependencies (`package.json`, `*.config.*`, `.eslintrc`, CI)    | `chore`                     |
 | `yoke-artifacts` | Yoke flow files under `docs/ai/**`                                       | `docs`                      |
+
+When a file matches several rows, tie-break by precedence: `yoke-artifacts` > `test` > `style` > `chore` > `docs` > `feature`. `perf` and `style` are content-judgement types, not path-derivable — apply them only when the diff clearly warrants it.
 
 ### Step 2: Determining atomic commits
 
@@ -42,14 +44,20 @@ Standalone runs autonomously — no confirmation. Execute the planned commits in
 
 ---
 
+## Scope
+
+Standalone gca commits the **entire working tree**. Never exclude a file because it "wasn't this session's edit," because another session changed it, or because the change's context is unknown — that is precisely what makes the user re-run gca. Provenance is irrelevant to staging.
+
 ## Safeguards
 
-Exclude from staging:
+Exclusions are narrow and apply only to **untracked** (`??`) files that are genuine footguns:
 
-- `.env`, `.env.*` — secrets
-- Files containing credentials, tokens, keys
-- Large binary files (images, videos, archives > 1MB)
+- `.env`, `.env.*`
+- raw secret/key files: `*.pem`, `*.key`, `id_rsa`, `*.p12`, files plainly named as credentials
+- any binary over 1MB (e.g. images, videos, archives)
 
-When you detect such files, exclude them and list them in the final report. Do not ask.
+Tracked files are always committed — git-crypt-managed files included, since the clean filter encrypts them on commit, so committing them is safe and intended. Apply the name-based judgement above to **untracked** files only; never inspect a tracked file's name or contents to decide exclusion.
+
+When you exclude an untracked footgun, do not ask — commit everything else and list the excluded files in the final report.
 
 Stage files by name (not `git add -A` and not `git add .`).

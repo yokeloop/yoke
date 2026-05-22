@@ -55,6 +55,8 @@ Stage only the artifact of the just-completed stage under `docs/ai/<SLUG>/`, mat
 
 ### standalone (autonomous)
 
+gca commits the **entire working tree** — every modified and untracked entry from `git status --porcelain`, no matter who produced the change (this session, another session, or the user editing by hand). Git tracks working-tree state, not per-session authorship; never exclude a file because "it wasn't my edit" or "I don't know the context." Filtering by provenance is exactly what forces the user to re-run gca.
+
 Classify each file by path, then group into atomic commits — no confirmation:
 
 | Group          | Path pattern                                    | Type                    |
@@ -70,7 +72,7 @@ Precedence when a file matches several rows: yoke-artifacts > test > style > cho
 
 Grouping: feature + test of one feature → one commit; chore, style, yoke-artifacts → separate. Order: chore → feature → style → docs → yoke-artifacts. Full algorithm: `reference/staging-strategy.md`.
 
-Exclude `.env`, credentials, keys, and binaries over 1MB silently; list them in the final report.
+Exclusions are narrow and apply only to **untracked** (`??`) files: a new `.env`/`.env.*`, a raw key or credential file (`*.pem`, `*.key`, `*.p12`, `id_rsa`, files plainly named as credentials), or a binary over 1MB. Tracked files are always committed — git-crypt-managed files included, since the clean filter encrypts them on commit. Don't ask; commit everything else and list any excluded file in the final report.
 
 ---
 
@@ -96,7 +98,8 @@ For each planned commit, batched in one turn:
 - One commit — one logical change.
 - Ticket first when present; never a colon after it.
 - Stage files by name.
-- Exclude secrets, credentials, binaries.
+- Standalone commits the whole working tree; never skip a file because another session or the user changed it.
+- Exclude only untracked secrets, credentials, and >1MB binaries; always commit tracked files, git-crypt included.
 - Avoid `wip`, `temp`, `misc`.
 - No `Co-Authored-By`, `Signed-off-by`, or trailer lines.
 - Standalone commits run without confirmation.

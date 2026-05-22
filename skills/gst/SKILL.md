@@ -9,13 +9,73 @@ description: >-
 
 # Development status
 
-Run git commands and analysis only through the agent, not in the main thread.
+Status orchestrator: collect repository state, format a report, write a short summary. Read-only, no agent.
 
-## The only action
+## Step 1 — Collect
 
-Run `git-data-collector` via the Agent tool:
+One call:
 
-- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/gst/agents/git-data-collector.md`
-- Prompt: "Collect data on the current git repository state and produce a report"
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/gst-collect.sh
+```
 
-Output the agent's result to the user as is.
+Parse the structured block. A top-level field is a line matching `^[A-Z_]+:` at column 0; its value is inline (`KEY: value`) or, for list fields (`CHANGED_FILES`, `HOT_FILES`, `COMMITS`, `STASH`, `CONFLICTS`), the indented lines that follow until the next top-level field. Each `COMMITS` line is `hash|subject|relative-time|author`.
+
+## Step 2 — Format
+
+Build the report from this template; skip every empty section:
+
+```
+Branch: <BRANCH> [ahead <AHEAD>, behind <BEHIND> <UPSTREAM>]
+
+Changes: <SHORTSTAT>
+   staged: <STAGED>  unstaged: <UNSTAGED>  untracked: <UNTRACKED>
+
+Changed files (vs <DEFAULT_BRANCH>):
+   <directory>/
+     <status> <file> (+N -M)
+
+Hot files:
+   1. <path> — +N -M
+   ...
+
+Commits (from <DEFAULT_BRANCH>): +<COMMITS_COUNT> commits
+   <hash> <subject> — <relative-time>
+   ...
+
+Stash: <STASH_COUNT> entries
+
+Summary: <2-3 sentences>
+```
+
+Rules:
+
+- Group `CHANGED_FILES` by directory, not alphabetically.
+- Relative times come straight from the 3rd `COMMITS` field; never print absolute dates.
+- Skip empty sections (no stash, no hot files, no changes → hide them).
+- File status: `M` modified, `A` added, `D` deleted (renames appear as `D` + `A`).
+- Plain text, no emoji.
+
+## Step 3 — Summary
+
+Write 2-3 sentences on the outcome ("added JWT-based authentication"), not the file list. Base them on `COMMITS` and `CHANGED_FILES`.
+
+## Edge cases
+
+Exclusive states — check in order, first match wins:
+
+1. `EMPTY_REPO = true` → `New repository. Untracked files: <UNTRACKED>`. Nothing else to show.
+2. `DETACHED = true` → header `Branch: detached at <BRANCH>`, then the rest of the report.
+3. `CONFLICTS` non-empty → lead with `MERGE CONFLICTS:` and the file list, then the normal report.
+4. `ON_DEFAULT_BRANCH = true` or `MERGE_BASE = NONE` → no diff vs default; show `Recent commits:` from `COMMITS`; skip "Changed files" and "Hot files".
+
+Modifiers — apply independently:
+
+- `HAS_UPSTREAM = false` → header `Branch: <BRANCH> (no upstream)`; omit ahead/behind.
+- No changes (`STAGED`, `UNSTAGED`, `UNTRACKED` all 0) → skip Changes, Changed files, Hot files.
+
+## Rules
+
+- The script runs only read-only git commands.
+- No agent — format inline in this turn.
+- Limits: max 20 commits, max 50 file lines, max 10 stash entries.

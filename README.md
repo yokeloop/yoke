@@ -262,8 +262,7 @@ yoke/
 │   │   ├── SKILL.md
 │   │   └── agents/          # explore-agent, explore-log-writer
 │   └── gst/                 # repository status
-│       ├── SKILL.md
-│       └── agents/          # git-data-collector
+│       └── SKILL.md
 ├── hooks/
 │   ├── hooks.json           # Stop hook registration (Telegram notifications)
 │   └── notify.sh            # delivery script: reads the queue → sends to Telegram
@@ -271,7 +270,8 @@ yoke/
 │   ├── notify.sh            # write library: skills call it to enqueue messages
 │   ├── gp-precheck.sh       # gp: read-only pre-push state
 │   ├── gp-push.sh           # gp: runs git push, collects report
-│   └── pr-collect.sh        # pr: read-only data collection (paths, not contents)
+│   ├── pr-collect.sh        # pr: read-only data collection (paths, not contents)
+│   └── gst-collect.sh       # gst: read-only repository status data
 ├── commands/
 └── docs/                    # per-skill documentation
 ```

@@ -106,10 +106,64 @@ Read-only Q&A loop for codebase exploration and brainstorming. Classifies questi
 /yoke:explore compare Framer Motion and react-spring for our animations
 ```
 
+### /grill — interactive plan grilling
+
+Interrogates you about a plan or design one question at a time via AskUserQuestion (recommended answer first), walking the decision tree until you share understanding. Read-only.
+
+**Input:** plan or topic → **Output:** shared understanding (no file)
+
+```
+/yoke:grill should we cache sessions in Redis or Postgres
+```
+
+### /grill-docs — grilling with domain docs
+
+Same grilling, plus it maintains the glossary `CONTEXT.md` and ADRs in `docs/adr/` inline as decisions land.
+
+**Input:** plan or topic → **Output:** `CONTEXT.md` + `docs/adr/NNNN-*.md`
+
+```
+/yoke:grill-docs design the order cancellation flow
+```
+
+### /prd — PRD from context
+
+Synthesizes the current conversation into a PRD, publishes it as a GitHub issue (`ready-for-agent`), and saves a local copy. No interview.
+
+**Input:** current context → **Output:** GitHub issue + `docs/ai/<slug>/<slug>-prd.md`
+
+```
+/yoke:prd
+```
+
+### /issues — break work into issues
+
+Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), in dependency order.
+
+**Input:** context or issue reference → **Output:** GitHub issues + `docs/ai/<slug>/<slug>-issues.md`
+
+```
+/yoke:issues
+/yoke:issues https://github.com/owner/repo/issues/42
+```
+
+### /handoff — conversation handoff
+
+Compacts the conversation into a handoff document for a fresh agent, referencing existing artifacts. Saves to the OS temp directory.
+
+**Input:** optional focus → **Output:** handoff doc in the OS temp directory
+
+```
+/yoke:handoff
+```
+
 ## Full cycle
 
 ```
 /yoke:explore <topic>                # explore the codebase
+/yoke:grill <plan>                   # stress-test the idea (optional)
+/yoke:prd                            # PRD → GitHub issue (optional)
+/yoke:issues                         # break into issues (optional)
 /yoke:task <ticket or description>   # formulate the task
   → answer questions in the file
 /yoke:plan <path to task file>       # build the plan

@@ -71,6 +71,11 @@ claude --plugin-dir .
 - `/help` — how to use yoke and overview of available skills
 - `/explore` — codebase exploration: read-only Q&A loop with a summary chain
 - `/bootstrap` — prepare a project for yoke flow: stack detection, CLAUDE.md generation, `.claude/yoke-context.md` creation
+- `/grill` — interactive plan grilling: decision-tree interview via AskUserQuestion (read-only)
+- `/grill-docs` — grilling plus inline CONTEXT.md glossary and ADR maintenance
+- `/prd` — PRD from conversation context → GitHub issue + local copy in `docs/ai/`
+- `/issues` — break a plan/PRD into tracer-bullet GitHub issues + local index
+- `/handoff` — compact the conversation into a handoff doc for another agent (OS temp dir)
 
 ## Local skills (development)
 
@@ -84,6 +89,8 @@ claude --plugin-dir .
 ## Reference docs
 
 - `docs/notify.md` — Telegram notifications: setup, types, map of trigger points
+- `skills/issues/reference/github-issues.md` — GitHub issue tracker conventions + triage labels (used by `/prd`, `/issues`)
+- `skills/grill-docs/reference/domain-docs.md` — domain-doc consumer rules for CONTEXT.md/ADRs (used by `/prd`, `/issues`)
 
 ## Formatting
 

@@ -2,13 +2,16 @@
 
 ```mermaid
 flowchart LR
+  grill --> prd --> issues --> task
   task --> plan --> do --> review --> gca --> gp --> pr
   do --> fix
   fix --> do
   subgraph utility
     gst
     explore
+    grill-docs
     bootstrap
+    handoff
     help
   end
 ```
@@ -146,6 +149,57 @@ Interactive Q&A over the codebase and brainstorming. Delegates research to a sub
 
 **Output:** `docs/ai/<slug>/<slug>-exploration.md`
 
+### /grill — interactive plan grilling
+
+Interrogates you about a plan or design, one interactive question at a time (recommended answer first, "Other" for free-form), walking down the decision tree until you share the same understanding. Read-only — no artifact. [Details →](docs/grill.md)
+
+```
+/yoke:grill should we cache sessions in Redis or Postgres
+/yoke:grill review my plan for the billing flow
+```
+
+### /grill-docs — grilling with domain docs
+
+Same interactive grilling, plus it maintains the domain glossary (`CONTEXT.md`) and architecture decision records (`docs/adr/`) inline as decisions crystallise. [Details →](docs/grill-docs.md)
+
+```
+/yoke:grill-docs design the order cancellation flow
+```
+
+**Output:** `CONTEXT.md` + `docs/adr/NNNN-*.md` (created lazily)
+
+### /prd — PRD from context
+
+Synthesises the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue (labelled `ready-for-agent`), and saves a local copy. Does not interview — uses what is already known. [Details →](docs/prd.md)
+
+```
+/yoke:prd
+```
+
+**Output:** GitHub issue + `docs/ai/<slug>/<slug>-prd.md`
+
+### /issues — break work into issues
+
+Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), published in dependency order, with a local index. [Details →](docs/issues.md)
+
+```
+/yoke:issues
+/yoke:issues https://github.com/owner/repo/issues/42
+```
+
+**Output:** GitHub issues + `docs/ai/<slug>/<slug>-issues.md`
+
+### /handoff — conversation handoff
+
+Compacts the current conversation into a handoff document for a fresh agent, referencing existing artifacts instead of duplicating them. Saves to the OS temp directory. [Details →](docs/handoff.md)
+
+```
+/yoke:handoff
+/yoke:handoff continue with the payment retry logic
+```
+
+**Output:** handoff doc in the OS temp directory
+
 ### /bootstrap — prepare project for yoke flow
 
 Detects the project stack, analyzes architecture, scans conventions, and generates CLAUDE.md and `.claude/yoke-context.md`. Entry point for wiring yoke into a new project. [Details →](docs/bootstrap.md)
@@ -199,6 +253,17 @@ When working on multiple projects in parallel (tmux + worktree), skills send con
 
 ## Full cycle
 
+Optional discovery & specification front-end:
+
+```
+/yoke:grill <plan>                   # stress-test the idea interactively
+/yoke:grill-docs <plan>              # …and capture terms (CONTEXT.md) + ADRs
+/yoke:prd                            # turn the discussion into a PRD → GitHub issue
+/yoke:issues                         # break it into tracer-bullet issues
+```
+
+Core pipeline:
+
 ```
 /yoke:task <ticket or description>   # define the task
   → answer questions in the file
@@ -210,6 +275,8 @@ When working on multiple projects in parallel (tmux + worktree), skills send con
 /yoke:gp                             # push to remote
 /yoke:pr                             # create a pull request
 ```
+
+`/yoke:handoff` compacts the conversation for a fresh agent at any point.
 
 ## Structure
 
@@ -261,6 +328,18 @@ yoke/
 │   ├── explore/             # codebase exploration and brainstorming
 │   │   ├── SKILL.md
 │   │   └── agents/          # explore-agent, explore-log-writer
+│   ├── grill/               # interactive plan grilling
+│   │   └── SKILL.md
+│   ├── grill-docs/          # grilling + CONTEXT.md glossary + ADRs
+│   │   ├── SKILL.md
+│   │   └── reference/       # CONTEXT-FORMAT, ADR-FORMAT, domain-docs
+│   ├── prd/                 # PRD from context → GitHub issue
+│   │   └── SKILL.md
+│   ├── issues/              # break a plan/PRD into tracer-bullet issues
+│   │   ├── SKILL.md
+│   │   └── reference/       # github-issues
+│   ├── handoff/             # compact the conversation for another agent
+│   │   └── SKILL.md
 │   └── gst/                 # repository status
 │       └── SKILL.md
 ├── hooks/

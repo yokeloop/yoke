@@ -1,0 +1,52 @@
+---
+name: grill
+description: >-
+  Interviews the user one interactive question at a time about a plan or design,
+  walking each branch of the decision tree to a shared understanding; every
+  question offers a recommended answer. A read-only interview that writes no
+  files — for the variant that also captures terminology and decisions into
+  CONTEXT.md and ADRs, use grill-docs. Activates when the user writes "grill",
+  "grill me", "poke holes in this", "interrogate my design", "challenge my
+  plan", "stress-test my plan", "interview me about this".
+---
+
+# Grill
+
+Interview the user relentlessly about every aspect of this plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
+
+Ask **one question at a time through the AskUserQuestion tool**, and wait for the answer before moving to the next. A later question usually depends on an earlier answer, so resolve the branch in order — don't batch unrelated questions.
+
+If a question can be answered by exploring the codebase, explore the codebase instead of asking.
+
+This is a read-only interview — it writes no files. The output is the shared understanding and a closing summary.
+
+---
+
+## Input
+
+`$ARGUMENTS` — the plan, design, or topic to grill. If empty, ask via AskUserQuestion what they want to be grilled on.
+
+---
+
+## Each question
+
+Pose every question with AskUserQuestion:
+
+- A short `header` (≤12 chars) naming the decision.
+- 2–4 options. **Put your recommended answer first, labelled `(Recommended)`**, with a one-line rationale in its description. Make the remaining options the strongest realistic alternatives.
+- The user can always pick "Other" to type a free-form answer — options are starting points, not a cage, so don't force a fit.
+
+After each answer, fold it into your understanding and ask the next question down that branch. Surface contradictions immediately ("you just chose X, but earlier you said Y — which holds?").
+
+Stop when a full pass down the tree surfaces no new open decisions, or when the user signals they're satisfied. After about 15 questions, check in: ask whether to keep going or wrap up. Summarise the resolved decisions at the end.
+
+---
+
+## Rules
+
+- One AskUserQuestion per question. Wait for the answer before moving on.
+- The recommended answer is always present and listed first.
+- Resolve dependencies in order — don't jump branches.
+- Prefer exploring the codebase over asking when the answer is discoverable there.
+- For deeper grilling that also captures terminology and decisions into `CONTEXT.md` and ADRs, use `/yoke:grill-docs`.
+- Language: match the user's language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

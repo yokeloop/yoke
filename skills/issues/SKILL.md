@@ -1,0 +1,103 @@
+---
+name: issues
+description: >-
+  Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using
+  vertical slices (tracer bullets), publishes them in dependency order, and
+  saves a local index in docs/ai. Activates when the user writes "issues",
+  "break into issues", "create tickets", "split into tasks",
+  "decompose into issues", "make implementation tickets", "tracer bullets".
+---
+
+# Issues
+
+Break a plan into independently-grabbable issues using vertical slices (tracer bullets).
+
+## Process
+
+### 1. Gather context
+
+Work from whatever is already in the conversation context. If the user passes an issue reference (issue number, URL, or path) as an argument, fetch it (`gh issue view <ref>` for GitHub) and read its full body and comments.
+
+### 2. Explore the codebase (skip if already explored this session)
+
+If you have not already explored the codebase, do so to understand its current state. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `CONTEXT.md` / `CONTEXT-MAP.md` and relevant `docs/adr/`, give issue titles and descriptions the glossary's vocabulary, and flag any ADR a slice contradicts.
+
+### 3. Draft vertical slices
+
+Break the plan into **tracer bullet** issues. Each issue is a thin vertical slice that cuts through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
+
+Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an architectural decision or a design review. AFK slices can be implemented and merged without human interaction. Prefer AFK over HITL where possible.
+
+<vertical-slice-rules>
+- Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
+- A completed slice is demoable or verifiable on its own
+- Prefer many thin slices over few thick ones
+</vertical-slice-rules>
+
+### 4. Quiz the user
+
+Present the proposed breakdown as a numbered list. For each slice, show:
+
+- **Title**: short descriptive name
+- **Type**: HITL / AFK
+- **Blocked by**: which other slices (if any) must complete first
+- **User stories covered**: which user stories this addresses (if the source material has them)
+
+Ask the user:
+
+- Does the granularity feel right? (too coarse / too fine)
+- Are the dependency relationships correct?
+- Should any slices be merged or split further?
+- Are the correct slices marked as HITL and AFK?
+
+Iterate until the user approves the breakdown.
+
+### 5. Publish
+
+Publish in dependency order (blockers first) so you can reference real issue identifiers in the "Blocked by" field. Follow `reference/github-issues.md` for the `gh` conventions and triage labels.
+
+Order the slices so every blocker is created before the slices that depend on it. For each slice, in that order: write its body (the `<issue-template>` below) to a file, substitute the real issue numbers of its blockers into the "Blocked by" section, then create it:
+
+```bash
+gh issue create --title "<slice title>" --body-file <slice body file>
+```
+
+Label AFK slices `ready-for-agent` and HITL slices `ready-for-human` (per the reference; create a label if the repo lacks it, unless the user objects). Capture each returned issue number for its dependents to cite.
+
+Build the slug as in `/yoke:prd` — an English kebab-case description, prefixed with a ticket id if one exists; reuse the parent PRD/issue's slug when the source was one, so `<slug>-prd.md` and `<slug>-issues.md` sit together. Save a local index to `docs/ai/<slug>/<slug>-issues.md` (`mkdir -p docs/ai/<slug>` first) listing every slice: title, type, blocked-by, the created issue URL, and its body.
+
+If `gh` is not authenticated or there is no GitHub remote, skip publishing, write the full breakdown to the local index, and tell the user.
+
+Do NOT close or modify any parent issue.
+
+<issue-template>
+## Parent
+
+A reference to the parent issue (if the source was an existing issue, otherwise omit this section).
+
+## What to build
+
+A concise description of this vertical slice. Describe the end-to-end behavior, not layer-by-layer implementation.
+
+Avoid specific file paths or code snippets — they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it here and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
+
+## Acceptance criteria
+
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
+
+## Blocked by
+
+- A reference to the blocking ticket (if any)
+
+Or "None - can start immediately" if no blockers.
+
+</issue-template>
+
+## Rules
+
+- Vertical slices, not horizontal layers. Prefer many thin slices.
+- Publish in dependency order so "Blocked by" can reference real issue numbers.
+- Use the project's domain glossary and respect ADRs. Pair with `/yoke:prd` or `/yoke:plan` upstream.
+- Language: match the conversation language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

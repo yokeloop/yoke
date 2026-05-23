@@ -1,0 +1,96 @@
+---
+name: prd
+description: >-
+  Turns the current conversation and codebase understanding into a PRD,
+  publishes it as a GitHub issue, and saves a local copy in docs/ai. Does not
+  interview — synthesizes what is already known. Activates when the user writes
+  "prd", "create a prd", "write a prd", "turn this into a prd",
+  "product requirements doc", "draft requirements".
+---
+
+# PRD
+
+Take the current conversation context and codebase understanding and produce a PRD. Do NOT interview the user — synthesize what you already know.
+
+## Process
+
+1. **Explore the repo** to understand the current state of the codebase, if you haven't already. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `CONTEXT.md` / `CONTEXT-MAP.md` and the relevant `docs/adr/`, use the glossary's vocabulary throughout the PRD, and flag any ADR the PRD contradicts.
+
+2. **Sketch the major modules** you will need to build or modify. Actively look for opportunities to extract deep modules that can be tested in isolation. A deep module (as opposed to a shallow one) encapsulates a lot of functionality behind a simple, testable interface that rarely changes. Briefly confirm the module breakdown with the user and which modules they want tested — a quick check, not a requirements interview.
+
+3. **Write the PRD** using the template below.
+
+4. **Build the slug** — an English kebab-case description, prefixed with a ticket id only if one exists in context (e.g. `86-balance-on-accounts`, otherwise `dark-mode-settings`). Derive the PRD title from the slug's human-readable form and add it as a top-level `# <title>` heading at the top of the PRD body. Save a local copy to `docs/ai/<slug>/<slug>-prd.md` (`mkdir -p docs/ai/<slug>` first).
+
+5. **Publish to GitHub.** Follow `${CLAUDE_PLUGIN_ROOT}/skills/issues/reference/github-issues.md` for the `gh` conventions and triage labels. First check it is safe to publish: if `docs/ai/<slug>/<slug>-prd.md` already existed or an open issue carries the same title, ask the user whether to update the existing issue (`gh issue edit <n> --body-file ...`) or create a new one. Otherwise:
+
+   ```bash
+   gh issue create --title "<PRD title>" --body-file docs/ai/<slug>/<slug>-prd.md
+   ```
+
+   Apply the `ready-for-agent` label per the reference (create it if the repo lacks it, unless the user objects), then print the issue URL.
+
+   If `gh` is not authenticated or there is no GitHub remote, keep the local copy only and tell the user where it is.
+
+<prd-template>
+
+## Problem Statement
+
+The problem that the user is facing, from the user's perspective.
+
+## Solution
+
+The solution to the problem, from the user's perspective.
+
+## User Stories
+
+A LONG, numbered list of user stories. Each user story should follow this format:
+
+1. As an <actor>, I want a <feature>, so that <benefit>
+
+<user-story-example>
+1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
+</user-story-example>
+
+This list should be extensive and cover every aspect of the feature.
+
+## Implementation Decisions
+
+A list of implementation decisions. This can include:
+
+- The modules that will be built/modified
+- The interfaces of those modules that will be modified
+- Technical clarifications from the developer
+- Architectural decisions
+- Schema changes
+- API contracts
+- Specific interactions
+
+Do NOT include specific file paths or code snippets. They go stale fast.
+
+Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it within the relevant decision and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
+
+## Testing Decisions
+
+A list of testing decisions. Include:
+
+- A description of what makes a good test (only test external behavior, not implementation details)
+- Which modules will be tested
+- Prior art for the tests (i.e. similar types of tests in the codebase)
+
+## Out of Scope
+
+What is out of scope for this PRD.
+
+## Further Notes
+
+Any further notes about the feature.
+
+</prd-template>
+
+## Rules
+
+- Synthesize from existing context — don't interview the user.
+- Use the project's domain glossary and respect ADRs. Pair with `/yoke:grill-docs` upstream to build that vocabulary.
+- To break the PRD into implementation tickets, hand off to `/yoke:issues`.
+- Language: match the conversation language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

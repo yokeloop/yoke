@@ -23,7 +23,7 @@ Delegate each phase to an agent via the Agent tool:
 
 Work end-to-end without stopping.
 
-**Principle:** the developer writes a fix description and walks away. Opus on the implementation phases replaces the review loop.
+**Principle:** the developer writes a fix description and walks away. Running Opus on the implementation phases replaces the review loop.
 
 ---
 

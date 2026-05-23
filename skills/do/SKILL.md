@@ -140,7 +140,7 @@ Without parallel groups, dispatch sequentially.
 On BLOCKED — send a notification:
 `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill do --phase Execute --slug "$SLUG" --title "Task blocked" --body "<block reason and number of skipped tasks>"`
 
-Save the changed/created files list for Phases 3-5.
+Save the list of changed and created files for Phases 3-5.
 
 **Transition:** tasks done (or BLOCKED) → Phase 3
 

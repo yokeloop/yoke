@@ -55,7 +55,7 @@ Stage only the artifact of the just-completed stage under `docs/ai/<SLUG>/`, mat
 
 ### standalone (autonomous)
 
-gca commits the **entire working tree** — every modified and untracked entry from `git status --porcelain`, no matter who produced the change (this session, another session, or the user editing by hand). Git tracks working-tree state, not per-session authorship; never exclude a file because "it wasn't my edit" or "I don't know the context." Filtering by provenance is exactly what forces the user to re-run gca.
+gca commits the **entire working tree** — every modified and untracked entry from `git status --porcelain`, no matter who produced the change (this session, another session, or the user editing by hand). Git tracks working-tree state, not per-session authorship; never exclude a file because "it wasn't my edit" or "I don't know the context." Filtering by provenance forces the user to re-run gca.
 
 Classify each file by path, then group into atomic commits — no confirmation:
 

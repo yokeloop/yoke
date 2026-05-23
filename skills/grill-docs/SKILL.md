@@ -1,11 +1,11 @@
 ---
 name: grill-docs
 description: >-
-  Docs-aware grilling: interrogates your plan one question at a time AND
+  Docs-aware grilling: interrogates the user's plan one question at a time AND
   maintains the domain glossary (CONTEXT.md) and architecture decision records
-  (docs/adr/) inline as decisions crystallise. Use to stress-test a plan against
-  the project's language and documented decisions; for a plain interview that
-  writes no files, use grill. Activates when the user writes "grill-docs",
+  (docs/adr/) inline as decisions crystallise. Used to stress-test a plan
+  against the project's language and documented decisions; for a plain interview
+  that writes no files, use grill. Activates when the user writes "grill-docs",
   "grill with docs", "grill and update the glossary", "grill and write ADRs",
   "stress-test against CONTEXT.md", "challenge my plan and capture decisions".
 ---

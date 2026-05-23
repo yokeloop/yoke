@@ -1,57 +1,57 @@
-# План создания репозитория yoke-pi
+# yoke-pi Repository Creation Plan
 
-> Дата: 2026-04-27
-> Статус: Черновик
+> Date: 2026-04-27
+> Status: Draft
 
-## Содержание
+## Contents
 
-1. [Обзор и цели](#1-обзор-и-цели)
-2. [Структура репозитория](#2-структура-репозитория)
-3. [Фаза 0: Подготовка репозитория](#3-фаза-0-подготовка-репозитория)
-4. [Фаза 1: Инфраструктура и пакеты](#4-фаза-1-инфраструктура-и-пакеты)
-5. [Фаза 2: Агенты — единый источник правды](#5-фаза-2-агенты--единый-источник-правды)
-6. [Фаза 3: SKILL.md — универсальные оркестраторы](#6-фаза-3-skillmd--универсальные-оркестраторы)
-7. [Фаза 4: Портирование скилов — по порядку сложности](#7-фаза-4-портирование-скилов--по-порядку-сложности)
-8. [Фаза 5: Расширения и уведомления](#8-фаза-5-расширения-и-уведомления)
-9. [Фаза 6: Документация и CI](#9-фаза-6-документация-и-ci)
-10. [Фаза 7: Тестирование и полировка](#10-фаза-7-тестирование-и-полировка)
-11. [Критерии приёмки](#11-критерии-приёмки)
-12. [Риски](#12-риски)
-13. [Оценка трудозатрат](#13-оценка-трудозатрат)
-14. [Приложения](#приложения)
-
----
-
-## 1. Обзор и цели
-
-### Что делаем
-
-Полный клон репозитория `yokeloop/yoke`, переписанный под экосистему pi dev. Новое название: **`yoke-pi`** (репозиторий `yokeloop/yoke-pi`).
-
-### Цели
-
-1. **Полный паритет функциональности** — все 12 скилов работают в pi так же, как в Claude Code
-2. **Совместимость с pi-плагинами** — pi-subagents, pi-ask-user, pi-intercom
-3. **Нативные pi-паттерны** — `subagent()`, `ask_user()`, `.pi/` вместо `.claude/`, AGENTS.md
-4. **Установка одной командой** — `pi install npm:yoke-pi` (или `pi install git:yokeloop/yoke-pi`)
-5. **Обратная совместимость знаний** — архитектура скилов, фазы, артефакты (task.md, plan.md, report.md) те же
-
-### Чего мы НЕ делаем
-
-- ❌ Поддержка двух харнесов в одном репозитории одновременно — слишком дорого
-- ❌ Универсальные SKILL.md с `<!-- CC -->` / `<!-- Pi -->` условиями — каждый скилл переписан целиком под pi
-- ❌ Сохранение Claude Code плагина — оригинальный `yoke` остаётся в `yokeloop/yoke`
+1. [Overview and goals](#1-overview-and-goals)
+2. [Repository structure](#2-repository-structure)
+3. [Phase 0: Repository preparation](#3-phase-0-repository-preparation)
+4. [Phase 1: Infrastructure and packages](#4-phase-1-infrastructure-and-packages)
+5. [Phase 2: Agents — the single source of truth](#5-phase-2-agents--the-single-source-of-truth)
+6. [Phase 3: SKILL.md — universal orchestrators](#6-phase-3-skillmd--universal-orchestrators)
+7. [Phase 4: Porting skills — by order of complexity](#7-phase-4-porting-skills--by-order-of-complexity)
+8. [Phase 5: Extensions and notifications](#8-phase-5-extensions-and-notifications)
+9. [Phase 6: Documentation and CI](#9-phase-6-documentation-and-ci)
+10. [Phase 7: Testing and polish](#10-phase-7-testing-and-polish)
+11. [Acceptance criteria](#11-acceptance-criteria)
+12. [Risks](#12-risks)
+13. [Effort estimate](#13-effort-estimate)
+14. [Appendices](#appendices)
 
 ---
 
-## 2. Структура репозитория
+## 1. Overview and goals
+
+### What we are building
+
+A full clone of the `yokeloop/yoke` repository, rewritten for the pi dev ecosystem. New name: **`yoke-pi`** (repository `yokeloop/yoke-pi`).
+
+### Goals
+
+1. **Full feature parity** — all 12 skills work in pi exactly as they do in Claude Code
+2. **Compatibility with pi plugins** — pi-subagents, pi-ask-user, pi-intercom
+3. **Native pi patterns** — `subagent()`, `ask_user()`, `.pi/` instead of `.claude/`, AGENTS.md
+4. **One-command install** — `pi install npm:yoke-pi` (or `pi install git:yokeloop/yoke-pi`)
+5. **Knowledge backward compatibility** — the skill architecture, phases, and artifacts (task.md, plan.md, report.md) stay the same
+
+### What we are NOT doing
+
+- ❌ Supporting two harnesses in one repository simultaneously — too expensive
+- ❌ Universal SKILL.md files with `<!-- CC -->` / `<!-- Pi -->` conditionals — each skill is rewritten entirely for pi
+- ❌ Keeping the Claude Code plugin — the original `yoke` stays in `yokeloop/yoke`
+
+---
+
+## 2. Repository structure
 
 ```
 yoke-pi/
-├── package.json                    # npm-пакет yoke-pi
-├── README.md                       # Документация
+├── package.json                    # npm package yoke-pi
+├── README.md                       # Documentation
 ├── LICENSE                         # MIT
-├── AGENTS.md                       # Инструкции для pi (вместо CLAUDE.md)
+├── AGENTS.md                       # Instructions for pi (instead of CLAUDE.md)
 ├── .gitignore
 ├── .editorconfig
 ├── .prettierrc.json
@@ -59,14 +59,14 @@ yoke-pi/
 ├── .husky/
 │   └── pre-commit                  # prettier
 │
-├── agents/                         # Единый источник правды — 37 агентов
+├── agents/                         # Single source of truth — 37 agents
 │   ├── stack-detector.md
 │   ├── architecture-mapper.md
 │   ├── convention-scanner.md
 │   ├── validation-scanner.md
 │   ├── existing-rules-detector.md
 │   ├── domain-analyzer.md
-│   ├── claude-md-generator.md      # → переименовать в project-md-generator.md
+│   ├── claude-md-generator.md      # → rename to project-md-generator.md
 │   ├── yoke-context-generator.md
 │   ├── automation-recommender.md
 │   ├── bootstrap-verifier.md
@@ -98,10 +98,10 @@ yoke-pi/
 │   ├── task-explorer.md
 │   └── task-architect.md
 │
-├── skills/                          # 12 SKILL.md (переписаны под pi)
+├── skills/                          # 12 SKILL.md (rewritten for pi)
 │   ├── bootstrap/SKILL.md
-│   │   └── reference/              # Справочники (переносятся как есть)
-│   │       ├── project-md-template.md      # бывш. claude-md-template.md
+│   │   └── reference/              # Reference docs (carried over as-is)
+│   │       ├── project-md-template.md      # formerly claude-md-template.md
 │   │       ├── hooks-patterns.md
 │   │       ├── mcp-servers.md
 │   │       ├── quality-criteria.md
@@ -128,10 +128,10 @@ yoke-pi/
 │       └── reference/
 │       └── examples/
 │
-├── extensions/                      # pi-расширения
-│   └── yoke-notify.ts               # Уведомления (замена hooks/notify.sh)
+├── extensions/                      # pi extensions
+│   └── yoke-notify.ts               # Notifications (replacement for hooks/notify.sh)
 │
-├── docs/                            # Документация скилов
+├── docs/                            # Skill documentation
 │   ├── task.md
 │   ├── plan.md
 │   ├── do.md
@@ -146,57 +146,57 @@ yoke-pi/
 │   ├── hi.md
 │   └── notify.md
 │
-├── yoke.png                         # Логотип
+├── yoke.png                         # Logo
 │
 └── scripts/
-    └── validate.ts                   # Валидация пакета
+    └── validate.ts                   # Package validation
 ```
 
-### Ключевые отличия от оригинального yoke
+### Key differences from the original yoke
 
-| Что              | yoke (Claude Code)                      | yoke-pi (pi)                                             |
-| ---------------- | --------------------------------------- | -------------------------------------------------------- |
-| Агенты           | `skills/*/agents/*.md` (внутри скиллов) | `agents/*.md` (корень, единый каталог)                   |
-| SKILL.md         | Диспатчит через `Agent tool`            | Диспатчит через `subagent()`                             |
-| Q&A              | `AskUserQuestion`                       | `ask_user()`                                             |
-| Аргументы        | `$ARGUMENTS`                            | Текст после `/skill:name`                                |
-| Путь к корню     | `${CLAUDE_PLUGIN_ROOT}`                 | Относительные пути / имена агентов                       |
-| Контекст проекта | `.claude/yoke-context.md`               | `.pi/yoke-context.md`                                    |
-| Правила проекта  | `CLAUDE.md`                             | `AGENTS.md`                                              |
-| Плагин-файл      | `.claude-plugin/plugin.json`            | `package.json` (pi key)                                  |
-| Манифест         | `.claude-plugin/marketplace.json`       | `package.json` (pi key)                                  |
-| Уведомления      | `hooks/hooks.json` + `lib/notify.sh`    | `extensions/yoke-notify.ts`                              |
-| Прогресс         | `TodoWrite`                             | Markdown-чеклисты + subagent progress                    |
-| Шаблоны          | `{{PLACEHOLDER}}` оркестратором         | Контекст через `task:` строку                            |
-| Неймспейс        | `/yoke:<name>`                          | `/skill:<name>` (или `/skill:yoke-<name>` при конфликте) |
-| Locale skills    | `.claude/skills/`                       | `.pi/skills/`                                            |
+| What            | yoke (Claude Code)                     | yoke-pi (pi)                                          |
+| --------------- | -------------------------------------- | ----------------------------------------------------- |
+| Agents          | `skills/*/agents/*.md` (inside skills) | `agents/*.md` (root, single directory)                |
+| SKILL.md        | Dispatches via `Agent tool`            | Dispatches via `subagent()`                           |
+| Q&A             | `AskUserQuestion`                      | `ask_user()`                                          |
+| Arguments       | `$ARGUMENTS`                           | Text after `/skill:name`                              |
+| Path to root    | `${CLAUDE_PLUGIN_ROOT}`                | Relative paths / agent names                          |
+| Project context | `.claude/yoke-context.md`              | `.pi/yoke-context.md`                                 |
+| Project rules   | `CLAUDE.md`                            | `AGENTS.md`                                           |
+| Plugin file     | `.claude-plugin/plugin.json`           | `package.json` (pi key)                               |
+| Manifest        | `.claude-plugin/marketplace.json`      | `package.json` (pi key)                               |
+| Notifications   | `hooks/hooks.json` + `lib/notify.sh`   | `extensions/yoke-notify.ts`                           |
+| Progress        | `TodoWrite`                            | Markdown checklists + subagent progress               |
+| Templates       | `{{PLACEHOLDER}}` by the orchestrator  | Context via the `task:` string                        |
+| Namespace       | `/yoke:<name>`                         | `/skill:<name>` (or `/skill:yoke-<name>` on conflict) |
+| Locale skills   | `.claude/skills/`                      | `.pi/skills/`                                         |
 
 ---
 
-## 3. Фаза 0: Подготовка репозитория
+## 3. Phase 0: Repository preparation
 
-### 0.1. Создать репозиторий
+### 0.1. Create the repository
 
 ```bash
-# Клонировать оригинал как отправную точку
+# Clone the original as a starting point
 git clone https://github.com/yokeloop/yoke.git yoke-pi
 cd yoke-pi
 
-# Переписать историю, чтобы не тянуть мусор
-# Или начать чистый репозиторий и скопировать нужные файлы
+# Rewrite history so we don't drag in junk
+# Or start a clean repository and copy over the needed files
 ```
 
-### 0.2. Удалить Claude Code-специфичные файлы
+### 0.2. Remove Claude Code-specific files
 
 ```bash
 rm -rf .claude-plugin/
 rm -rf .claude/
 rm -rf hooks/
 rm -f  lib/notify.sh
-rm -rf docs/ai/          # Примеры артефактов — не нужны в репо
+rm -rf docs/ai/          # Example artifacts — not needed in the repo
 ```
 
-### 0.3. Создать package.json
+### 0.3. Create package.json
 
 ```json
 {
@@ -238,7 +238,7 @@ rm -rf docs/ai/          # Примеры артефактов — не нужн
 }
 ```
 
-### 0.4. Создать .gitignore
+### 0.4. Create .gitignore
 
 ```
 node_modules/
@@ -248,7 +248,7 @@ node_modules/
 .pi/
 ```
 
-### 0.5. Создать AGENTS.md (вместо CLAUDE.md)
+### 0.5. Create AGENTS.md (instead of CLAUDE.md)
 
 ```markdown
 # AGENTS.md
@@ -286,17 +286,17 @@ docs/ # Per-skill documentation
 - SKILL.md frontmatter: `name` (identifier, kebab-case), `description` (when to activate)
 ```
 
-### 0.6. Настроить husky и форматирование
+### 0.6. Set up husky and formatting
 
-Скопировать `.husky/pre-commit`, `.prettierrc.json`, `.prettierignore`, `.editorconfig` из оригинала.
+Copy `.husky/pre-commit`, `.prettierrc.json`, `.prettierignore`, and `.editorconfig` from the original.
 
 ---
 
-## 4. Фаза 1: Инфраструктура и пакеты
+## 4. Phase 1: Infrastructure and packages
 
-### 1.1. Зависимости pi
+### 1.1. pi dependencies
 
-В `.pi/settings.json` (проектный) или `~/.pi/agent/settings.json` (глобальный):
+In `.pi/settings.json` (project) or `~/.pi/agent/settings.json` (global):
 
 ```json
 {
@@ -304,41 +304,41 @@ docs/ # Per-skill documentation
 }
 ```
 
-Эти пакеты устанавливаются пользователем при установке yoke-pi. В README будет инструкция.
+These packages are installed by the user when installing yoke-pi. The README will include instructions.
 
-### 1.2. Тестовая установка
+### 1.2. Test installation
 
 ```bash
-# Установить зависимости
+# Install dependencies
 pi install npm:pi-subagents
 pi install npm:pi-ask-user
 pi install npm:pi-intercom
 
-# Запустить yoke-pi локально
+# Run yoke-pi locally
 pi --skill-dir ./skills --agents-dir ./agents
 ```
 
 ---
 
-## 5. Фаза 2: Агенты — единый источник правды
+## 5. Phase 2: Agents — the single source of truth
 
-Все 37 агентов переносятся в корневой каталог `agents/`. Каждый агент переписывается под формат pi-subagents.
+All 37 agents move into the root `agents/` directory. Each agent is rewritten in the pi-subagents format.
 
-### 5.1. Каталог `agents/`
+### 5.1. The `agents/` directory
 
-Почему в корне, а не внутри скилов:
+Why in the root rather than inside the skills:
 
-1. pi-subagents ищет агентов в `.pi/agents/` и `agents/` — единый каталог удобнее
-2. Агенты используются несколькими скиллами (task-executor из do и fix)
-3. При установке как npm-пакет, `agents/` разворачивается в проект
+1. pi-subagents looks for agents in `.pi/agents/` and `agents/` — a single directory is more convenient
+2. Agents are used by several skills (task-executor is used by do and fix)
+3. When installed as an npm package, `agents/` unpacks into the project
 
-**Альтернатива**: положить агентов в `.pi/agents/` внутри проекта — но тогда они не включаются в npm-пакет автоматически. Рекомендуется `agents/` в корне, а `package.json > pi.agents` указывает на него.
+**Alternative**: place agents in `.pi/agents/` inside the project — but then they aren't included in the npm package automatically. We recommend `agents/` in the root, with `package.json > pi.agents` pointing to it.
 
-### 5.2. Формат агента
+### 5.2. Agent format
 
-Каждый `agents/<name>.md` переписывается с новым frontmatter:
+Each `agents/<name>.md` is rewritten with new frontmatter:
 
-**Было (Claude Code):**
+**Before (Claude Code):**
 
 ```yaml
 ---
@@ -352,7 +352,7 @@ color: cyan
 ---
 ```
 
-**Стало (Pi):**
+**After (Pi):**
 
 ```yaml
 ---
@@ -370,33 +370,33 @@ defaultProgress: true
 ---
 ```
 
-### 5.3. Полная таблица переименования и маппинга агентов
+### 5.3. Full agent rename and mapping table
 
-#### Переименования
+#### Renames
 
-| Старое имя            | Новое имя              | Причина                    |
-| --------------------- | ---------------------- | -------------------------- |
-| `claude-md-generator` | `project-md-generator` | Не привязано к Claude Code |
+| Old name              | New name               | Reason                  |
+| --------------------- | ---------------------- | ----------------------- |
+| `claude-md-generator` | `project-md-generator` | Not tied to Claude Code |
 
-#### Маппинг инструментов (для всех агентов)
+#### Tool mapping (for all agents)
 
-| Claude Code    | Pi      | Убрать                                      |
-| -------------- | ------- | ------------------------------------------- |
-| `Read`         | `read`  | —                                           |
-| `Write`        | `write` | —                                           |
-| `Edit`         | `edit`  | —                                           |
-| `Bash`         | `bash`  | —                                           |
-| `Glob`         | `find`  | —                                           |
-| `Grep`         | `grep`  | —                                           |
-| `LS`           | `ls`    | —                                           |
-| `NotebookRead` | —       | ✗                                           |
-| `WebFetch`     | —       | ✗ (или `fetch_content` через pi-web-access) |
-| `WebSearch`    | —       | ✗ (или `web_search` через pi-web-access)    |
-| `TodoWrite`    | —       | ✗                                           |
-| `KillShell`    | —       | ✗                                           |
-| `BashOutput`   | —       | ✗                                           |
+| Claude Code    | Pi      | Remove                                   |
+| -------------- | ------- | ---------------------------------------- |
+| `Read`         | `read`  | —                                        |
+| `Write`        | `write` | —                                        |
+| `Edit`         | `edit`  | —                                        |
+| `Bash`         | `bash`  | —                                        |
+| `Glob`         | `find`  | —                                        |
+| `Grep`         | `grep`  | —                                        |
+| `LS`           | `ls`    | —                                        |
+| `NotebookRead` | —       | ✗                                        |
+| `WebFetch`     | —       | ✗ (or `fetch_content` via pi-web-access) |
+| `WebSearch`    | —       | ✗ (or `web_search` via pi-web-access)    |
+| `TodoWrite`    | —       | ✗                                        |
+| `KillShell`    | —       | ✗                                        |
+| `BashOutput`   | —       | ✗                                        |
 
-#### Маппинг моделей
+#### Model mapping
 
 | Claude Code | Pi                           |
 | ----------- | ---------------------------- |
@@ -404,27 +404,27 @@ defaultProgress: true
 | `sonnet`    | `anthropic/claude-sonnet-4`  |
 | `opus`      | `anthropic/claude-opus-4`    |
 
-#### Pi-специфичные поля (добавляются ко всем агентам)
+#### Pi-specific fields (added to all agents)
 
-| Поле                    | Значение     | Примечание                        |
-| ----------------------- | ------------ | --------------------------------- |
-| `systemPromptMode`      | `replace`    | Агент получает чистый промпт      |
-| `inheritProjectContext` | `true`       | Наследует AGENTS.md, .pi/settings |
-| `inheritSkills`         | `false`      | Не наследует глобальные скилы     |
-| `output`                | `context.md` | Где писать результат              |
-| `defaultProgress`       | `true`       | Вести progress.md                 |
+| Field                   | Value        | Note                             |
+| ----------------------- | ------------ | -------------------------------- |
+| `systemPromptMode`      | `replace`    | The agent gets a clean prompt    |
+| `inheritProjectContext` | `true`       | Inherits AGENTS.md, .pi/settings |
+| `inheritSkills`         | `false`      | Does not inherit global skills   |
+| `output`                | `context.md` | Where to write the result        |
+| `defaultProgress`       | `true`       | Maintain progress.md             |
 
-### 5.4. Изменения в теле промптов агентов
+### 5.4. Changes to the agent prompt bodies
 
-1. **Убрать `TodoWrite`** — все упоминания удалить
-2. **Убрать `{{PLACEHOLDER}}`** — заменить на инструкции «Контекст передан через task»
-3. **Убрать `Read ${CLAUDE_PLUGIN_ROOT}/...`** — заменить на «Читай файлы из task-аргумента»
+1. **Remove `TodoWrite`** — delete all mentions
+2. **Remove `{{PLACEHOLDER}}`** — replace with instructions "Context is passed via task"
+3. **Remove `Read ${CLAUDE_PLUGIN_ROOT}/...`** — replace with "Read files from the task argument"
 4. **`.claude/yoke-context.md`** → `.pi/yoke-context.md`
 5. **`CLAUDE.md`** → `AGENTS.md`
-6. **Убрать `NotebookRead`, `KillShell`, `BashOutput`** из списка разрешённых действий
-7. **Убрать `color:` из frontmatter**
+6. **Remove `NotebookRead`, `KillShell`, `BashOutput`** from the list of allowed actions
+7. **Remove `color:` from the frontmatter**
 
-### 5.5. Пример переписанного агента
+### 5.5. Example of a rewritten agent
 
 **`agents/stack-detector.md`:**
 
@@ -498,86 +498,86 @@ ENV_FILES:
 
 ````
 
-### 5.6. Список всех 37 агентов для портирования
+### 5.6. List of all 37 agents to port
 
-| # | Агент | Строк | Скилл | Инструменты CC | Инструменты Pi | Модель Pi | Сложность |
+| # | Agent | Lines | Skill | CC tools | Pi tools | Pi model | Complexity |
 |---|---|---|---|---|---|---|---|
-| 1 | stack-detector | 104 | bootstrap | Bash, Glob, Read | bash, find, read, ls | haiku-4-5 | лёгкая |
-| 2 | architecture-mapper | 116 | bootstrap | Glob, Grep, Read, Bash | find, grep, read, bash, ls | sonnet-4 | лёгкая |
-| 3 | convention-scanner | 110 | bootstrap | Glob, Grep, Read | find, grep, read, ls | sonnet-4 | лёгкая |
-| 4 | validation-scanner | 92 | bootstrap | Bash, Glob, Read | bash, find, read, ls | haiku-4-5 | лёгкая |
-| 5 | existing-rules-detector | 108 | bootstrap | Bash, Read, Glob | bash, read, find, ls | haiku-4-5 | лёгкая |
-| 6 | domain-analyzer | 213 | bootstrap | Glob, Grep, Read, Bash | find, grep, read, bash, ls | sonnet-4 | средняя |
-| 7 | project-md-generator | 104 | bootstrap | Read, Write, Edit, Glob | read, write, edit, find, ls | sonnet-4 | лёгкая |
-| 8 | yoke-context-generator | 102 | bootstrap | Read, Write, Bash, Glob | read, write, bash, find, ls | haiku-4-5 | лёгкая |
-| 9 | automation-recommender | 65 | bootstrap | Read | read | haiku-4-5 | лёгкая |
-| 10 | bootstrap-verifier | 97 | bootstrap | Read, Bash, Glob | read, bash, find, ls | sonnet-4 | лёгкая |
-| 11 | task-executor | 190 | do | Read, Write, Edit, Bash, Glob, Grep, LS, NotebookRead, WebFetch, TodoWrite | read, write, edit, bash, find, grep, ls | opus-4 | средняя |
-| 12 | spec-reviewer | 59 | do | Read, Glob, Grep, LS | read, find, grep, ls | sonnet-4 | лёгкая |
-| 13 | quality-reviewer | 75 | do | Read, Glob, Grep, LS, Bash | read, find, grep, ls, bash | sonnet-4 | лёгкая |
-| 14 | code-polisher | 67 | do | Read, Write, Edit, Bash, Glob, Grep, LS | read, write, edit, bash, find, grep, ls | opus-4 | лёгкая |
-| 15 | validator | 112 | do | Read, Edit, Bash, Glob, Grep, LS | read, edit, bash, find, grep, ls | haiku-4-5 | средняя |
-| 16 | formatter | 83 | do | Read, Bash, Glob, Grep, LS | read, bash, find, grep, ls | haiku-4-5 | лёгкая |
-| 17 | doc-updater | 87 | do | Read, Write, Edit, Bash, Glob, Grep, LS | read, write, edit, bash, find, grep, ls | sonnet-4 | лёгкая |
-| 18 | report-writer | 56 | do | Read, Write, Bash, Glob, LS | read, write, bash, find, ls | haiku-4-5 | лёгкая |
-| 19 | explore-agent | 100 | explore | Glob, Grep, LS, Read, Bash, WebSearch, WebFetch | find, grep, ls, read, bash | sonnet-4 | средняя |
-| 20 | explore-log-writer | 87 | explore | Read, Write, Edit, Bash | read, write, edit, bash | haiku-4-5 | лёгкая |
-| 21 | fix-context-collector | 130 | fix | Bash, Glob, LS | bash, find, ls | haiku-4-5 | средняя |
-| 22 | fix-investigator | 86 | fix | Glob, Grep, LS, Read, Bash | find, grep, ls, read, bash | sonnet-4 | лёгкая |
-| 23 | fix-log-writer | 95 | fix | Read, Write, Edit, Bash | read, write, edit, bash | haiku-4-5 | лёгкая |
-| 24 | git-data-collector | 195 | gst | Bash | bash | haiku-4-5 | средняя |
-| 25 | git-pre-checker | 150 | gp | Bash | bash | haiku-4-5 | средняя |
-| 26 | git-pusher | 109 | gp | Bash | bash | haiku-4-5 | лёгкая |
-| 27 | plan-explorer | 108 | plan | Glob, Grep, LS, Read, ✗4 | find, grep, ls, read | sonnet-4 | средняя |
-| 28 | plan-designer | 118 | plan | Glob, Grep, LS, Read, ✗4 | find, grep, ls, read | opus-4 | средняя |
-| 29 | plan-reviewer | 78 | plan | Glob, Grep, LS, Read, ✗1 | find, grep, ls, read | sonnet-4 | лёгкая |
-| 30 | pr-data-collector | 175 | pr | Bash, Read, Glob | bash, read, find | haiku-4-5 | средняя |
-| 31 | pr-body-generator | 103 | pr | Read | read | sonnet-4 | лёгкая |
-| 32 | code-reviewer | 118 | review | Read, Bash, Glob, Grep | read, bash, find, grep | sonnet-4 | средняя |
-| 33 | issue-fixer | 67 | review | Read, Bash, Glob, Grep | read, bash, find, grep | sonnet-4 | лёгкая |
-| 34 | single-fix-agent | 49 | review | Read, Edit, Bash, Glob, Grep, LS | read, edit, bash, find, grep, ls | opus-4 | лёгкая |
-| 35 | review-report-writer | 84 | review | Read, Write, Bash, Glob, Grep | read, write, bash, find, grep | sonnet-4 | лёгкая |
-| 36 | task-explorer | 62 | task | Glob, Grep, LS, Read, ✗4 | find, grep, ls, read | sonnet-4 | лёгкая |
-| 37 | task-architect | 41 | task | Glob, Grep, LS, Read, ✗4 | find, grep, ls, read | opus-4 | лёгкая |
+| 1 | stack-detector | 104 | bootstrap | Bash, Glob, Read | bash, find, read, ls | haiku-4-5 | easy |
+| 2 | architecture-mapper | 116 | bootstrap | Glob, Grep, Read, Bash | find, grep, read, bash, ls | sonnet-4 | easy |
+| 3 | convention-scanner | 110 | bootstrap | Glob, Grep, Read | find, grep, read, ls | sonnet-4 | easy |
+| 4 | validation-scanner | 92 | bootstrap | Bash, Glob, Read | bash, find, read, ls | haiku-4-5 | easy |
+| 5 | existing-rules-detector | 108 | bootstrap | Bash, Read, Glob | bash, read, find, ls | haiku-4-5 | easy |
+| 6 | domain-analyzer | 213 | bootstrap | Glob, Grep, Read, Bash | find, grep, read, bash, ls | sonnet-4 | medium |
+| 7 | project-md-generator | 104 | bootstrap | Read, Write, Edit, Glob | read, write, edit, find, ls | sonnet-4 | easy |
+| 8 | yoke-context-generator | 102 | bootstrap | Read, Write, Bash, Glob | read, write, bash, find, ls | haiku-4-5 | easy |
+| 9 | automation-recommender | 65 | bootstrap | Read | read | haiku-4-5 | easy |
+| 10 | bootstrap-verifier | 97 | bootstrap | Read, Bash, Glob | read, bash, find, ls | sonnet-4 | easy |
+| 11 | task-executor | 190 | do | Read, Write, Edit, Bash, Glob, Grep, LS, NotebookRead, WebFetch, TodoWrite | read, write, edit, bash, find, grep, ls | opus-4 | medium |
+| 12 | spec-reviewer | 59 | do | Read, Glob, Grep, LS | read, find, grep, ls | sonnet-4 | easy |
+| 13 | quality-reviewer | 75 | do | Read, Glob, Grep, LS, Bash | read, find, grep, ls, bash | sonnet-4 | easy |
+| 14 | code-polisher | 67 | do | Read, Write, Edit, Bash, Glob, Grep, LS | read, write, edit, bash, find, grep, ls | opus-4 | easy |
+| 15 | validator | 112 | do | Read, Edit, Bash, Glob, Grep, LS | read, edit, bash, find, grep, ls | haiku-4-5 | medium |
+| 16 | formatter | 83 | do | Read, Bash, Glob, Grep, LS | read, bash, find, grep, ls | haiku-4-5 | easy |
+| 17 | doc-updater | 87 | do | Read, Write, Edit, Bash, Glob, Grep, LS | read, write, edit, bash, find, grep, ls | sonnet-4 | easy |
+| 18 | report-writer | 56 | do | Read, Write, Bash, Glob, LS | read, write, bash, find, ls | haiku-4-5 | easy |
+| 19 | explore-agent | 100 | explore | Glob, Grep, LS, Read, Bash, WebSearch, WebFetch | find, grep, ls, read, bash | sonnet-4 | medium |
+| 20 | explore-log-writer | 87 | explore | Read, Write, Edit, Bash | read, write, edit, bash | haiku-4-5 | easy |
+| 21 | fix-context-collector | 130 | fix | Bash, Glob, LS | bash, find, ls | haiku-4-5 | medium |
+| 22 | fix-investigator | 86 | fix | Glob, Grep, LS, Read, Bash | find, grep, ls, read, bash | sonnet-4 | easy |
+| 23 | fix-log-writer | 95 | fix | Read, Write, Edit, Bash | read, write, edit, bash | haiku-4-5 | easy |
+| 24 | git-data-collector | 195 | gst | Bash | bash | haiku-4-5 | medium |
+| 25 | git-pre-checker | 150 | gp | Bash | bash | haiku-4-5 | medium |
+| 26 | git-pusher | 109 | gp | Bash | bash | haiku-4-5 | easy |
+| 27 | plan-explorer | 108 | plan | Glob, Grep, LS, Read, ✗4 | find, grep, ls, read | sonnet-4 | medium |
+| 28 | plan-designer | 118 | plan | Glob, Grep, LS, Read, ✗4 | find, grep, ls, read | opus-4 | medium |
+| 29 | plan-reviewer | 78 | plan | Glob, Grep, LS, Read, ✗1 | find, grep, ls, read | sonnet-4 | easy |
+| 30 | pr-data-collector | 175 | pr | Bash, Read, Glob | bash, read, find | haiku-4-5 | medium |
+| 31 | pr-body-generator | 103 | pr | Read | read | sonnet-4 | easy |
+| 32 | code-reviewer | 118 | review | Read, Bash, Glob, Grep | read, bash, find, grep | sonnet-4 | medium |
+| 33 | issue-fixer | 67 | review | Read, Bash, Glob, Grep | read, bash, find, grep | sonnet-4 | easy |
+| 34 | single-fix-agent | 49 | review | Read, Edit, Bash, Glob, Grep, LS | read, edit, bash, find, grep, ls | opus-4 | easy |
+| 35 | review-report-writer | 84 | review | Read, Write, Bash, Glob, Grep | read, write, bash, find, grep | sonnet-4 | easy |
+| 36 | task-explorer | 62 | task | Glob, Grep, LS, Read, ✗4 | find, grep, ls, read | sonnet-4 | easy |
+| 37 | task-architect | 41 | task | Glob, Grep, LS, Read, ✗4 | find, grep, ls, read | opus-4 | easy |
 
-✗ = исключены: NotebookRead, WebFetch, WebSearch, TodoWrite, KillShell, BashOutput
+✗ = excluded: NotebookRead, WebFetch, WebSearch, TodoWrite, KillShell, BashOutput
 
 ---
 
-## 6. Фаза 3: SKILL.md — универсальные оркестраторы
+## 6. Phase 3: SKILL.md — universal orchestrators
 
-### 6.1. Принципы переписки SKILL.md
+### 6.1. Principles for rewriting SKILL.md
 
-1. **Frontmatter не меняется** — `name` и `description` остаются теми же (pi skill spec использует тот же формат Agent Skills)
-2. **Agent tool → `subagent()`** — все dispatch'и переписаны
-3. **AskUserQuestion → `ask_user()`** — все Q&A переписаны
-4. **`$ARGUMENTS` → инструкция** — «The user's input follows the skill name»
-5. **`${CLAUDE_PLUGIN_ROOT}` → имена агентов** — `subagent({ agent: "stack-detector" })` вместо `${CLAUDE_PLUGIN_ROOT}/skills/bootstrap/agents/stack-detector.md`
-6. **`TodoWrite` → markdown-чеклист** — прогресс отслеживается текстом
-7. **`{{PLACEHOLDER}}` → контекст через `task:`** — оркестратор формирует строку с данными
+1. **Frontmatter does not change** — `name` and `description` stay the same (the pi skill spec uses the same Agent Skills format)
+2. **Agent tool → `subagent()`** — all dispatches are rewritten
+3. **AskUserQuestion → `ask_user()`** — all Q&A is rewritten
+4. **`$ARGUMENTS` → instruction** — "The user's input follows the skill name"
+5. **`${CLAUDE_PLUGIN_ROOT}` → agent names** — `subagent({ agent: "stack-detector" })` instead of `${CLAUDE_PLUGIN_ROOT}/skills/bootstrap/agents/stack-detector.md`
+6. **`TodoWrite` → markdown checklist** — progress is tracked as text
+7. **`{{PLACEHOLDER}}` → context via `task:`** — the orchestrator builds a string with the data
 8. **`.claude/yoke-context.md` → `.pi/yoke-context.md`**
 9. **`CLAUDE.md` → `AGENTS.md`**
-10. **Path-ссылки на reference/ — остаются относительными** — `reference/commit-convention.md` работает в обеих средах
+10. **Path references to reference/ — stay relative** — `reference/commit-convention.md` works in both environments
 
-### 6.2. Паттерны переписки
+### 6.2. Rewrite patterns
 
-#### Паттерн: Dispatch одного агента
+#### Pattern: Dispatch a single agent
 
 ```markdown
-# Было (Claude Code)
+# Before (Claude Code)
 Run `git-data-collector` via the Agent tool:
 - Agent: `${CLAUDE_PLUGIN_ROOT}/skills/gst/agents/git-data-collector.md`
 - Prompt: "Collect data on the current git repository state and produce a report"
 
-# Стало (Pi)
+# After (Pi)
 Run `git-data-collector` via subagent:
 subagent({ agent: "git-data-collector", task: "Collect data on the current git repository state and produce a report" })
 ````
 
-#### Паттерн: Параллельный dispatch
+#### Pattern: Parallel dispatch
 
 ```markdown
-# Было (Claude Code)
+# Before (Claude Code)
 
 Dispatch 6 agents **in parallel** via the Agent tool (6 calls at once):
 
@@ -585,7 +585,7 @@ Dispatch 6 agents **in parallel** via the Agent tool (6 calls at once):
 2. **architecture-mapper** (sonnet) — read `agents/architecture-mapper.md`, pass the prompt.
    ...
 
-# Стало (Pi)
+# After (Pi)
 
 Collect project information in parallel:
 subagent({ tasks: [
@@ -598,10 +598,10 @@ subagent({ tasks: [
 ], concurrency: 6 })
 ```
 
-#### Паттерн: Цепочка
+#### Pattern: Chain
 
 ```markdown
-# Было (Claude Code)
+# Before (Claude Code)
 
 Phase 6: Run sub-agents sequentially.
 
@@ -612,7 +612,7 @@ Phase 6: Run sub-agents sequentially.
 5. doc-updater → read `agents/doc-updater.md`, dispatch.
 6. formatter → read `agents/formatter.md`, dispatch.
 
-# Стало (Pi)
+# After (Pi)
 
 Run the review and polish chain:
 subagent({ chain: [
@@ -625,10 +625,10 @@ subagent({ chain: [
 ] })
 ```
 
-#### Паттерн: AskUserQuestion
+#### Pattern: AskUserQuestion
 
 ```markdown
-# Было (Claude Code)
+# Before (Claude Code)
 
 AskUserQuestion with 3 options:
 
@@ -636,7 +636,7 @@ AskUserQuestion with 3 options:
 2. Commit only `CLAUDE.md` — skip yoke-context
 3. Cancel — tell the user and exit
 
-# Стало (Pi)
+# After (Pi)
 
 ask_user({
 question: "How should we handle the generated files in git?",
@@ -650,10 +650,10 @@ allowFreeform: true
 })
 ```
 
-#### Паттерн: Переменные в task
+#### Pattern: Variables in task
 
 ```markdown
-# Было (Claude Code)
+# Before (Claude Code)
 
 Dispatch `task-executor` with:
 
@@ -661,7 +661,7 @@ Dispatch `task-executor` with:
 - TASK_HOW: {{TASK_HOW}}
 - TASK_FILES: {{TASK_FILES}}
 
-# Стало (Pi)
+# After (Pi)
 
 subagent({
 agent: "task-executor",
@@ -679,139 +679,139 @@ If the file .pi/yoke-context.md exists — read it first.`
 })
 ```
 
-### 6.3. Переименования в reference/
+### 6.3. Renames in reference/
 
-| Файл                 | Старое имя              | Новое имя                            |
-| -------------------- | ----------------------- | ------------------------------------ |
-| bootstrap/reference/ | `claude-md-template.md` | `project-md-template.md`             |
-| bootstrap/reference/ | `hooks-patterns.md`     | Переписать: CC hooks → pi extensions |
-| bootstrap/SKILL.md   | Ссылки на `.claude/`    | `.pi/`                               |
+| File                 | Old name                 | New name                          |
+| -------------------- | ------------------------ | --------------------------------- |
+| bootstrap/reference/ | `claude-md-template.md`  | `project-md-template.md`          |
+| bootstrap/reference/ | `hooks-patterns.md`      | Rewrite: CC hooks → pi extensions |
+| bootstrap/SKILL.md   | References to `.claude/` | `.pi/`                            |
 
 ---
 
-## 7. Фаза 4: Портирование скилов — по порядку сложности
+## 7. Phase 4: Porting skills — by order of complexity
 
-### 7.1. Очерёдность
+### 7.1. Ordering
 
-| #   | Скилл         | Сложность | Агентов | Приоритет | Типичные изменения                                      |
-| --- | ------------- | --------- | ------- | --------- | ------------------------------------------------------- |
-| 1   | **hi**        | 🟢        | 0       | 1         | Обновить описание скилов, убрать `/yoke:`               |
-| 2   | **gst**       | 🟡        | 1       | 2         | `subagent()` вместо Agent tool                          |
-| 3   | **gca**       | 🟡        | 0       | 3         | `ask_user()`, убрать `$ARGUMENTS`                       |
-| 4   | **gp**        | 🟡        | 2       | 4         | `subagent()`, убрать `CLAUDE_PLUGIN_ROOT`               |
-| 5   | **explore**   | 🟡        | 2       | 5         | `ask_user()`, `subagent()`, убрать TodoWrite            |
-| 6   | **pr**        | 🟡        | 2       | 6         | `subagent()`, `ask_user()`, убрать `CLAUDE_PLUGIN_ROOT` |
-| 7   | **task**      | 🟡        | 2       | 7         | `subagent()`, убрать CC-специфичные tools               |
-| 8   | **plan**      | 🔴        | 3       | 8         | `subagent({ chain })`, убрать шаблоны, CC tools         |
-| 9   | **review**    | 🔴        | 4+2     | 9         | Параллельные fix-агенты, cross-skill ссылки             |
-| 10  | **fix**       | 🔴        | 3+3     | 10        | Cross-skill ссылки, `ask_user()`, эскалация             |
-| 11  | **bootstrap** | 🔴        | 10      | 11        | Параллельный dispatch, `.claude/` → `.pi/`, шаблоны     |
-| 12  | **do**        | 🔴        | 8       | 12        | Chain, review loop, cross-reference на gca              |
+| #   | Skill         | Complexity | Agents | Priority | Typical changes                                         |
+| --- | ------------- | ---------- | ------ | -------- | ------------------------------------------------------- |
+| 1   | **hi**        | 🟢         | 0      | 1        | Update skill descriptions, remove `/yoke:`              |
+| 2   | **gst**       | 🟡         | 1      | 2        | `subagent()` instead of Agent tool                      |
+| 3   | **gca**       | 🟡         | 0      | 3        | `ask_user()`, remove `$ARGUMENTS`                       |
+| 4   | **gp**        | 🟡         | 2      | 4        | `subagent()`, remove `CLAUDE_PLUGIN_ROOT`               |
+| 5   | **explore**   | 🟡         | 2      | 5        | `ask_user()`, `subagent()`, remove TodoWrite            |
+| 6   | **pr**        | 🟡         | 2      | 6        | `subagent()`, `ask_user()`, remove `CLAUDE_PLUGIN_ROOT` |
+| 7   | **task**      | 🟡         | 2      | 7        | `subagent()`, remove CC-specific tools                  |
+| 8   | **plan**      | 🔴         | 3      | 8        | `subagent({ chain })`, remove templates, CC tools       |
+| 9   | **review**    | 🔴         | 4+2    | 9        | Parallel fix agents, cross-skill references             |
+| 10  | **fix**       | 🔴         | 3+3    | 10       | Cross-skill references, `ask_user()`, escalation        |
+| 11  | **bootstrap** | 🔴         | 10     | 11       | Parallel dispatch, `.claude/` → `.pi/`, templates       |
+| 12  | **do**        | 🔴         | 8      | 12       | Chain, review loop, cross-reference to gca              |
 
-### 7.2. Детальный план по каждому простому скиллу
+### 7.2. Detailed plan for each simple skill
 
-#### hi (21 строк) — 15 мин
+#### hi (21 lines) — 15 min
 
-- Убрать `/yoke:` префиксы → `/skill:`
-- Обновить описания скилов (структура pi: `subagent()`, `ask_user()`)
+- Remove `/yoke:` prefixes → `/skill:`
+- Update skill descriptions (pi structure: `subagent()`, `ask_user()`)
 
-#### gst (21 строк) — 30 мин
+#### gst (21 lines) — 30 min
 
 - `Agent tool` dispatch → `subagent({ agent: "git-data-collector", task: "..." })`
-- Убрать `${CLAUDE_PLUGIN_ROOT}/skills/gst/agents/git-data-collector.md`
+- Remove `${CLAUDE_PLUGIN_ROOT}/skills/gst/agents/git-data-collector.md`
 
-#### gca (128 строк) — 1 час
+#### gca (128 lines) — 1 hour
 
-- `AskUserQuestion` → `ask_user()` (3 вхождения)
-- `$ARGUMENTS` → инструкция про аргументы
-- `TodoWrite` → убрать
-- `reference/` — оставить как есть
+- `AskUserQuestion` → `ask_user()` (3 occurrences)
+- `$ARGUMENTS` → instruction about arguments
+- `TodoWrite` → remove
+- `reference/` — leave as-is
 
-#### gp (156 строк) — 1.5 часа
+#### gp (156 lines) — 1.5 hours
 
-- `Agent tool` dispatch → `subagent()` для 2 агентов
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
-- `$ARGUMENTS` → инструкция
+- `Agent tool` dispatch → `subagent()` for 2 agents
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
+- `$ARGUMENTS` → instruction
 
-#### explore (154 строки) — 2 часа
+#### explore (154 lines) — 2 hours
 
-- `Agent tool` dispatch → `subagent()` для 2 агентов
-- `AskUserQuestion` → `ask_user()` (3 вхождения)
-- `$ARGUMENTS` → инструкция
-- `TodoWrite` → markdown-чеклист
+- `Agent tool` dispatch → `subagent()` for 2 agents
+- `AskUserQuestion` → `ask_user()` (3 occurrences)
+- `$ARGUMENTS` → instruction
+- `TodoWrite` → markdown checklist
 
-#### pr (157 строк) — 2 часа
+#### pr (157 lines) — 2 hours
 
-- `Agent tool` dispatch → `subagent()` для 2 агентов
+- `Agent tool` dispatch → `subagent()` for 2 agents
 - `AskUserQuestion` → `ask_user()`
-- `$ARGUMENTS` → инструкция
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
+- `$ARGUMENTS` → instruction
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
 
-#### task (286 строк) — 2.5 часа
+#### task (286 lines) — 2.5 hours
 
-- `Agent tool` dispatch → `subagent()` для 2 агентов
+- `Agent tool` dispatch → `subagent()` for 2 agents
 - `AskUserQuestion` → `ask_user()`
-- `$ARGUMENTS` → инструкция
-- Убрать KillShell, BashOutput, WebSearch, WebFetch из ссылок
+- `$ARGUMENTS` → instruction
+- Remove KillShell, BashOutput, WebSearch, WebFetch from the references
 
-### 7.3. Детальный план по сложным скиллам
+### 7.3. Detailed plan for the complex skills
 
-#### plan (315 строк) — 3 часа
+#### plan (315 lines) — 3 hours
 
-- 3 агента → `subagent({ chain: [...] })`
-- Убрать `{{PLACEHOLDER}}` — оркестратор собирает контекст для `task:`
-- Убрать KillShell, BashOutput, WebSearch, WebFetch
+- 3 agents → `subagent({ chain: [...] })`
+- Remove `{{PLACEHOLDER}}` — the orchestrator assembles context for `task:`
+- Remove KillShell, BashOutput, WebSearch, WebFetch
 - `AskUserQuestion` → `ask_user()`
-- `TodoWrite` → markdown-чеклист
+- `TodoWrite` → markdown checklist
 
-#### review (187 строк) — 3 часа
+#### review (187 lines) — 3 hours
 
-- 4 собственных + 2 cross-skill агента → `subagent()` по имени
-- Параллельные fix-агенты → `subagent({ tasks: [...] })`
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
+- 4 own + 2 cross-skill agents → `subagent()` by name
+- Parallel fix agents → `subagent({ tasks: [...] })`
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
 - `AskUserQuestion` → `ask_user()`
 
-#### fix (287 строк) — 3.5 часа
+#### fix (287 lines) — 3.5 hours
 
-- 3 собственных + 3 cross-skill агента → `subagent()` по имени
+- 3 own + 3 cross-skill agents → `subagent()` by name
 - `AskUserQuestion` → `ask_user()`
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
-- `TodoWrite` → убрать
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
+- `TodoWrite` → remove
 - `notify.sh` → `ask_user()` + markdown note
 
-#### bootstrap (356 строк) — 4 часа
+#### bootstrap (356 lines) — 4 hours
 
-- 10 агентов → параллельный dispatch `subagent({ tasks: [...], concurrency: 6 })`
-- `{{PLACEHOLDER}}` шаблоны → контекст через `task:` строки
+- 10 agents → parallel dispatch `subagent({ tasks: [...], concurrency: 6 })`
+- `{{PLACEHOLDER}}` templates → context via `task:` strings
 - `AskUserQuestion` → `ask_user()`
-- `TodoWrite` → markdown-чеклист
+- `TodoWrite` → markdown checklist
 - `.claude/` → `.pi/`
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
 - `notify.sh` → pi extension
 
-#### do (312 строк) — 4 часа
+#### do (312 lines) — 4 hours
 
-- 8 агентов → `subagent({ chain: [...] })`
-- Параллельные `task-executor` → `subagent({ tasks: [...] })`
-- `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md` → агент читает файл напрямую
-- `TodoWrite` → убрать
+- 8 agents → `subagent({ chain: [...] })`
+- Parallel `task-executor` → `subagent({ tasks: [...] })`
+- `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md` → the agent reads the file directly
+- `TodoWrite` → remove
 - `notify.sh` → pi extension
-- `{{PLACEHOLDER}}` → контекст через `task:` строки
+- `{{PLACEHOLDER}}` → context via `task:` strings
 
 ---
 
-## 8. Фаза 5: Расширения и уведомления
+## 8. Phase 5: Extensions and notifications
 
 ### 8.1. `extensions/yoke-notify.ts`
 
-Замена `hooks/hooks.json` + `lib/notify.sh` + `hooks/notify.sh`.
+Replacement for `hooks/hooks.json` + `lib/notify.sh` + `hooks/notify.sh`.
 
 ```typescript
 // extensions/yoke-notify.ts
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
-  // Регистрируем кастомный инструмент для уведомлений
+  // Register a custom tool for notifications
   pi.registerTool({
     name: "yoke_notify",
     label: "Yoke Notification",
@@ -832,7 +832,7 @@ export default function (pi: ExtensionAPI) {
     async execute(_toolCallId, params) {
       const { type, skill, phase, slug, title, body } = params as any;
 
-      // Формируем текстовое уведомление
+      // Build the text notification
       const emoji = type === "ACTION_REQUIRED" ? "⏸" : type === "STAGE_COMPLETE" ? "✅" : "⚠️";
       const message = `${emoji} ${type} — ${skill}${phase ? ` / ${phase}` : ""}: ${title}${body ? `\n${body}` : ""}`;
 
@@ -844,19 +844,19 @@ export default function (pi: ExtensionAPI) {
 }
 ```
 
-**Дальнейшее расширение:** При установленном `pi-intercom`, уведомления можно отправлять через intercom в родительскую сессию.
+**Further extension:** When `pi-intercom` is installed, notifications can be sent through intercom to the parent session.
 
-### 8.2. `.pi/yoke-context.md` вместо `.claude/yoke-context.md`
+### 8.2. `.pi/yoke-context.md` instead of `.claude/yoke-context.md`
 
-Агент `yoke-context-generator` и `bootstrap` SKILL.md обновляются:
+The `yoke-context-generator` agent and the `bootstrap` SKILL.md are updated:
 
-- Путь: `.pi/yoke-context.md` вместо `.claude/yoke-context.md`
-- Правила проекта: `AGENTS.md` вместо `CLAUDE.md`
-- Bootstrap генерирует `AGENTS.md` вместо `CLAUDE.md`
+- Path: `.pi/yoke-context.md` instead of `.claude/yoke-context.md`
+- Project rules: `AGENTS.md` instead of `CLAUDE.md`
+- Bootstrap generates `AGENTS.md` instead of `CLAUDE.md`
 
 ### 8.3. `reference/hooks-patterns.md` → `reference/pi-extensions.md`
 
-Файл `bootstrap/reference/hooks-patterns.md` переписывается под pi extensions:
+The `bootstrap/reference/hooks-patterns.md` file is rewritten for pi extensions:
 
 ```markdown
 # Pi Extensions for yoke
@@ -878,146 +878,146 @@ from the `agents/` directory and `.pi/agents/` automatically.
 
 ---
 
-## 9. Фаза 6: Документация и CI
+## 9. Phase 6: Documentation and CI
 
 ### 9.1. README.md
 
-Полная переработка README:
+Full README rework:
 
-- Убрать все `/yoke:` префиксы → `/skill:`
-- Убрать `{CLAUDE_PLUGIN_ROOT}` ссылки
-- Добавить секцию установки pi
-- Добавить список зависимостей (pi-subagents, pi-ask-user, pi-intercom)
-- Обновить примеры команд
-- Обновить структуру каталогов
+- Remove all `/yoke:` prefixes → `/skill:`
+- Remove `{CLAUDE_PLUGIN_ROOT}` references
+- Add a pi installation section
+- Add the list of dependencies (pi-subagents, pi-ask-user, pi-intercom)
+- Update command examples
+- Update the directory structure
 
 ### 9.2. docs/\*.md
 
-Обновить 12 файлов документации скилов:
+Update the 12 skill documentation files:
 
 - `/yoke:<name>` → `/skill:<name>`
 - Agent tool → subagent()
 - AskUserQuestion → ask_user()
-- Официальные имена моделей
-- Примеры команд pi
+- Official model names
+- pi command examples
 
-### 9.3. CI / валидация
+### 9.3. CI / validation
 
 `scripts/validate.ts`:
 
 ```typescript
-// Проверить:
-// 1. Все SKILL.md имеют корректный frontmatter (name, description)
-// 2. Все агенты в agents/ имеют корректный frontmatter pi-subagents
-// 3. Все агенты, на которые ссылаются SKILL.md, существуют в agents/
-// 4. Все reference/ файлы, на которые ссылаются SKILL.md, существуют
-// 5. package.json валиден
+// Check:
+// 1. All SKILL.md files have valid frontmatter (name, description)
+// 2. All agents in agents/ have valid pi-subagents frontmatter
+// 3. All agents referenced by SKILL.md exist in agents/
+// 4. All reference/ files referenced by SKILL.md exist
+// 5. package.json is valid
 ```
 
 ### 9.4. Husky + prettier
 
-Перенести из оригинала: `.husky/pre-commit`, `.prettierrc.json`, `.prettierignore`
+Carry over from the original: `.husky/pre-commit`, `.prettierrc.json`, `.prettierignore`
 
 ---
 
-## 10. Фаза 7: Тестирование и полировка
+## 10. Phase 7: Testing and polish
 
-### 10.1. Smoke-тест каждого скилла
+### 10.1. Smoke test for each skill
 
-Для каждого скилла — запустить в тестовом проекте:
+For each skill — run it in a test project:
 
-| Скилл     | Тестовая команда                    | Ожидаемый результат           |
-| --------- | ----------------------------------- | ----------------------------- |
-| hi        | `/skill:hi`                         | Выводит список скилов         |
-| gst       | `/skill:gst`                        | Показывает статус репозитория |
-| gca       | Создать файл, `/skill:gca`          | Коммит с группировкой         |
-| gp        | `/skill:gp`                         | Пуш с отчётом                 |
-| pr        | `/skill:pr --draft`                 | Создаёт draft PR              |
-| explore   | `/skill:explore how does auth work` | Исследование с логом          |
-| task      | `/skill:task add dark mode`         | Файл task.md                  |
-| plan      | `/skill:plan docs/ai/...task.md`    | Файл plan.md                  |
-| do        | `/skill:do docs/ai/...plan.md`      | Реализация + отчёт            |
-| fix       | `/skill:fix fix validation bug`     | Фикс + лог                    |
-| review    | `/skill:review`                     | Файл review.md                |
-| bootstrap | `/skill:bootstrap`                  | AGENTS.md + context           |
+| Skill     | Test command                        | Expected result             |
+| --------- | ----------------------------------- | --------------------------- |
+| hi        | `/skill:hi`                         | Prints the skill list       |
+| gst       | `/skill:gst`                        | Shows the repository status |
+| gca       | Create a file, `/skill:gca`         | Commit with grouping        |
+| gp        | `/skill:gp`                         | Push with report            |
+| pr        | `/skill:pr --draft`                 | Creates a draft PR          |
+| explore   | `/skill:explore how does auth work` | Exploration with a log      |
+| task      | `/skill:task add dark mode`         | task.md file                |
+| plan      | `/skill:plan docs/ai/...task.md`    | plan.md file                |
+| do        | `/skill:do docs/ai/...plan.md`      | Implementation + report     |
+| fix       | `/skill:fix fix validation bug`     | Fix + log                   |
+| review    | `/skill:review`                     | review.md file              |
+| bootstrap | `/skill:bootstrap`                  | AGENTS.md + context         |
 
-### 10.2. Критерии проверки
+### 10.2. Verification criteria
 
-1. **Все агенты обнаружены** — `subagent({ action: "list" })` показывает всех 37
-2. **Все скилы активируются** — `/skill:<name>` работает для каждого
-3. **ask_user работает** — Q&A отображается в TUI
-4. **Параллельный dispatch работает** — bootstrap запускает 6 агентов одновременно
-5. **Цепочки работают** — do последовательно прогоняет review → polish → validate
-6. **Контекст проекта читается** — `.pi/yoke-context.md` читается агентами
-7. **Уведомления доставляются** — `yoke_notify` выводит сообщения
-
----
-
-## 11. Критерии приёмки
-
-- [ ] Все 12 SKILL.md переписаны под pi
-- [ ] Все 37 агентов переписаны под pi-subagents frontmatter
-- [ ] `pi install npm:yoke-pi` устанавливается без ошибок
-- [ ] `pi --skill-dir ./skills` загружает все скилы
-- [ ] `subagent({ action: "list" })` показывает 37 агентов
-- [ ] Каждый скилл протестирован в pi dev
-- [ ] README.md обновлён
-- [ ] docs/\*.md обновлён
-- [ ] CI (format:check + validate) проходит
-- [ ] Нет ссылок на Claude Code, `${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`, `AskUserQuestion`, `Agent tool`
+1. **All agents discovered** — `subagent({ action: "list" })` shows all 37
+2. **All skills activate** — `/skill:<name>` works for each
+3. **ask_user works** — Q&A is displayed in the TUI
+4. **Parallel dispatch works** — bootstrap launches 6 agents at once
+5. **Chains work** — do runs review → polish → validate sequentially
+6. **Project context is read** — `.pi/yoke-context.md` is read by agents
+7. **Notifications are delivered** — `yoke_notify` prints messages
 
 ---
 
-## 12. Риски
+## 11. Acceptance criteria
 
-| Риск                                                          | Вероятность | Влияние | Митигация                                                                                        |
-| ------------------------------------------------------------- | ----------- | ------- | ------------------------------------------------------------------------------------------------ |
-| Pi-subagents не поддерживает нужную модель                    | Низкая      | Среднее | Использовать fallbackModels в frontmatter                                                        |
-| ask_user не работает в неинтерактивном режиме                 | Низкая      | Низкое  | Есть fallback (текстовый вывод)                                                                  |
-| Параллельный dispatch не работает как ожидается               | Среднее     | Высокое | Тестировать concurrency, при проблемах — последовательный dispatch                               |
-| Агенты доступны не по имени, а по пути                        | Низкая      | Среднее | Проверить discovery: `subagent({ action: "list" })`                                              |
-| Шаблоны `{{PLACEHOLDER}}` теряются при передаче через `task:` | Среднее     | Среднее | Тестировать передачу длинного контекста; при проблемах — записывать во временный файл + `reads:` |
-| `.pi/agents/` не подхватывается из npm-пакета                 | Среднее     | Высокое | Проверить pi package discovery; при проблемах — ручная установка агентов                         |
-| yoke-pi конфликтует с builtin-агентами pi-subagents           | Низкая      | Среднее | Проверить уникальность имён; при конфликтах — добавить префикс `yoke-`                           |
-
----
-
-## 13. Оценка трудозатрат
-
-### По фазам
-
-| Фаза      | Описание                     | Оценка         |
-| --------- | ---------------------------- | -------------- |
-| 0         | Подготовка репозитория       | 0.5 дня        |
-| 1         | Инфраструктура и пакеты      | 0.5 дня        |
-| 2         | Агенты (37 файлов)           | 2-3 дня        |
-| 3         | SKILL.md — простые (6 штук)  | 1-2 дня        |
-| 4         | SKILL.md — средние (1 штука) | 1 день         |
-| 5         | SKILL.md — сложные (5 штук)  | 3-4 дня        |
-| 5         | Расширения и уведомления     | 1 день         |
-| 6         | Документация и CI            | 1 день         |
-| 7         | Тестирование и полировка     | 2-3 дня        |
-| **Итого** |                              | **12-16 дней** |
-
-### По типам файлов
-
-| Тип                                 | Количество | Оценка                                                   |
-| ----------------------------------- | ---------- | -------------------------------------------------------- |
-| Агенты (agents/\*.md)               | 37 файлов  | 2-3 дня (механическая замена frontmatter + очистка тела) |
-| SKILL.md                            | 12 файлов  | 4-6 дней (перепись логики оркестрации)                   |
-| Расширения (extensions/\*.ts)       | 1 файл     | 0.5 дня                                                  |
-| Скрипты (scripts/\*.ts)             | 1 файл     | 0.5 дня                                                  |
-| package.json, AGENTS.md, .gitignore | 3 файла    | 0.5 дня                                                  |
-| README.md                           | 1 файл     | 0.5 дня                                                  |
-| docs/\*.md                          | 12 файлов  | 1 день                                                   |
-| reference/ (модификация)            | ~5 файлов  | 0.5 дня                                                  |
-| **Итого**                           | ~72 файла  | **12-16 дней**                                           |
+- [ ] All 12 SKILL.md files rewritten for pi
+- [ ] All 37 agents rewritten with pi-subagents frontmatter
+- [ ] `pi install npm:yoke-pi` installs without errors
+- [ ] `pi --skill-dir ./skills` loads all skills
+- [ ] `subagent({ action: "list" })` shows 37 agents
+- [ ] Each skill tested in pi dev
+- [ ] README.md updated
+- [ ] docs/\*.md updated
+- [ ] CI (format:check + validate) passes
+- [ ] No references to Claude Code, `${CLAUDE_PLUGIN_ROOT}`, `$ARGUMENTS`, `AskUserQuestion`, `Agent tool`
 
 ---
 
-## Приложение A: Полный файловый лист миграции
+## 12. Risks
 
-### Удалить (Claude Code-специфичное)
+| Risk                                                         | Likelihood | Impact | Mitigation                                                               |
+| ------------------------------------------------------------ | ---------- | ------ | ------------------------------------------------------------------------ |
+| pi-subagents doesn't support the required model              | Low        | Medium | Use fallbackModels in the frontmatter                                    |
+| ask_user doesn't work in non-interactive mode                | Low        | Low    | There is a fallback (text output)                                        |
+| Parallel dispatch doesn't work as expected                   | Medium     | High   | Test concurrency; fall back to sequential dispatch on problems           |
+| Agents aren't reachable by name, only by path                | Low        | Medium | Verify discovery: `subagent({ action: "list" })`                         |
+| `{{PLACEHOLDER}}` templates get lost when passed via `task:` | Medium     | Medium | Test passing long context; on problems — write to a temp file + `reads:` |
+| `.pi/agents/` isn't picked up from the npm package           | Medium     | High   | Verify pi package discovery; on problems — install agents manually       |
+| yoke-pi conflicts with pi-subagents builtin agents           | Low        | Medium | Verify name uniqueness; on conflicts — add a `yoke-` prefix              |
+
+---
+
+## 13. Effort estimate
+
+### By phase
+
+| Phase     | Description                    | Estimate       |
+| --------- | ------------------------------ | -------------- |
+| 0         | Repository preparation         | 0.5 days       |
+| 1         | Infrastructure and packages    | 0.5 days       |
+| 2         | Agents (37 files)              | 2-3 days       |
+| 3         | SKILL.md — simple (6 of them)  | 1-2 days       |
+| 4         | SKILL.md — medium (1 of them)  | 1 day          |
+| 5         | SKILL.md — complex (5 of them) | 3-4 days       |
+| 5         | Extensions and notifications   | 1 day          |
+| 6         | Documentation and CI           | 1 day          |
+| 7         | Testing and polish             | 2-3 days       |
+| **Total** |                                | **12-16 days** |
+
+### By file type
+
+| Type                                | Count     | Estimate                                              |
+| ----------------------------------- | --------- | ----------------------------------------------------- |
+| Agents (agents/\*.md)               | 37 files  | 2-3 days (mechanical frontmatter swap + body cleanup) |
+| SKILL.md                            | 12 files  | 4-6 days (rewriting orchestration logic)              |
+| Extensions (extensions/\*.ts)       | 1 file    | 0.5 days                                              |
+| Scripts (scripts/\*.ts)             | 1 file    | 0.5 days                                              |
+| package.json, AGENTS.md, .gitignore | 3 files   | 0.5 days                                              |
+| README.md                           | 1 file    | 0.5 days                                              |
+| docs/\*.md                          | 12 files  | 1 day                                                 |
+| reference/ (modification)           | ~5 files  | 0.5 days                                              |
+| **Total**                           | ~72 files | **12-16 days**                                        |
+
+---
+
+## Appendix A: Full migration file list
+
+### Remove (Claude Code-specific)
 
 ```
 .claude-plugin/plugin.json
@@ -1028,22 +1028,22 @@ from the `agents/` directory and `.pi/agents/` automatically.
 hooks/hooks.json
 hooks/notify.sh
 lib/notify.sh
-commands/                        # (пустая директория)
+commands/                        # (empty directory)
 CLAUDE.md
 ```
 
-### Создать заново
+### Create from scratch
 
 ```
-package.json                      # npm-пакет yoke-pi с pi config
-AGENTS.md                         # Инструкции для pi
-.gitignore                        # Обновлённый
-.pi/settings.json                 # (для локальной разработки, не в пакете)
-extensions/yoke-notify.ts         # Pi extension для уведомлений
-scripts/validate.ts               # Валидация пакета
+package.json                      # npm package yoke-pi with pi config
+AGENTS.md                         # Instructions for pi
+.gitignore                        # Updated
+.pi/settings.json                 # (for local development, not in the package)
+extensions/yoke-notify.ts         # Pi extension for notifications
+scripts/validate.ts               # Package validation
 ```
 
-### Переписать полностью (37 агентов)
+### Rewrite fully (37 agents)
 
 ```
 agents/stack-detector.md
@@ -1052,7 +1052,7 @@ agents/convention-scanner.md
 agents/validation-scanner.md
 agents/existing-rules-detector.md
 agents/domain-analyzer.md
-agents/project-md-generator.md       # бывш. claude-md-generator.md
+agents/project-md-generator.md       # formerly claude-md-generator.md
 agents/yoke-context-generator.md
 agents/automation-recommender.md
 agents/bootstrap-verifier.md
@@ -1085,7 +1085,7 @@ agents/task-explorer.md
 agents/task-architect.md
 ```
 
-### Переписать полностью (12 SKILL.md)
+### Rewrite fully (12 SKILL.md)
 
 ```
 skills/bootstrap/SKILL.md
@@ -1102,35 +1102,35 @@ skills/review/SKILL.md
 skills/task/SKILL.md
 ```
 
-### Перенести с модификациями (reference/)
+### Carry over with modifications (reference/)
 
 ```
-skills/bootstrap/reference/project-md-template.md     # бывш. claude-md-template.md
-skills/bootstrap/reference/hooks-patterns.md          # существенно переписать → pi-extensions.md
-skills/bootstrap/reference/mcp-servers.md             # оставить как есть
-skills/bootstrap/reference/quality-criteria.md        # оставить как есть
-skills/bootstrap/reference/update-guidelines.md       # оставить как есть
-skills/do/reference/status-protocol.md                # убрать TodoWrite
-skills/do/reference/report-format.md                 # оставить как есть
-skills/explore/reference/exploration-log-format.md   # оставить как есть
-skills/fix/reference/fix-log-format.md               # оставить как есть
-skills/gca/reference/commit-convention.md            # оставить как есть
-skills/gca/reference/staging-strategy.md             # оставить как есть
-skills/plan/examples/simple-plan.md                   # оставить как есть
-skills/plan/examples/complex-plan.md                 # оставить как есть
-skills/plan/reference/elements-of-style-rules.md     # оставить как есть
-skills/plan/reference/plan-format.md                  # оставить как есть
-skills/plan/reference/routing-rules.md               # оставить как есть
-skills/pr/reference/pr-body-format.md                # оставить как есть
-skills/review/reference/review-format.md             # оставить как есть
-skills/task/examples/simple-task.md                   # оставить как есть
-skills/task/examples/complex-task.md                 # оставить как есть
-skills/task/reference/elements-of-style-rules.md     # оставить как есть
-skills/task/reference/frontend-guide.md              # оставить как есть
-skills/task/reference/synthesize-guide.md            # оставить как есть
+skills/bootstrap/reference/project-md-template.md     # formerly claude-md-template.md
+skills/bootstrap/reference/hooks-patterns.md          # rewrite substantially → pi-extensions.md
+skills/bootstrap/reference/mcp-servers.md             # leave as-is
+skills/bootstrap/reference/quality-criteria.md        # leave as-is
+skills/bootstrap/reference/update-guidelines.md       # leave as-is
+skills/do/reference/status-protocol.md                # remove TodoWrite
+skills/do/reference/report-format.md                 # leave as-is
+skills/explore/reference/exploration-log-format.md   # leave as-is
+skills/fix/reference/fix-log-format.md               # leave as-is
+skills/gca/reference/commit-convention.md            # leave as-is
+skills/gca/reference/staging-strategy.md             # leave as-is
+skills/plan/examples/simple-plan.md                   # leave as-is
+skills/plan/examples/complex-plan.md                 # leave as-is
+skills/plan/reference/elements-of-style-rules.md     # leave as-is
+skills/plan/reference/plan-format.md                  # leave as-is
+skills/plan/reference/routing-rules.md               # leave as-is
+skills/pr/reference/pr-body-format.md                # leave as-is
+skills/review/reference/review-format.md             # leave as-is
+skills/task/examples/simple-task.md                   # leave as-is
+skills/task/examples/complex-task.md                 # leave as-is
+skills/task/reference/elements-of-style-rules.md     # leave as-is
+skills/task/reference/frontend-guide.md              # leave as-is
+skills/task/reference/synthesize-guide.md            # leave as-is
 ```
 
-### Переписать (документация)
+### Rewrite (documentation)
 
 ```
 README.md
@@ -1149,60 +1149,60 @@ docs/hi.md
 docs/notify.md
 ```
 
-## Приложение B: Установка yoke-pi конечным пользователем
+## Appendix B: Installing yoke-pi as an end user
 
 ```bash
-# 1. Установить yoke-pi как pi-пакет
+# 1. Install yoke-pi as a pi package
 pi install npm:yoke-pi
 
-# Или из git:
+# Or from git:
 pi install git:yokeloop/yoke-pi
 
-# 2. Установить зависимости
+# 2. Install dependencies
 pi install npm:pi-subagents
 pi install npm:pi-ask-user
 pi install npm:pi-intercom
 
-# 3. (Опционально) Установить веб-доступ
+# 3. (Optional) Install web access
 pi install npm:pi-web-access
 
-# 4. Запустить
+# 4. Run
 cd my-project
 pi
 
-# 5. Использовать
-> /skill:hi           # обзор скилов
-> /skill:bootstrap    # подготовить проект
-> /skill:task ...     # определить задачу
-> /skill:plan ...     # построить план
-> /skill:do ...       # выполнить план
+# 5. Use
+> /skill:hi           # skill overview
+> /skill:bootstrap    # prepare the project
+> /skill:task ...     # define a task
+> /skill:plan ...     # build a plan
+> /skill:do ...       # execute the plan
 ```
 
-## Приложение C: Справочник pi-subagents frontmatter
+## Appendix C: pi-subagents frontmatter reference
 
 ```yaml
 ---
-name: my-agent # 1-64 символов, kebab-case
-description: What this agent does # До 1024 символов
+name: my-agent # 1-64 characters, kebab-case
+description: What this agent does # Up to 1024 characters
 tools: read, write, edit, bash, find, grep, ls
-model: anthropic/claude-sonnet-4 # Модель
-fallbackModels: # Запасные модели
+model: anthropic/claude-sonnet-4 # Model
+fallbackModels: # Fallback models
   - openai/gpt-5-mini
   - anthropic/claude-haiku-4-5
 thinking: high # off, minimal, low, medium, high, xhigh
-systemPromptMode: replace # replace (default) или append
-inheritProjectContext: true # Наследовать AGENTS.md, .pi/settings
-inheritSkills: false # Наследовать каталог скилов
-skills: ask-user # Инжектировать скилы (через +)
-output: context.md # Файл вывода по умолчанию
-defaultReads: context.md # Файлы для чтения перед стартом
-defaultProgress: true # Вести progress.md
-maxSubagentDepth: 1 # Лимит вложенности суб-агентов
+systemPromptMode: replace # replace (default) or append
+inheritProjectContext: true # Inherit AGENTS.md, .pi/settings
+inheritSkills: false # Inherit the skills directory
+skills: ask-user # Inject skills (with +)
+output: context.md # Default output file
+defaultReads: context.md # Files to read before starting
+defaultProgress: true # Maintain progress.md
+maxSubagentDepth: 1 # Subagent nesting limit
 ---
-Системный промпт агента...
+The agent's system prompt...
 ```
 
-## Приложение D: Справочник ask_user API
+## Appendix D: ask_user API reference
 
 ```json
 {
@@ -1219,34 +1219,34 @@ maxSubagentDepth: 1 # Лимит вложенности суб-агентов
 }
 ```
 
-Ответ:
+Response:
 
 ```json
 { "kind": "selection", "selections": ["Option A"], "comment": null }
 ```
 
-или
+or
 
 ```json
 { "kind": "freeform", "text": "Custom answer..." }
 ```
 
-или
+or
 
 ```json
-null // Пользователь отменил
+null // The user cancelled
 ```
 
-## Приложение E: Справочник subagent() API
+## Appendix E: subagent() API reference
 
 ```typescript
-// Одиночный агент
+// Single agent
 subagent({ agent: "stack-detector", task: "Detect the tech stack" });
 
-// С выбором модели
+// With model selection
 subagent({ agent: "task-executor", task: "...", model: "anthropic/claude-opus-4" });
 
-// Параллельный
+// Parallel
 subagent({
   tasks: [
     { agent: "stack-detector", task: "Detect stack" },
@@ -1255,7 +1255,7 @@ subagent({
   concurrency: 2,
 });
 
-// Цепочка
+// Chain
 subagent({
   chain: [
     { agent: "task-executor", task: "Implement: ..." },
@@ -1264,13 +1264,13 @@ subagent({
   ],
 });
 
-// Асинхронный
+// Async
 subagent({ agent: "worker", task: "...", async: true });
 
 // Fork context
 subagent({ agent: "oracle", task: "Review direction", context: "fork" });
 
-// Управление
+// Management
 subagent({ action: "list" });
 subagent({ action: "status" });
 subagent({ action: "interrupt", id: "abc123" });

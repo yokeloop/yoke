@@ -1,95 +1,95 @@
-# Адаптация yoke для pi dev — полное исследование
+# Adapting yoke for pi dev — full research
 
-> Дата: 2026-04-27  
-> Версия yoke: 1.0.0
+> Date: 2026-04-27  
+> yoke version: 1.0.0
 
-## Содержание
+## Contents
 
-1. [Обзор архитектуры yoke](#1-обзор-архитектуры-yoke)
-2. [Критические несовместимости с pi](#2-критические-несовместимости-с-pi)
-3. [Плагины pi, решающие основные проблемы](#3-плагины-pi-решающие-основные-проблемы)
-4. [Детальный маппинг Claude Code → Pi](#4-детальный-маппинг-claude-code--pi)
-5. [Адаптация каждого скилла](#5-адаптация-каждого-скилла)
-6. [Остаточные проблемы, не решаемые плагинами](#6-остаточные-проблемы-не-решаемые-плагинами)
-7. [Стратегия: универсальные скилы для обеих платформ](#7-стратегия-универсальные-скилы-для-обеих-платформ)
-8. [План реализации](#8-план-реализации)
-9. [Список файлов к изменению](#9-список-файлов-к-изменению)
-10. [Приложения](#приложения)
+1. [Overview of the yoke architecture](#1-overview-of-the-yoke-architecture)
+2. [Critical incompatibilities with pi](#2-critical-incompatibilities-with-pi)
+3. [pi plugins that solve the core problems](#3-pi-plugins-that-solve-the-core-problems)
+4. [Detailed Claude Code → Pi mapping](#4-detailed-claude-code--pi-mapping)
+5. [Adapting each skill](#5-adapting-each-skill)
+6. [Residual problems not solved by plugins](#6-residual-problems-not-solved-by-plugins)
+7. [Strategy: universal skills for both platforms](#7-strategy-universal-skills-for-both-platforms)
+8. [Implementation plan](#8-implementation-plan)
+9. [List of files to change](#9-list-of-files-to-change)
+10. [Appendices](#appendices)
 
 ---
 
-## 1. Обзор архитектуры yoke
+## 1. Overview of the yoke architecture
 
-Yoke — это набор из 12 скилов для Claude Code, организованных по паттерну «оркестратор → агенты»:
+Yoke is a set of 12 skills for Claude Code, organized around the "orchestrator → agents" pattern:
 
 ```
 skills/
-  bootstrap/SKILL.md          # Подготовка проекта для yoke flow
-  do/SKILL.md                 # Выполнение задачи по плану
-  explore/SKILL.md             # Исследование кодовой базы
-  fix/SKILL.md                 # Быстрый фикс
-  gca/SKILL.md                 # Git commit с умной группировкой
-  gp/SKILL.md                  # Git push с проверками
-  gst/SKILL.md                 # Статус разработки
-  hi/SKILL.md                  # Приветствие и обзор скилов
-  plan/SKILL.md                # Построение плана реализации
-  pr/SKILL.md                  # Создание/обновление Pull Request
-  review/SKILL.md              # Код-ревью с автофиксами
-  task/SKILL.md                # Формулировка задачи для AI
+  bootstrap/SKILL.md          # Prepare a project for the yoke flow
+  do/SKILL.md                 # Execute a task per the plan
+  explore/SKILL.md             # Explore the codebase
+  fix/SKILL.md                 # Quick fix
+  gca/SKILL.md                 # Git commit with smart grouping
+  gp/SKILL.md                  # Git push with checks
+  gst/SKILL.md                 # Development status
+  hi/SKILL.md                  # Greeting and skills overview
+  plan/SKILL.md                # Build an implementation plan
+  pr/SKILL.md                  # Create/update a Pull Request
+  review/SKILL.md              # Code review with auto-fixes
+  task/SKILL.md                # Frame a task for AI
 
-  Каждый скилл:
-  ├── SKILL.md                 # Оркестратор (фронтmatter + инструкции)
-  ├── agents/                  # Суб-агенты (dispatch через Agent tool)
-  ├── reference/               # Справочные материалы
-  └── examples/                # Примеры (не у всех)
+  Each skill:
+  ├── SKILL.md                 # Orchestrator (frontmatter + instructions)
+  ├── agents/                  # Sub-agents (dispatched via the Agent tool)
+  ├── reference/               # Reference material
+  └── examples/                # Examples (not in all of them)
 ```
 
-### Ключевые концепции
+### Key concepts
 
-| Концепция                    | Описание                                | Частота                 |
-| ---------------------------- | --------------------------------------- | ----------------------- |
-| **Agent tool**               | Dispatch суб-агента из SKILL.md         | 30 агентов, 50+ вызовов |
-| **AskUserQuestion**          | Интерактивный Q&A с пользователем       | 6 скилов, 15+ вызовов   |
-| **$ARGUMENTS**               | Автоподстановка аргументов команды      | 9 скилов, 20+ вызовов   |
-| **${CLAUDE_PLUGIN_ROOT}**    | Путь к корню плагина                    | 6 скилов, 20+ вызовов   |
-| **{{PLACEHOLDER}}**          | Шаблонные переменные в промптах агентов | 126 вхождений           |
-| **TodoWrite**                | Отслеживание прогресса фаз              | 5 скилов, 15+ вызовов   |
-| **model: opus/sonnet/haiku** | Выбор модели в frontmatter агента       | Все 30 агентов          |
-| **tools: Read, Write...**    | Ограничение инструментов агента         | Все 30 агентов          |
-| **color:**                   | Цветовая метка агента                   | Все 30 агентов          |
-| **notify.sh**                | Уведомления через Telegram              | 3 скила, hooks/         |
+| Concept                      | Description                            | Frequency            |
+| ---------------------------- | -------------------------------------- | -------------------- |
+| **Agent tool**               | Dispatch a sub-agent from SKILL.md     | 30 agents, 50+ calls |
+| **AskUserQuestion**          | Interactive Q&A with the user          | 6 skills, 15+ calls  |
+| **$ARGUMENTS**               | Auto-substitution of command arguments | 9 skills, 20+ calls  |
+| **${CLAUDE_PLUGIN_ROOT}**    | Path to the plugin root                | 6 skills, 20+ calls  |
+| **{{PLACEHOLDER}}**          | Template variables in agent prompts    | 126 occurrences      |
+| **TodoWrite**                | Phase progress tracking                | 5 skills, 15+ calls  |
+| **model: opus/sonnet/haiku** | Model selection in agent frontmatter   | All 30 agents        |
+| **tools: Read, Write...**    | Restricting an agent's tools           | All 30 agents        |
+| **color:**                   | Agent color label                      | All 30 agents        |
+| **notify.sh**                | Notifications via Telegram             | 3 skills, hooks/     |
 
-### Каталог агентов (30 штук)
+### Agent catalog (30 of them)
 
-| Скилл                | Агенты                                                                                                                                                                                                         |
+| Skill                | Agents                                                                                                                                                                                                         |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | bootstrap (10)       | stack-detector, architecture-mapper, convention-scanner, validation-scanner, existing-rules-detector, domain-analyzer, claude-md-generator, yoke-context-generator, automation-recommender, bootstrap-verifier |
 | do (8)               | task-executor, spec-reviewer, quality-reviewer, code-polisher, validator, formatter, doc-updater, report-writer                                                                                                |
 | explore (2)          | explore-agent, explore-log-writer                                                                                                                                                                              |
-| fix (3 + 3 cross)    | fix-context-collector, fix-investigator, fix-log-writer; + task-executor, code-polisher, validator из do                                                                                                       |
-| gca (0)              | — (оркестратор работает напрямую)                                                                                                                                                                              |
+| fix (3 + 3 cross)    | fix-context-collector, fix-investigator, fix-log-writer; + task-executor, code-polisher, validator from do                                                                                                     |
+| gca (0)              | — (the orchestrator works directly)                                                                                                                                                                            |
 | gp (2)               | git-pre-checker, git-pusher                                                                                                                                                                                    |
 | gst (1)              | git-data-collector                                                                                                                                                                                             |
 | plan (3)             | plan-explorer, plan-designer, plan-reviewer                                                                                                                                                                    |
 | pr (2)               | pr-data-collector, pr-body-generator                                                                                                                                                                           |
-| review (4 + 2 cross) | code-reviewer, issue-fixer, single-fix-agent, review-report-writer; + validator, formatter из do                                                                                                               |
+| review (4 + 2 cross) | code-reviewer, issue-fixer, single-fix-agent, review-report-writer; + validator, formatter from do                                                                                                             |
 | task (2)             | task-explorer, task-architect                                                                                                                                                                                  |
 
 ---
 
-## 2. Критические несовместимости с pi
+## 2. Critical incompatibilities with pi
 
-### 2.1. Agent tool — главный барьер
+### 2.1. Agent tool — the main barrier
 
-Во всех сложных скилах оркестратор dispatch'ит работу агентам через `Agent tool`. Pi **не имеет встроенного Agent tool**.
+In every complex skill, the orchestrator dispatches work to agents via the `Agent tool`. Pi **has no built-in Agent tool**.
 
-**Пример из do/SKILL.md:**
+**Example from do/SKILL.md:**
 
 ```
 Dispatch via the Agent tool (model: sonnet). The agent file is already read in Init.
 ```
 
-**Пример из bootstrap/SKILL.md:**
+**Example from bootstrap/SKILL.md:**
 
 ```
 Dispatch 6 agents in parallel via the Agent tool (6 calls at once):
@@ -98,9 +98,9 @@ Dispatch 6 agents in parallel via the Agent tool (6 calls at once):
 ...
 ```
 
-### 2.2. AskUserQuestion — интерактивные решения
+### 2.2. AskUserQuestion — interactive decisions
 
-Оркестраторы принимают решения у пользователя через `AskUserQuestion`:
+Orchestrators get decisions from the user via `AskUserQuestion`:
 
 ```
 AskUserQuestion with 3 options:
@@ -109,24 +109,24 @@ AskUserQuestion with 3 options:
 3. Cancel
 ```
 
-Pi не имеет `AskUserQuestion`.
+Pi has no `AskUserQuestion`.
 
-### 2.3. $ARGUMENTS — аргументы команды
+### 2.3. $ARGUMENTS — command arguments
 
-Claude Code автоматически подставляет `$ARGUMENTS` в контекст. Pi передаёт аргументы как текст после `/skill:name`.
+Claude Code automatically substitutes `$ARGUMENTS` into the context. Pi passes arguments as the text after `/skill:name`.
 
-### 2.4. ${CLAUDE_PLUGIN_ROOT} — пути к корню
+### 2.4. ${CLAUDE_PLUGIN_ROOT} — paths to the root
 
 ```
 ${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md
 bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE ...
 ```
 
-Pi не предоставляет этой переменной и не использует плагинную структуру каталогов агентов.
+Pi does not provide this variable and does not use a plugin-style directory structure for agents.
 
-### 2.5. {{PLACEHOLDER}} — шаблоны в промптах
+### 2.5. {{PLACEHOLDER}} — templates in prompts
 
-Оркестратор подставляет данные перед dispatch:
+The orchestrator substitutes data before dispatch:
 
 ```yaml
 TASK_WHAT: { { TASK_WHAT } }
@@ -134,81 +134,81 @@ TASK_HOW: { { TASK_HOW } }
 PROJECT_PROFILE: { { PROJECT_PROFILE } }
 ```
 
-126 вхождений. Pi-subagents не поддерживает шаблоны — `task:` это просто строка.
+126 occurrences. Pi-subagents does not support templates — `task:` is just a string.
 
-### 2.6. TodoWrite — трекинг фаз
+### 2.6. TodoWrite — phase tracking
 
 ```markdown
 Mark in TodoWrite: [x] Detect
 Mark in TodoWrite: [x] Execute
 ```
 
-Pi не имеет TodoWrite. Альтернатива: markdown-чеклисты или встроенный прогресс pi-subagents.
+Pi has no TodoWrite. Alternative: markdown checklists or the built-in progress of pi-subagents.
 
-### 2.7. Agent frontmatter — разные форматы
+### 2.7. Agent frontmatter — different formats
 
-| Поле                    | Claude Code               | Pi (pi-subagents)                                                                    |
+| Field                   | Claude Code               | Pi (pi-subagents)                                                                    |
 | ----------------------- | ------------------------- | ------------------------------------------------------------------------------------ |
 | `tools`                 | `Glob, Grep, Read, Bash`  | `find, grep, read, bash, ls`                                                         |
 | `model`                 | `opus`, `sonnet`, `haiku` | `anthropic/claude-opus-4`, `anthropic/claude-sonnet-4`, `anthropic/claude-haiku-4-5` |
-| `color`                 | `blue`, `cyan`, etc.      | Нет (Pi игнорирует)                                                                  |
-| `systemPromptMode`      | Нет                       | `replace` / `append`                                                                 |
-| `inheritProjectContext` | Нет                       | `true` / `false`                                                                     |
-| `inheritSkills`         | Нет                       | `true` / `false`                                                                     |
-| `output`                | Нет                       | `context.md`                                                                         |
-| `defaultProgress`       | Нет                       | `true`                                                                               |
+| `color`                 | `blue`, `cyan`, etc.      | None (Pi ignores it)                                                                 |
+| `systemPromptMode`      | None                      | `replace` / `append`                                                                 |
+| `inheritProjectContext` | None                      | `true` / `false`                                                                     |
+| `inheritSkills`         | None                      | `true` / `false`                                                                     |
+| `output`                | None                      | `context.md`                                                                         |
+| `defaultProgress`       | None                      | `true`                                                                               |
 
-### 2.8. Имена встроенных инструментов
+### 2.8. Built-in tool names
 
-| Claude Code    | Pi            | Примечание          |
-| -------------- | ------------- | ------------------- |
-| `Read`         | `read`        | —                   |
-| `Write`        | `write`       | —                   |
-| `Edit`         | `edit`        | —                   |
-| `Bash`         | `bash`        | —                   |
-| `Glob`         | `find` / `ls` | Pi не имеет Glob    |
-| `Grep`         | `grep`        | —                   |
-| `LS`           | `ls`          | —                   |
-| `TodoWrite`    | —             | Убрать              |
-| `NotebookRead` | —             | Или `pi-docparser`  |
-| `WebFetch`     | —             | Или `pi-web-access` |
-| `WebSearch`    | —             | Или `pi-web-access` |
-| `KillShell`    | —             | Нет аналога         |
-| `BashOutput`   | —             | Нет аналога         |
+| Claude Code    | Pi            | Note               |
+| -------------- | ------------- | ------------------ |
+| `Read`         | `read`        | —                  |
+| `Write`        | `write`       | —                  |
+| `Edit`         | `edit`        | —                  |
+| `Bash`         | `bash`        | —                  |
+| `Glob`         | `find` / `ls` | Pi has no Glob     |
+| `Grep`         | `grep`        | —                  |
+| `LS`           | `ls`          | —                  |
+| `TodoWrite`    | —             | Remove             |
+| `NotebookRead` | —             | Or `pi-docparser`  |
+| `WebFetch`     | —             | Or `pi-web-access` |
+| `WebSearch`    | —             | Or `pi-web-access` |
+| `KillShell`    | —             | No equivalent      |
+| `BashOutput`   | —             | No equivalent      |
 
-### 2.9. Контекст проекта
+### 2.9. Project context
 
-| Аспект           | Claude Code                          | Pi                                    |
-| ---------------- | ------------------------------------ | ------------------------------------- |
-| Контекстный файл | `.claude/yoke-context.md`            | `.pi/yoke-context.md` или `AGENTS.md` |
-| Правила проекта  | `CLAUDE.md`                          | `AGENTS.md` или `.pi/settings.json`   |
-| Путь к плагину   | `${CLAUDE_PLUGIN_ROOT}`              | Относительный путь                    |
-| Аргументы        | `$ARGUMENTS`                         | Текст после `/skill:name`             |
-| Уведомления      | `hooks/hooks.json` + `lib/notify.sh` | pi extension events                   |
+| Aspect         | Claude Code                          | Pi                                   |
+| -------------- | ------------------------------------ | ------------------------------------ |
+| Context file   | `.claude/yoke-context.md`            | `.pi/yoke-context.md` or `AGENTS.md` |
+| Project rules  | `CLAUDE.md`                          | `AGENTS.md` or `.pi/settings.json`   |
+| Path to plugin | `${CLAUDE_PLUGIN_ROOT}`              | Relative path                        |
+| Arguments      | `$ARGUMENTS`                         | Text after `/skill:name`             |
+| Notifications  | `hooks/hooks.json` + `lib/notify.sh` | pi extension events                  |
 
 ---
 
-## 3. Плагины pi, решающие основные проблемы
+## 3. pi plugins that solve the core problems
 
-### 3.1. pi-subagents (v0.19.3) — замена Agent tool
+### 3.1. pi-subagents (v0.19.3) — replacement for the Agent tool
 
-**Установка:** `pi install npm:pi-subagents`
+**Install:** `pi install npm:pi-subagents`
 
-**Возможности:**
+**Capabilities:**
 
-- Одиночный dispatch: `subagent({ agent: "stack-detector", task: "..." })`
-- Параллельный: `subagent({ tasks: [{ agent: "scout", task: "..." }, ...], concurrency: 6 })`
-- Цепочки: `subagent({ chain: [{ agent: "scout", task: "..." }, { agent: "planner" }, ...] })`
+- Single dispatch: `subagent({ agent: "stack-detector", task: "..." })`
+- Parallel: `subagent({ tasks: [{ agent: "scout", task: "..." }, ...], concurrency: 6 })`
+- Chains: `subagent({ chain: [{ agent: "scout", task: "..." }, { agent: "planner" }, ...] })`
 - Async/background: `subagent({ agent: "worker", task: "...", async: true })`
 - Fork context: `subagent({ agent: "oracle", task: "...", context: "fork" })`
-- Выбор модели: в frontmatter агента (`model: anthropic/claude-sonnet-4`)
-- Override модели: `/run reviewer[model=anthropic/claude-sonnet-4]`
-- Worktrees для параллельной записи: `worktree: true`
-- Управление агентами: `subagent({ action: "list" })`, create, update, delete
-- `/agents` — интерактивный TUI менеджер
-- `/run`, `/chain`, `/parallel` — слэш-команды
+- Model selection: in agent frontmatter (`model: anthropic/claude-sonnet-4`)
+- Model override: `/run reviewer[model=anthropic/claude-sonnet-4]`
+- Worktrees for parallel writes: `worktree: true`
+- Agent management: `subagent({ action: "list" })`, create, update, delete
+- `/agents` — interactive TUI manager
+- `/run`, `/chain`, `/parallel` — slash commands
 
-**Формат агента:**
+**Agent format:**
 
 ```yaml
 ---
@@ -225,14 +225,14 @@ defaultProgress: true
 System prompt body...
 ```
 
-**Обнаружение агентов:**
+**Agent discovery:**
 
-- `~/.pi/agent/agents/*.md` — глобальные
-- `.pi/agents/*.md` — проектные
-- `.agents/*.md` — legacy (совместимость)
-- `~/.pi/agent/extensions/subagent/agents/` — встроенные
+- `~/.pi/agent/agents/*.md` — global
+- `.pi/agents/*.md` — project-level
+- `.agents/*.md` — legacy (compatibility)
+- `~/.pi/agent/extensions/subagent/agents/` — built-in
 
-**Маппинг yoke → pi-subagents:**
+**yoke → pi-subagents mapping:**
 
 | yoke                                | pi-subagents                                 |
 | ----------------------------------- | -------------------------------------------- |
@@ -245,22 +245,22 @@ System prompt body...
 | `tools: Glob, Grep`                 | `tools: find, grep`                          |
 | `tools: LS`                         | `tools: ls`                                  |
 
-### 3.2. pi-ask-user (v0.6.1) — замена AskUserQuestion
+### 3.2. pi-ask-user (v0.6.1) — replacement for AskUserQuestion
 
-**Установка:** `pi install npm:pi-ask-user`
+**Install:** `pi install npm:pi-ask-user`
 
-**Возможности:**
+**Capabilities:**
 
-- Interactive TUI с поиском, split-pane preview
-- Single-select и multi-select
-- Freeform ввод
-- Optional comment после выбора
+- Interactive TUI with search, split-pane preview
+- Single-select and multi-select
+- Freeform input
+- Optional comment after selection
 - Overlay mode
-- Timeout (автозакрытие)
-- Fallback в RPC/headless режиме (через `ctx.ui.select()`)
-- Бандлит skill `ask-user` с decision-gate паттерном
+- Timeout (auto-close)
+- Fallback in RPC/headless mode (via `ctx.ui.select()`)
+- Bundles the `ask-user` skill with a decision-gate pattern
 
-**Пример маппинга:**
+**Mapping example:**
 
 ```markdown
 # Claude Code
@@ -285,36 +285,36 @@ allowFreeform: true
 })
 ```
 
-### 3.3. pi-intercom (v0.2.1) — координация и уведомления
+### 3.3. pi-intercom (v0.2.1) — coordination and notifications
 
-**Установка:** `pi install npm:pi-intercom`
+**Install:** `pi install npm:pi-intercom`
 
-**Возможности:**
+**Capabilities:**
 
-- 1:1 messaging между pi-сессиями
-- `intercom({ action: "send", to: "worker", message: "..." })` — отправка
-- `intercom({ action: "ask", to: "planner", message: "..." })` — вопрос с блокировкой
-- Интеграция с pi-subagents для needs-attention уведомлений
-- `/intercom` или Alt+M — TUI
+- 1:1 messaging between pi sessions
+- `intercom({ action: "send", to: "worker", message: "..." })` — send
+- `intercom({ action: "ask", to: "planner", message: "..." })` — blocking question
+- Integration with pi-subagents for needs-attention notifications
+- `/intercom` or Alt+M — TUI
 
-**Замена notify.sh:**
-Вместо `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE ...` можно:
+**Replacement for notify.sh:**
+Instead of `bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE ...` you can:
 
-- Для координации оркестратор ↔ агент: `intercom({ action: "send", message: "..." })`
-- Для UI уведомлений пользователю: `ctx.ui.notify()` (в pi extension)
+- For orchestrator ↔ agent coordination: `intercom({ action: "send", message: "..." })`
+- For UI notifications to the user: `ctx.ui.notify()` (in a pi extension)
 
-### 3.4. Опциональные плагины
+### 3.4. Optional plugins
 
-| Пакет                      | Заменяет                         | Установка                                 |
-| -------------------------- | -------------------------------- | ----------------------------------------- |
-| `pi-web-access`            | `WebFetch`, `WebSearch`          | `pi install npm:pi-web-access`            |
-| `pi-docparser`             | `NotebookRead` (PDF/Office)      | `pi install npm:pi-docparser`             |
-| `pi-lens`                  | Ручные bash-проверки в validator | `pi install npm:pi-lens`                  |
-| `pi-prompt-template-model` | Переиспользуемые промпт-шаблоны  | `pi install npm:pi-prompt-template-model` |
+| Package                    | Replaces                            | Install                                   |
+| -------------------------- | ----------------------------------- | ----------------------------------------- |
+| `pi-web-access`            | `WebFetch`, `WebSearch`             | `pi install npm:pi-web-access`            |
+| `pi-docparser`             | `NotebookRead` (PDF/Office)         | `pi install npm:pi-docparser`             |
+| `pi-lens`                  | Manual bash checks in the validator | `pi install npm:pi-lens`                  |
+| `pi-prompt-template-model` | Reusable prompt templates           | `pi install npm:pi-prompt-template-model` |
 
 ---
 
-## 4. Детальный маппинг Claude Code → Pi
+## 4. Detailed Claude Code → Pi mapping
 
 ### 4.1. Agent tool → subagent()
 
@@ -334,7 +334,7 @@ task: "Collect data on the current git repository state and produce a report"
 })
 ```
 
-### 4.2. Параллельный dispatch
+### 4.2. Parallel dispatch
 
 ```markdown
 # Claude Code
@@ -360,10 +360,10 @@ concurrency: 6
 })
 ```
 
-### 4.3. Последовательная цепочка
+### 4.3. Sequential chain
 
 ```markdown
-# Claude Code (ручной dispatch в SKILL.md)
+# Claude Code (manual dispatch in SKILL.md)
 
 1. Run task-executor → agents/task-executor.md
 2. Then spec-reviewer → agents/spec-reviewer.md
@@ -411,7 +411,7 @@ allowFreeform: true
 })
 ```
 
-### 4.5. $ARGUMENTS → prompt-аргументы
+### 4.5. $ARGUMENTS → prompt arguments
 
 ```markdown
 # Claude Code
@@ -425,7 +425,7 @@ is the path to a task file, e.g. `docs/ai/86-black-jack-page/86-black-jack-page-
 If the argument is missing — ask via ask_user.
 ```
 
-### 4.6. CLAUDE_PLUGIN_ROOT → имена агентов / относительные пути
+### 4.6. CLAUDE_PLUGIN_ROOT → agent names / relative paths
 
 ```markdown
 # Claude Code
@@ -436,16 +436,16 @@ If the argument is missing — ask via ask_user.
 
 - Implementation → subagent({ agent: "task-executor", task: "..." })
 
-# Для reference/ файлов в SKILL.md — относительные пути работают в обеих средах:
+# For reference/ files in SKILL.md — relative paths work in both environments:
 
 See [commit convention](reference/commit-convention.md) for details.
 ```
 
-### 4.7. {{PLACEHOLDER}} шаблоны
+### 4.7. {{PLACEHOLDER}} templates
 
-Pi-subagents не подставляет шаблоны. Два подхода:
+Pi-subagents does not substitute templates. Two approaches:
 
-**Подход A: Контекст через task: строку**
+**Approach A: Context via the task: string**
 
 ```markdown
 subagent({
@@ -462,12 +462,12 @@ Verify: ${TASK_VERIFY}`
 })
 ```
 
-**Подход B: Контекст через reads: файл**
+**Approach B: Context via a reads: file**
 
 ```markdown
-# Оркестратор пишет временый контекстный файл
+# The orchestrator writes a temporary context file
 
-# затем:
+# then:
 
 subagent({
 agent: "task-executor",
@@ -476,7 +476,7 @@ reads: "context.md"
 })
 ```
 
-### 4.8. TodoWrite → markdown-чеклисты
+### 4.8. TodoWrite → markdown checklists
 
 ```markdown
 # Claude Code
@@ -484,7 +484,7 @@ reads: "context.md"
 Mark in TodoWrite: [x] Detect
 Mark in TodoWrite: [x] Execute
 
-# Pi: просто текст в SKILL.md
+# Pi: just text in SKILL.md
 
 Progress checklist (update as you complete each phase):
 
@@ -494,20 +494,20 @@ Progress checklist (update as you complete each phase):
 - [ ] Verify
 ```
 
-Или использовать встроенный прогресс pi-subagents (`defaultProgress: true`).
+Or use the built-in progress of pi-subagents (`defaultProgress: true`).
 
-### 4.9. Уведомления (notify.sh) → pi extension
+### 4.9. Notifications (notify.sh) → pi extension
 
 ```markdown
 # Claude Code
 
 bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill bootstrap --phase Confirm --slug "bootstrap" --title "Bootstrap ready" --body "CLAUDE.md and yoke-context.md created"
 
-# Pi: через ctx.ui.notify() в extension
+# Pi: via ctx.ui.notify() in an extension
 
 ctx.ui.notify("Bootstrap ready: CLAUDE.md and yoke-context.md created", "success");
 
-# Pi: через intercom (для оркестратор ↔ агент координации)
+# Pi: via intercom (for orchestrator ↔ agent coordination)
 
 intercom({ action: "send", to: "parent", message: "Bootstrap phase Complete done" })
 ```
@@ -538,177 +538,177 @@ pi.on("session_shutdown", async (event, ctx) => {
 
 ---
 
-## 5. Адаптация каждого скилла
+## 5. Adapting each skill
 
-### 5.1. hi — 🟢 Лёгкая
+### 5.1. hi — 🟢 Easy
 
-Нет агентов, нет `$ARGUMENTS`, нет `AskUserQuestion`. Почти чистый текст.
+No agents, no `$ARGUMENTS`, no `AskUserQuestion`. Almost pure text.
 
-**Изменения:**
+**Changes:**
 
-- Обновить префиксы команд: `/yoke:task` → `/skill:task`
-- В pi-контексте убрать ссылки на `/yoke:`
+- Update command prefixes: `/yoke:task` → `/skill:task`
+- In the pi context, remove references to `/yoke:`
 
-### 5.2. gca — 🟡 Средняя
+### 5.2. gca — 🟡 Medium
 
-Нет агентов. Есть `$ARGUMENTS`, `AskUserQuestion` и `reference/`.
+No agents. Has `$ARGUMENTS`, `AskUserQuestion`, and `reference/`.
 
-**Изменения:**
+**Changes:**
 
-- `$ARGUMENTS` → инструкция про аргументы
+- `$ARGUMENTS` → instruction about arguments
 - `AskUserQuestion` → `ask_user()`
-- `reference/` — оставить как есть (относительные пути)
+- `reference/` — leave as is (relative paths)
 
-### 5.3. gst — 🟡 Средняя
+### 5.3. gst — 🟡 Medium
 
-1 агент (`git-data-collector`).
+1 agent (`git-data-collector`).
 
-**Изменения:**
+**Changes:**
 
 - `Agent tool` → `subagent({ agent: "git-data-collector", task: "..." })`
-- `${CLAUDE_PLUGIN_ROOT}/skills/gst/agents/git-data-collector.md` → имя агента `git-data-collector`
+- `${CLAUDE_PLUGIN_ROOT}/skills/gst/agents/git-data-collector.md` → agent name `git-data-collector`
 
-### 5.4. explore — 🟡 Средняя
+### 5.4. explore — 🟡 Medium
 
-2 агента, `AskUserQuestion`, `$ARGUMENTS`.
+2 agents, `AskUserQuestion`, `$ARGUMENTS`.
 
-**Изменения:**
+**Changes:**
 
-- 2 агента → `subagent()`
+- 2 agents → `subagent()`
 - `AskUserQuestion` → `ask_user()`
-- `$ARGUMENTS` → инструкция
+- `$ARGUMENTS` → instruction
 
-### 5.5. gp — 🟡 Средняя
+### 5.5. gp — 🟡 Medium
 
-2 агента.
+2 agents.
 
-**Изменения:**
+**Changes:**
 
-- 2 агента → `subagent()`
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
+- 2 agents → `subagent()`
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
 
-### 5.6. pr — 🟡 Средняя
+### 5.6. pr — 🟡 Medium
 
-2 агента, `AskUserQuestion`, `$ARGUMENTS`.
+2 agents, `AskUserQuestion`, `$ARGUMENTS`.
 
-**Изменения:**
+**Changes:**
 
-- 2 агента → `subagent()`
+- 2 agents → `subagent()`
 - `AskUserQuestion` → `ask_user()`
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
 
-### 5.7. task — 🟡 Средняя
+### 5.7. task — 🟡 Medium
 
-2 агента, `KillShell`, `BashOutput`, `WebSearch`, `WebFetch` в frontmatter.
+2 agents, `KillShell`, `BashOutput`, `WebSearch`, `WebFetch` in the frontmatter.
 
-**Изменения:**
+**Changes:**
 
-- 2 агента → `subagent()`
-- Убрать `KillShell`, `BashOutput`, `WebSearch`, `WebFetch` из tools
-- Или добавить `pi-web-access` как зависимость
+- 2 agents → `subagent()`
+- Remove `KillShell`, `BashOutput`, `WebSearch`, `WebFetch` from tools
+- Or add `pi-web-access` as a dependency
 
-### 5.8. plan — 🔴 Высокая
+### 5.8. plan — 🔴 High
 
-3 агента, `KillShell`, `BashOutput` в frontmatter, `{{PLACEHOLDER}}`.
+3 agents, `KillShell`, `BashOutput` in the frontmatter, `{{PLACEHOLDER}}`.
 
-**Изменения:**
+**Changes:**
 
-- 3 агента → `subagent({ chain: [...] })`
-- Убрать `KillShell`, `BashOutput`
-- Шаблоны → контекст через `task:` или `reads:`
+- 3 agents → `subagent({ chain: [...] })`
+- Remove `KillShell`, `BashOutput`
+- Templates → context via `task:` or `reads:`
 
-### 5.9. bootstrap — 🔴 Высокая
+### 5.9. bootstrap — 🔴 High
 
-10 агентов, параллельный dispatch, `{{PLACEHOLDER}}`, `TodoWrite`, `AskUserQuestion`, `.claude/`.
+10 agents, parallel dispatch, `{{PLACEHOLDER}}`, `TodoWrite`, `AskUserQuestion`, `.claude/`.
 
-**Изменения:**
+**Changes:**
 
-- Параллельный dispatch → `subagent({ tasks: [...], concurrency: 6 })`
-- `{{PLACEHOLDER}}` → контекст через `task:` строку
-- `TodoWrite` → markdown-чеклист
+- Parallel dispatch → `subagent({ tasks: [...], concurrency: 6 })`
+- `{{PLACEHOLDER}}` → context via the `task:` string
+- `TodoWrite` → markdown checklist
 - `AskUserQuestion` → `ask_user()`
 - `.claude/` → `.pi/`
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
 - `notify.sh` → pi-integration
 
-### 5.10. do — 🔴 Высокая
+### 5.10. do — 🔴 High
 
-8 агентов, последовательные и параллельные фазы, review loop, модель-маршрутизация.
+8 agents, sequential and parallel phases, review loop, model routing.
 
-**Изменения:**
+**Changes:**
 
-- Последовательные фазы → `subagent({ chain: [...] })`
-- Параллельные `task-executor` → `subagent({ tasks: [...], concurrency: N })`
-- `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md` → агент читает файл напрямую
-- `TodoWrite` → убрать
+- Sequential phases → `subagent({ chain: [...] })`
+- Parallel `task-executor` → `subagent({ tasks: [...], concurrency: N })`
+- `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md` → the agent reads the file directly
+- `TodoWrite` → remove
 - `notify.sh` → pi-intercom / ctx.ui.notify()
 
-### 5.11. fix — 🔴 Высокая
+### 5.11. fix — 🔴 High
 
-3 собственных + 3 cross-skill агента, `AskUserQuestion`, `CLAUDE_PLUGIN_ROOT`, эскалация на opus.
+3 own + 3 cross-skill agents, `AskUserQuestion`, `CLAUDE_PLUGIN_ROOT`, escalation to opus.
 
-**Изменения:**
+**Changes:**
 
-- 6 агентов → `subagent()` по имени (без путей)
+- 6 agents → `subagent()` by name (no paths)
 - `AskUserQuestion` → `ask_user()`
-- Модель-маршрутизация → `model: anthropic/claude-opus-4` в frontmatter агента
+- Model routing → `model: anthropic/claude-opus-4` in the agent frontmatter
 - `notify.sh` → pi-intercom
 
-### 5.12. review — 🔴 Высокая
+### 5.12. review — 🔴 High
 
-4 собственных + 2 cross-skill агента, параллельные fix-агенты.
+4 own + 2 cross-skill agents, parallel fix agents.
 
-**Изменения:**
+**Changes:**
 
-- 6 агентов → `subagent()` по имени
-- Параллельные fix → `subagent({ tasks: [...] })`
-- `${CLAUDE_PLUGIN_ROOT}` → имена агентов
+- 6 agents → `subagent()` by name
+- Parallel fix → `subagent({ tasks: [...] })`
+- `${CLAUDE_PLUGIN_ROOT}` → agent names
 
 ---
 
-## 6. Остаточные проблемы, не решаемые плагинами
+## 6. Residual problems not solved by plugins
 
 ### 6.1. TodoWrite
 
-**Проблема:** 15+ вызовов в 5 скилах.
+**Problem:** 15+ calls across 5 skills.
 
-**Решение:** Заменить на markdown-чеклисты или полагаться на встроенный прогресс pi-subagents (`defaultProgress: true`). Не критично — это cosmetic tracking.
+**Solution:** Replace with markdown checklists or rely on the built-in progress of pi-subagents (`defaultProgress: true`). Not critical — it is cosmetic tracking.
 
 ### 6.2. `.claude/yoke-context.md` → `.pi/`
 
-**Проблема:** Bootstrap генерирует `.claude/yoke-context.md`. Pi ожидает `.pi/`.
+**Problem:** Bootstrap generates `.claude/yoke-context.md`. Pi expects `.pi/`.
 
-**Решение:** В универсальном SKILL.md указать оба пути. Для Pi — генерировать в `.pi/yoke-context.md`.
+**Solution:** Specify both paths in the universal SKILL.md. For Pi — generate into `.pi/yoke-context.md`.
 
-### 6.3. Уведомления
+### 6.3. Notifications
 
-**Проблема:** `hooks/hooks.json` + `lib/notify.sh` + `hooks/notify.sh` — это Claude Code hooks.
+**Problem:** `hooks/hooks.json` + `lib/notify.sh` + `hooks/notify.sh` are Claude Code hooks.
 
-**Решение:** Написать мини-extension `pi-yoke-notify.ts` (~50 строк), который:
+**Solution:** Write a mini-extension `pi-yoke-notify.ts` (~50 lines) that:
 
-1. Регистрирует кастомный инструмент `yoke_notify`
-2. Отправляет уведомления через Telegram Bot API
-3. Или подписывается на `session_shutdown` для отправки сводки
+1. Registers a custom `yoke_notify` tool
+2. Sends notifications via the Telegram Bot API
+3. Or subscribes to `session_shutdown` to send a summary
 
 ### 6.4. NotebookRead
 
-**Проблема:** Используется в `task-executor.md`.
+**Problem:** Used in `task-executor.md`.
 
-**Решение:** Убрать из tools (агент может использовать `read` для текстовых файлов). Для PDF/Office — добавить `pi-docparser`.
+**Solution:** Remove it from tools (the agent can use `read` for text files). For PDF/Office — add `pi-docparser`.
 
 ### 6.5. KillShell, BashOutput
 
-**Проблема:** Используются в `plan-designer.md`, `plan-explorer.md`, `task-architect.md`, `task-explorer.md`.
+**Problem:** Used in `plan-designer.md`, `plan-explorer.md`, `task-architect.md`, `task-explorer.md`.
 
-**Решение:** Убрать — pi не имеет этих инструментов. Агенты могут прерываться через стандартный механизм pi-subagents.
+**Solution:** Remove them — pi does not have these tools. Agents can be interrupted via the standard pi-subagents mechanism.
 
 ---
 
-## 7. Стратегия: универсальные скилы для обеих платформ
+## 7. Strategy: universal skills for both platforms
 
-### 7.1. Почему нельзя полностью унифицировать
+### 7.1. Why full unification is impossible
 
-Агенты имеют **фундаментально разные** форматы frontmatter:
+Agents have **fundamentally different** frontmatter formats:
 
 ```yaml
 # Claude Code
@@ -733,51 +733,51 @@ defaultProgress: true
 ---
 ```
 
-Нельзя положить оба формата в один файл.
+You cannot put both formats in a single file.
 
-### 7.2. Рекомендуемая стратегия: единый источник правды
+### 7.2. Recommended strategy: single source of truth
 
 ```
 yoke/
-  agents/                     # Единый источник правды — 30 файлов
-    stack-detector.md          # Тело промпта + мета-данные для генератора
+  agents/                     # Single source of truth — 30 files
+    stack-detector.md          # Prompt body + metadata for the generator
     task-executor.md
     ...
 
-  skills/                     # Универсальные SKILL.md — 12 файлов
+  skills/                     # Universal SKILL.md — 12 files
     task/SKILL.md              # Dual-instructions (CC + Pi)
     plan/SKILL.md
     ...
-    task/reference/             # Референсы (общие)
+    task/reference/             # References (shared)
       elements-of-style-rules.md
       ...
 
   scripts/
-    build-agents.ts            # Генератор: agents/* → agents-cc/* + agents-pi/*
+    build-agents.ts            # Generator: agents/* → agents-cc/* + agents-pi/*
 
   lib/
-    notify.sh                  # CC уведомления
+    notify.sh                  # CC notifications
 
   hooks/
     hooks.json                 # CC hooks
 
-  .pi/agents/                  # ← Генерируется: Pi-формат
-  skills/*/agents/             # ← Генерируется: CC-формат
+  .pi/agents/                  # ← Generated: Pi format
+  skills/*/agents/             # ← Generated: CC format
 
-  .pi/settings.json            # Pi-конфигурация пакетов
+  .pi/settings.json            # Pi package configuration
 ```
 
-### 7.3. Формат единого агента
+### 7.3. Unified agent format
 
 ````yaml
 # agents/stack-detector.md
 
 ---
-# CC frontmatter (генерируется в skills/*/agents/stack-detector.md)
+# CC frontmatter (generated into skills/*/agents/stack-detector.md)
 # cc-tools: Bash, Glob, Read
 # cc-model: haiku
 
-# Pi frontmatter (генерируется в .pi/agents/stack-detector.md)
+# Pi frontmatter (generated into .pi/agents/stack-detector.md)
 # pi-tools: bash, find, read, ls
 # pi-model: anthropic/claude-haiku-4-5
 # pi-systemPromptMode: replace
@@ -822,7 +822,7 @@ BUILD_TOOLS:
 
 ````
 
-### 7.4. Universal SKILL.md шаблон
+### 7.4. Universal SKILL.md template
 
 ```markdown
 ---
@@ -867,15 +867,15 @@ Delegate investigation tasks:
 ...
 ````
 
-### 7.5. Скрипт build-agents.ts
+### 7.5. The build-agents.ts script
 
 ```typescript
 // scripts/build-agents.ts
-// Читает yoke/agents/*.md
-// Для каждого файла:
-//   1. Извлекает CC/Pi мета-данные из комментариев
-//   2. Генерирует CC-формат → skills/<parent>/agents/<name>.md
-//   3. Генерирует Pi-формат → .pi/agents/<name>.md
+// Reads yoke/agents/*.md
+// For each file:
+//   1. Extracts CC/Pi metadata from comments
+//   2. Generates the CC format → skills/<parent>/agents/<name>.md
+//   3. Generates the Pi format → .pi/agents/<name>.md
 
 import * as fs from "fs";
 import * as path from "path";
@@ -884,7 +884,7 @@ const AGENTS_DIR = "agents";
 const PI_AGENTS_DIR = ".pi/agents";
 const CC_SKILLS_DIR = "skills";
 
-// Маппинг: имя агента → родительский скилл
+// Mapping: agent name → parent skill
 const AGENT_TO_SKILL: Record<string, string> = {
   "stack-detector": "bootstrap",
   "architecture-mapper": "bootstrap",
@@ -893,7 +893,7 @@ const AGENT_TO_SKILL: Record<string, string> = {
   // ...
 };
 
-// Маппинг: CC tool name → Pi tool name
+// Mapping: CC tool name → Pi tool name
 const CC_TO_PI_TOOLS: Record<string, string> = {
   Read: "read",
   Write: "write",
@@ -910,7 +910,7 @@ const CC_TO_PI_TOOLS: Record<string, string> = {
   BashOutput: "",
 };
 
-// Маппинг: CC model name → Pi model name
+// Mapping: CC model name → Pi model name
 const CC_TO_PI_MODEL: Record<string, string> = {
   opus: "anthropic/claude-opus-4",
   sonnet: "anthropic/claude-sonnet-4",
@@ -933,9 +933,9 @@ interface AgentMeta {
 }
 
 function parseAgent(content: string, filename: string): AgentMeta {
-  // Извлечь frontmatter и тело
-  // Извлечь CC/Pi мета из комментариев
-  // Сформировать AgentMeta
+  // Extract the frontmatter and body
+  // Extract CC/Pi metadata from comments
+  // Build AgentMeta
   // ...
 }
 
@@ -977,7 +977,7 @@ for (const file of agents) {
   const content = fs.readFileSync(path.join(AGENTS_DIR, file), "utf-8");
   const agent = parseAgent(content, file);
 
-  // Генерировать CC
+  // Generate CC
   const skill = AGENT_TO_SKILL[agent.name];
   if (skill) {
     const ccDir = path.join(CC_SKILLS_DIR, skill, "agents");
@@ -985,7 +985,7 @@ for (const file of agents) {
     fs.writeFileSync(path.join(ccDir, file), generateCC(agent));
   }
 
-  // Генерировать Pi
+  // Generate Pi
   fs.mkdirSync(PI_AGENTS_DIR, { recursive: true });
   fs.writeFileSync(path.join(PI_AGENTS_DIR, file), generatePi(agent));
 }
@@ -993,11 +993,11 @@ for (const file of agents) {
 
 ---
 
-## 8. План реализации
+## 8. Implementation plan
 
-### Фаза 1: Инфраструктура (1-2 дня)
+### Phase 1: Infrastructure (1-2 days)
 
-1. Установить плагины:
+1. Install the plugins:
 
    ```bash
    pi install npm:pi-subagents
@@ -1005,7 +1005,7 @@ for (const file of agents) {
    pi install npm:pi-intercom
    ```
 
-2. Создать `.pi/settings.json` с конфигурацией:
+2. Create `.pi/settings.json` with the configuration:
 
    ```json
    {
@@ -1016,65 +1016,65 @@ for (const file of agents) {
    }
    ```
 
-3. Создать `.pi/agents/` директорию.
+3. Create the `.pi/agents/` directory.
 
-4. Написать `scripts/build-agents.ts` — генератор CC/Pi форматов из единого источника.
+4. Write `scripts/build-agents.ts` — the generator of CC/Pi formats from a single source.
 
-### Фаза 2: Простые скилы (1-2 дня)
+### Phase 2: Simple skills (1-2 days)
 
-Адаптировать в порядке сложности:
+Adapt in order of complexity:
 
-1. **hi** — обновить префиксы команд
-2. **gca** — `AskUserQuestion` → `ask_user()`, `$ARGUMENTS` → инструкция
-3. **gst** — `Agent tool` → `subagent()`, 1 агент
+1. **hi** — update command prefixes
+2. **gca** — `AskUserQuestion` → `ask_user()`, `$ARGUMENTS` → instruction
+3. **gst** — `Agent tool` → `subagent()`, 1 agent
 
-### Фаза 3: Средние скилы (2-3 дня)
+### Phase 3: Medium skills (2-3 days)
 
-4. **explore** — 2 агента, `AskUserQuestion`, `$ARGUMENTS`
-5. **gp** — 2 агента, `CLAUDE_PLUGIN_ROOT`
-6. **pr** — 2 агента, `AskUserQuestion`, `$ARGUMENTS`
-7. **task** — 2 агента, убрать CC-специфичные tools
+4. **explore** — 2 agents, `AskUserQuestion`, `$ARGUMENTS`
+5. **gp** — 2 agents, `CLAUDE_PLUGIN_ROOT`
+6. **pr** — 2 agents, `AskUserQuestion`, `$ARGUMENTS`
+7. **task** — 2 agents, remove CC-specific tools
 
-### Фаза 4: Сложные скилы (3-5 дней)
+### Phase 4: Complex skills (3-5 days)
 
-8. **plan** — 3 агента, цепочка, шаблоны
-9. **bootstrap** — 10 агентов, параллельный dispatch, `.claude/` → `.pi/`
-10. **do** — 8 агентов, цепочки, review loop
-11. **fix** — 6 агентов (cross-skill ссылки), `ask_user()`, эскалация
-12. **review** — 6 агентов, параллельные fix-агенты
+8. **plan** — 3 agents, chain, templates
+9. **bootstrap** — 10 agents, parallel dispatch, `.claude/` → `.pi/`
+10. **do** — 8 agents, chains, review loop
+11. **fix** — 6 agents (cross-skill references), `ask_user()`, escalation
+12. **review** — 6 agents, parallel fix agents
 
-### Фаза 5: Инфраструктурные (1-2 дня)
+### Phase 5: Infrastructure (1-2 days)
 
-13. Написать `pi-yoke-notify` extension (~50 строк)
-14. Адаптировать `bootstrap` для `.pi/`
-15. Тестирование на обоих платформах
+13. Write the `pi-yoke-notify` extension (~50 lines)
+14. Adapt `bootstrap` for `.pi/`
+15. Test on both platforms
 
-**Итого: ~8-14 дней**
+**Total: ~8-14 days**
 
 ---
 
-## 9. Список файлов к изменению
+## 9. List of files to change
 
-### SKILL.md (12 файлов — переписать с dual-instructions)
+### SKILL.md (12 files — rewrite with dual-instructions)
 
-| Файл                        | Сложность | Ключевые изменения                                     |
-| --------------------------- | --------- | ------------------------------------------------------ |
-| `skills/hi/SKILL.md`        | 🟢        | Обновить префиксы команд                               |
-| `skills/gca/SKILL.md`       | 🟡        | `AskUserQuestion` → `ask_user()`, `$ARGUMENTS`         |
-| `skills/gst/SKILL.md`       | 🟡        | `Agent tool` → `subagent()`                            |
-| `skills/explore/SKILL.md`   | 🟡        | `Agent`, `AskUserQuestion`, `$ARGUMENTS`               |
-| `skills/gp/SKILL.md`        | 🟡        | `Agent`, `CLAUDE_PLUGIN_ROOT`                          |
-| `skills/pr/SKILL.md`        | 🟡        | `Agent`, `AskUserQuestion`                             |
-| `skills/task/SKILL.md`      | 🟡        | `Agent`, убрать CC tools                               |
-| `skills/plan/SKILL.md`      | 🔴        | `Agent` chain, шаблоны, CC tools                       |
-| `skills/bootstrap/SKILL.md` | 🔴        | Параллельный dispatch, `{{PLACEHOLDER}}`, `.claude/`   |
-| `skills/do/SKILL.md`        | 🔴        | Chain, review loop, `CLAUDE_PLUGIN_ROOT`, `TodoWrite`  |
-| `skills/fix/SKILL.md`       | 🔴        | Cross-skill агенты, `ask_user()`, модель-маршрутизация |
-| `skills/review/SKILL.md`    | 🔴        | Параллельные fix, cross-skill ссылки                   |
+| File                        | Complexity | Key changes                                           |
+| --------------------------- | ---------- | ----------------------------------------------------- |
+| `skills/hi/SKILL.md`        | 🟢         | Update command prefixes                               |
+| `skills/gca/SKILL.md`       | 🟡         | `AskUserQuestion` → `ask_user()`, `$ARGUMENTS`        |
+| `skills/gst/SKILL.md`       | 🟡         | `Agent tool` → `subagent()`                           |
+| `skills/explore/SKILL.md`   | 🟡         | `Agent`, `AskUserQuestion`, `$ARGUMENTS`              |
+| `skills/gp/SKILL.md`        | 🟡         | `Agent`, `CLAUDE_PLUGIN_ROOT`                         |
+| `skills/pr/SKILL.md`        | 🟡         | `Agent`, `AskUserQuestion`                            |
+| `skills/task/SKILL.md`      | 🟡         | `Agent`, remove CC tools                              |
+| `skills/plan/SKILL.md`      | 🔴         | `Agent` chain, templates, CC tools                    |
+| `skills/bootstrap/SKILL.md` | 🔴         | Parallel dispatch, `{{PLACEHOLDER}}`, `.claude/`      |
+| `skills/do/SKILL.md`        | 🔴         | Chain, review loop, `CLAUDE_PLUGIN_ROOT`, `TodoWrite` |
+| `skills/fix/SKILL.md`       | 🔴         | Cross-skill agents, `ask_user()`, model routing       |
+| `skills/review/SKILL.md`    | 🔴         | Parallel fix, cross-skill references                  |
 
-### Агенты (30 файлов — адаптировать frontmatter + содержимое)
+### Agents (30 files — adapt frontmatter + content)
 
-| Агент                   | CC tools убрать                                       | CC tools → Pi tools                                                       | CC model → Pi model              |
+| Agent                   | Remove CC tools                                       | CC tools → Pi tools                                                       | CC model → Pi model              |
 | ----------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------- |
 | stack-detector          | —                                                     | Bash→bash, Glob→find, Read→read                                           | haiku→anthropic/claude-haiku-4-5 |
 | architecture-mapper     | —                                                     | Glob→find, Grep→grep, Read→read, Bash→bash                                | sonnet→anthropic/claude-sonnet-4 |
@@ -1114,25 +1114,25 @@ for (const file of agents) {
 | task-explorer           | KillShell, BashOutput, WebSearch, WebFetch, TodoWrite | Glob→find, Grep→grep, LS→ls, Read→read                                    | sonnet→anthropic/claude-sonnet-4 |
 | task-architect          | KillShell, BashOutput, WebSearch, WebFetch, TodoWrite | Glob→find, Grep→grep, LS→ls, Read→read                                    | opus→anthropic/claude-opus-4     |
 
-### Инфраструктурные файлы
+### Infrastructure files
 
-| Файл                      | Действие                                |
-| ------------------------- | --------------------------------------- |
-| `.pi/settings.json`       | Создать — конфигурация пакетов и скилов |
-| `.pi/agents/*.md`         | Создать — 30 Pi-агентов (генерируется)  |
-| `scripts/build-agents.ts` | Создать — генератор CC/Pi форматов      |
-| `package.json`            | Обновить — добавить build-скрипты       |
-| `pi-yoke-notify.ts`       | Создать — pi extension для уведомлений  |
-| `skills/*/agents/*.md`    | Обновить — CC-агенты (генерируется)     |
+| File                      | Action                                   |
+| ------------------------- | ---------------------------------------- |
+| `.pi/settings.json`       | Create — package and skill configuration |
+| `.pi/agents/*.md`         | Create — 30 Pi agents (generated)        |
+| `scripts/build-agents.ts` | Create — generator of CC/Pi formats      |
+| `package.json`            | Update — add build scripts               |
+| `pi-yoke-notify.ts`       | Create — pi extension for notifications  |
+| `skills/*/agents/*.md`    | Update — CC agents (generated)           |
 
 ---
 
-## Приложение A: Полный маппинг frontmatter агентов
+## Appendix A: Full agent frontmatter mapping
 
-### Все 37 агентов (включая cross-skill ссылки)
+### All 37 agents (including cross-skill references)
 
 ```
-Агент                  | CC tools                                    | CC model | Pi tools ( proposed)                    | Pi model
+Agent                  | CC tools                                    | CC model | Pi tools ( proposed)                    | Pi model
 -----------------------|---------------------------------------------|----------|----------------------------------------|----
 stack-detector          | Bash, Glob, Read                            | haiku    | bash, find, read, ls                   | anthropic/claude-haiku-4-5
 architecture-mapper    | Glob, Grep, Read, Bash                      | sonnet   | find, grep, read, bash, ls             | anthropic/claude-sonnet-4
@@ -1173,19 +1173,19 @@ task-explorer          | Glob, Grep, LS, Read, NotebookRead, WebFetch, TodoWrite
 task-architect         | Glob, Grep, LS, Read, NotebookRead, WebFetch, TodoWrite, WebSearch, KillShell, BashOutput | opus | find, grep, ls, read            | anthropic/claude-opus-4
 ```
 
-## Приложение B: Полный каталог плагинов pi
+## Appendix B: Full catalog of pi plugins
 
-| Пакет                      | Версия | Назначение                                                                  | Обязательность    |
-| -------------------------- | ------ | --------------------------------------------------------------------------- | ----------------- |
-| `pi-subagents`             | 0.19.3 | Суб-агенты, цепочки, параллельный dispatch, fork-контекст, модель на агента | **Обязательный**  |
-| `pi-ask-user`              | 0.6.1  | Интерактивный Q&A (замена AskUserQuestion)                                  | **Обязательный**  |
-| `pi-intercom`              | 0.2.1  | Координация оркестратор ↔ агент, уведомления                                | **Рекомендуемый** |
-| `pi-web-access`            | latest | WebSearch, WebFetch (замена CC инструментов)                                | Опциональный      |
-| `pi-docparser`             | latest | PDF/Office парсинг (замена NotebookRead)                                    | Опциональный      |
-| `pi-lens`                  | 3.8.33 | LSP/линтер в риалтайм (замена ручных проверок)                              | Опциональный      |
-| `pi-prompt-template-model` | latest | Переиспользуемые промпт-шаблоны                                             | Опциональный      |
+| Package                    | Version | Purpose                                                              | Requirement     |
+| -------------------------- | ------- | -------------------------------------------------------------------- | --------------- |
+| `pi-subagents`             | 0.19.3  | Sub-agents, chains, parallel dispatch, fork context, per-agent model | **Required**    |
+| `pi-ask-user`              | 0.6.1   | Interactive Q&A (replacement for AskUserQuestion)                    | **Required**    |
+| `pi-intercom`              | 0.2.1   | Orchestrator ↔ agent coordination, notifications                     | **Recommended** |
+| `pi-web-access`            | latest  | WebSearch, WebFetch (replacement for CC tools)                       | Optional        |
+| `pi-docparser`             | latest  | PDF/Office parsing (replacement for NotebookRead)                    | Optional        |
+| `pi-lens`                  | 3.8.33  | Real-time LSP/linter (replacement for manual checks)                 | Optional        |
+| `pi-prompt-template-model` | latest  | Reusable prompt templates                                            | Optional        |
 
-## Приложение C: Pi-subagents agent frontmatter reference
+## Appendix C: Pi-subagents agent frontmatter reference
 
 ```yaml
 ---
@@ -1211,7 +1211,7 @@ extensions: # Empty = no extensions
 System prompt body...
 ```
 
-## Приложение D: Pi-ask-user tool parameters
+## Appendix D: Pi-ask-user tool parameters
 
 ```json
 {

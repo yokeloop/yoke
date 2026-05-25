@@ -42,6 +42,18 @@ PRDs and tracer-bullet issues are written to be AFK-ready, so publish them with 
    `gh label create ready-for-agent --description "Fully specified, ready for an AFK agent" --color 0E8A16`
 4. If label creation is declined or fails, publish without the label and note it to the user.
 
+## Issue types
+
+GitHub issue **types** (`Bug`, `Feature`, `Task`, or org-defined ones) are a field separate from labels and render distinctly in the UI. Organizations define them; personal repos and orgs without them configured have none. The `gh` CLI exposes no flag for types (through 2.92), so set them through the REST API.
+
+Set the type as a best-effort step _after_ the issue exists — never as a create-time flag — so the issue always lands even when typing fails:
+
+```bash
+gh api --method PATCH "/repos/{owner}/{repo}/issues/<number>" -f type="Feature"
+```
+
+`gh` fills `{owner}`/`{repo}` from the current repo; take `<number>` from the trailing segment of the URL that `gh issue create` prints. If the call errors (the account has no issue types, the type name is undefined, or the token lacks permission), leave the issue untyped and tell the user the type wasn't set and why. Do not substitute a label — the type and labels are independent.
+
 ## Semantics
 
 - "Publish to the issue tracker" → create a GitHub issue.

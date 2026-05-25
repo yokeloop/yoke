@@ -10,13 +10,13 @@ description: >-
 
 # PRD
 
-Take the current conversation context and codebase understanding and produce a PRD. Do NOT interview the user — synthesize what you already know.
+Turn the current conversation and codebase understanding into a PRD. Do NOT interview the user — synthesize what you already know.
 
 ## Process
 
-1. **Explore the repo** to understand the current state of the codebase, if you haven't already. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `CONTEXT.md` / `CONTEXT-MAP.md` and the relevant `docs/adr/`, use the glossary's vocabulary throughout the PRD, and flag any ADR the PRD contradicts.
+1. **Explore the repo** to understand the codebase, if you haven't already. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `CONTEXT.md` / `CONTEXT-MAP.md` and the relevant `docs/adr/`, use the glossary's vocabulary throughout the PRD, and flag any ADR the PRD contradicts.
 
-2. **Sketch the major modules** you will need to build or modify. Actively look for opportunities to extract deep modules that can be tested in isolation. A deep module (as opposed to a shallow one) encapsulates a lot of functionality behind a simple, testable interface that rarely changes. Briefly confirm the module breakdown with the user and which modules they want tested — a quick check, not a requirements interview.
+2. **Sketch the major modules** you'll build or modify. Look for deep modules to extract that can be tested in isolation. A deep module (as opposed to a shallow one) encapsulates substantial functionality behind a simple, testable interface that rarely changes. Briefly confirm the module breakdown with the user and which modules they want tested — a quick check, not a requirements interview.
 
 3. **Write the PRD** using the template below.
 
@@ -28,7 +28,7 @@ Take the current conversation context and codebase understanding and produce a P
    gh issue create --title "<PRD title>" --body-file docs/ai/<slug>/<slug>-prd.md
    ```
 
-   Apply the `ready-for-agent` label per the reference (create it if the repo lacks it, unless the user objects), then print the issue URL.
+   Apply the `ready-for-agent` label per the reference (create it if the repo lacks it, unless the user objects). Then set the issue's type to `Feature` per the reference's "Issue types" section — a best-effort API call after creation; if the repo has no issue types, leave it untyped and warn rather than failing. Finally, print the issue URL.
 
    If `gh` is not authenticated or there is no GitHub remote, keep the local copy only and tell the user where it is.
 
@@ -36,7 +36,7 @@ Take the current conversation context and codebase understanding and produce a P
 
 ## Problem Statement
 
-The problem that the user is facing, from the user's perspective.
+The problem the user faces, from the user's perspective.
 
 ## Solution
 
@@ -44,7 +44,7 @@ The solution to the problem, from the user's perspective.
 
 ## User Stories
 
-A LONG, numbered list of user stories. Each user story should follow this format:
+A LONG, numbered list of user stories. Each follows this format:
 
 1. As an <actor>, I want a <feature>, so that <benefit>
 
@@ -52,7 +52,7 @@ A LONG, numbered list of user stories. Each user story should follow this format
 1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
 </user-story-example>
 
-This list should be extensive and cover every aspect of the feature.
+Make it extensive — cover every aspect of the feature.
 
 ## Implementation Decisions
 
@@ -76,7 +76,7 @@ A list of testing decisions. Include:
 
 - A description of what makes a good test (only test external behavior, not implementation details)
 - Which modules will be tested
-- Prior art for the tests (i.e. similar types of tests in the codebase)
+- Prior art for the tests (i.e. similar tests in the codebase)
 
 ## Out of Scope
 

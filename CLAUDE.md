@@ -82,6 +82,10 @@ claude --plugin-dir .
 - `/yoke-create` — skill factory: analysis, design, implementation, validation, integration
 - `/yoke-release` — plugin release: quality checks, version bump, tag, push, GitHub release
 
+## Local commands (development)
+
+- `/journal` — append a summary of the session's real changes to `journal.md` (repo root). Newest-first, English entries, write-only (commit separately). Not shipped to the marketplace.
+
 ## Planned skills
 
 `/polish` `/qa` `/memorize` `/merge`

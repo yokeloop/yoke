@@ -47,6 +47,8 @@ See **Full cycle** below for the complete pipeline.
 
 ## Skills
 
+<!-- yoke:skills:start -->
+
 ### /task — task definition
 
 Accepts a ticket URL or free-form description. Explores the codebase, analyzes architecture, and produces a prompt-task with context, requirements, constraints, and clarifying questions. [Details →](docs/task.md)
@@ -218,6 +220,8 @@ Help skill — explains how to use yoke, lists available skills, and the recomme
 ```
 /yoke:help
 ```
+
+<!-- yoke:skills:end -->
 
 ## Local skills (development)
 

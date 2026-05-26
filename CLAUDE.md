@@ -59,6 +59,8 @@ claude --plugin-dir .
 
 ## Implemented skills
 
+<!-- yoke:skills:start -->
+
 - `/task` — define tasks for AI implementation
 - `/plan` — build an implementation plan from a task file
 - `/do` — execute a task per the plan
@@ -76,6 +78,8 @@ claude --plugin-dir .
 - `/prd` — PRD from conversation context → GitHub issue + local copy in `docs/ai/`
 - `/issues` — break a plan/PRD into tracer-bullet GitHub issues + local index
 - `/handoff` — compact the conversation into a handoff doc for another agent (OS temp dir)
+
+<!-- yoke:skills:end -->
 
 ## Local skills (development)
 

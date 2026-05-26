@@ -93,7 +93,7 @@ claude --plugin-dir .
 ## Reference docs
 
 - `docs/notify.md` — Telegram notifications: setup, types, map of trigger points
-- `skills/issues/reference/github-issues.md` — GitHub issue tracker conventions, triage labels + issue types (used by `/prd`, `/issues`)
+- `skills/issues/reference/github-issues.md` — GitHub issue tracker conventions, triage labels, issue types + sub-issues (used by `/prd`, `/issues`)
 - `skills/grill-docs/reference/domain-docs.md` — domain-doc consumer rules for CONTEXT.md/ADRs (used by `/prd`, `/issues`)
 
 ## Formatting

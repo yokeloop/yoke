@@ -54,6 +54,25 @@ gh api --method PATCH "/repos/{owner}/{repo}/issues/<number>" -f type="Feature"
 
 `gh` fills `{owner}`/`{repo}` from the current repo; take `<number>` from the trailing segment of the URL that `gh issue create` prints. If the call errors (the account has no issue types, the type name is undefined, or the token lacks permission), leave the issue untyped and tell the user the type wasn't set and why. Do not substitute a label — the type and labels are independent.
 
+## Sub-issues
+
+GitHub **sub-issues** form a parent/child relationship between issues (e.g. a `Feature` parent grouping `Task` children) and render as a structured tree in the UI. The `gh` CLI exposes no sub-issue subcommand, so set the link through the REST API.
+
+Linking a child to a parent needs two things: the **parent's issue number** and the **child's REST id** — an integer, _not_ the issue number. Retrieve the child's id after creating it:
+
+```bash
+child_id=$(gh issue view <child_number> --json id --jq .id)
+```
+
+Then attach the child to the parent:
+
+```bash
+gh api --method POST "/repos/{owner}/{repo}/issues/<parent_number>/sub_issues" \
+  -f sub_issue_id="$child_id"
+```
+
+Treat the link as a best-effort step after the child exists. If the call errors (sub-issues unavailable on this repo plan, parent not found, missing permission), leave the child unlinked and tell the user why. The textual `## Parent` reference in the issue body remains the human-readable fallback.
+
 ## Semantics
 
 - "Publish to the issue tracker" → create a GitHub issue.

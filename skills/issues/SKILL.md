@@ -16,7 +16,7 @@ Break a plan into independently-grabbable issues using vertical slices (tracer b
 
 ### 1. Gather context
 
-Work from whatever is already in the conversation context. If the user passes an issue reference (issue number, URL, or path) as an argument, fetch it (`gh issue view <ref>` for GitHub) and read its full body and comments.
+Work from whatever is already in the conversation context. If the user passes an issue reference (issue number, URL, or path) as an argument, fetch it (`gh issue view <ref>` for GitHub) and read its full body and comments. When the path points to a PRD artifact (`<slug>-prd.md`), also extract any `**Tracking:** <URL>` line under the H1 — that URL marks the parent for sub-issue linking.
 
 ### 2. Explore the codebase (skip if already explored this session)
 
@@ -64,6 +64,8 @@ gh issue create --title "<slice title>" --body-file <slice body file>
 
 Label AFK slices `ready-for-agent` and HITL slices `ready-for-human` (per the reference; create a label if the repo lacks it, unless the user objects). Capture each returned issue number for its dependents to cite.
 
+Once each child exists, run two best-effort follow-ups per the reference: set its type to `Task` (per "Issue types"; leave it untyped and warn if unavailable), and — if a parent issue is known (from the input argument or from a `**Tracking:** <URL>` line in a PRD artifact) — link the child as a sub-issue of the parent (per "Sub-issues"; leave it unlinked and warn if unavailable). The textual `## Parent` section in the issue body remains the human-readable fallback.
+
 Build the slug as in `/yoke:prd` — an English kebab-case description, prefixed with a ticket id if one exists; reuse the parent PRD/issue's slug when the source was one, so `<slug>-prd.md` and `<slug>-issues.md` sit together. Save a local index to `docs/ai/<slug>/<slug>-issues.md` (`mkdir -p docs/ai/<slug>` first) listing every slice: title, type, blocked-by, the created issue URL, and its body.
 
 If `gh` is not authenticated or there is no GitHub remote, skip publishing, write the full breakdown to the local index, and tell the user.
@@ -73,7 +75,7 @@ Do NOT close or modify any parent issue.
 <issue-template>
 ## Parent
 
-A reference to the parent issue (if the source was an existing issue, otherwise omit this section).
+A reference to the parent issue (if there is one, otherwise omit this section).
 
 ## What to build
 

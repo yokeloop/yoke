@@ -28,7 +28,7 @@ Turn the current conversation and codebase understanding into a PRD. Do NOT inte
    gh issue create --title "<PRD title>" --body-file docs/ai/<slug>/<slug>-prd.md
    ```
 
-   Apply the `ready-for-agent` label per the reference (create it if the repo lacks it, unless the user objects). Then set the issue's type to `Feature` per the reference's "Issue types" section — a best-effort API call after creation; if the repo has no issue types, leave it untyped and warn rather than failing. Finally, print the issue URL.
+   Apply the `ready-for-agent` label per the reference (create it if the repo lacks it, unless the user objects). Then set the issue's type to `Feature` per the reference's "Issue types" section — a best-effort API call after creation; if the repo has no issue types, leave it untyped and warn rather than failing. Write the resulting issue URL into the local PRD artifact as a `**Tracking:** <URL>` line directly under the `# <title>` heading, so `/yoke:issues` can later use it as the parent for sub-issue linking; skip the write if a `**Tracking:**` line already exists. Finally, print the issue URL.
 
    If `gh` is not authenticated or there is no GitHub remote, keep the local copy only and tell the user where it is.
 

@@ -4,7 +4,7 @@ Date: 2026-05-26
 
 ## Status
 
-Accepted
+Accepted — deploy mechanism amended on 2026-05-26 (see Amendment below).
 
 ## Context
 
@@ -65,3 +65,27 @@ Follow-ups:
 
 - See [0002-sync-docs-skill.md](0002-sync-docs-skill.md) for how skill content
   flows from `SKILL.md` into the site.
+
+## Amendment — 2026-05-26: deploy via Pages-from-Actions, no `gh-pages` branch
+
+The Decision section above says "deploy the resulting `dist/` to the `gh-pages`
+branch". The implementation in `.github/workflows/docs.yml` uses Pages-from-
+Actions instead — `actions/upload-pages-artifact` + `actions/deploy-pages` —
+which publishes from a job artifact rather than a branch. No `gh-pages` branch
+is created.
+
+Reasons for the change:
+
+- Modern recommended GitHub Pages flow; `peaceiris/actions-gh-pages` is now a
+  third-party alternative rather than the default.
+- Keeps the repository's branch list free of a force-pushed build artifact.
+- The deploy job runs in the `github-pages` environment with `id-token: write`
+  for OIDC, which is harder to express with branch-based deploys.
+
+The one-time repo setting becomes Settings → Pages → Source = **GitHub
+Actions** (was: Deploy from branch: gh-pages).
+
+This amendment supersedes the third bullet of the Decision section and the
+"force-push" reference in the second Negative consequence. The rest of the
+decision (Astro Starlight, `site/` layout, sidebar grouping, Astro config
+values, GH Actions trigger) stands unchanged.

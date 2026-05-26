@@ -69,13 +69,13 @@ detection.
 
 The skill runs through 5 phases. No user interaction.
 
-| Phase | Name               | What happens                                                                                        |
-| ----- | ------------------ | --------------------------------------------------------------------------------------------------- |
-| 1     | **Preflight**      | Verify the repo (`.claude-plugin/plugin.json` exists, `skills/` is a directory); parse `--check`    |
-| 2     | **Enumerate**      | List the 17 shipped skills under `skills/` + sync-docs itself; never include `.claude/skills/*`     |
-| 3     | **Render**         | Write per-skill MDX, README block, CLAUDE.md block into `.yoke/sync-docs-tmp/`                      |
-| 4     | **Sentinel check** | Verify exactly one `start` and one `end` marker in each of `README.md` and `CLAUDE.md`; start < end |
-| 5     | **Write or diff**  | Write mode → copy tmp tree over live; check mode → diff and exit non-green on drift                 |
+| Phase | Name               | What happens                                                                                             |
+| ----- | ------------------ | -------------------------------------------------------------------------------------------------------- |
+| 1     | **Preflight**      | Verify the repo (`.claude-plugin/plugin.json` exists, `skills/` is a directory); parse `--check`         |
+| 2     | **Enumerate**      | List every directory under `skills/` (18 today, including `sync-docs`); never include `.claude/skills/*` |
+| 3     | **Render**         | Write per-skill MDX, README block, CLAUDE.md block into `.yoke/sync-docs-tmp/`                           |
+| 4     | **Sentinel check** | Verify exactly one `start` and one `end` marker in each of `README.md` and `CLAUDE.md`; start < end      |
+| 5     | **Write or diff**  | Write mode → copy tmp tree over live; check mode → diff and exit non-green on drift                      |
 
 ## Phase 1 — Preflight
 
@@ -102,10 +102,10 @@ List the shipped skills:
 ls -d skills/*/ | xargs -n1 basename
 ```
 
-Include every directory under `skills/` plus `sync-docs` itself (already
-under `skills/`). Never include anything under `.claude/skills/` —
-`yoke-create`, `yoke-release`, and `yoke-validate` are local-only tools and
-must not appear in the public catalog.
+Include every directory under `skills/` that contains a `SKILL.md`. Never
+include anything under `.claude/skills/` — `yoke-create`, `yoke-release`, and
+`yoke-validate` are local-only tools and must not appear in the public
+catalog.
 
 The shipped catalog today is 18 skills:
 `bootstrap, do, explore, fix, gca, gp, grill, grill-docs, gst, handoff, help,
@@ -241,9 +241,9 @@ When the live tree matches the tmp tree byte-for-byte → exit zero.
 
 ## Rules
 
-- Catalog membership: 17 shipped skills under `skills/` + `sync-docs` itself.
-  Never include `.claude/skills/*` skills (`yoke-create`, `yoke-release`,
-  `yoke-validate`).
+- Catalog membership: every directory under `skills/` that contains a
+  `SKILL.md` (18 today, including `sync-docs`). Never include
+  `.claude/skills/*` skills (`yoke-create`, `yoke-release`, `yoke-validate`).
 - Sentinels are required. Refuse to write when they are missing or
   unbalanced. Never auto-insert.
 - Touch only the bytes between the sentinels in `README.md` and `CLAUDE.md`.
@@ -282,7 +282,7 @@ affected files on any drift.
 ## Connections
 
 ```
-/yoke-create  → /yoke:sync-docs  (Phase 6c tail; regenerates catalog for the new skill)
+/yoke-create  → /yoke:sync-docs  (Phase 6b tail; regenerates catalog for the new skill)
 /yoke-release → /yoke:sync-docs --check  (Phase 0f gate; halts release on drift)
 ```
 ````

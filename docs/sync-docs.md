@@ -15,13 +15,13 @@ Regenerates the public skill catalog from `skills/*/SKILL.md`. One run rebuilds 
 
 The skill runs through 5 sequential phases. No user interaction.
 
-| Phase | Name               | What happens                                                                              |
-| ----- | ------------------ | ----------------------------------------------------------------------------------------- |
-| 1     | **Preflight**      | Verify the repo and parse `--check`                                                       |
-| 2     | **Enumerate**      | List the 17 shipped skills under `skills/` + `sync-docs` itself; never `.claude/skills/*` |
-| 3     | **Render**         | Write per-skill MDX, README block, CLAUDE.md block into `.yoke/sync-docs-tmp/`            |
-| 4     | **Sentinel check** | Verify one start + one end marker in each of `README.md` and `CLAUDE.md`                  |
-| 5     | **Write or diff**  | Write mode copies tmp tree over live; check mode diffs and exits non-green on drift       |
+| Phase | Name               | What happens                                                                                     |
+| ----- | ------------------ | ------------------------------------------------------------------------------------------------ |
+| 1     | **Preflight**      | Verify the repo and parse `--check`                                                              |
+| 2     | **Enumerate**      | List every directory under `skills/` (18 today, including `sync-docs`); never `.claude/skills/*` |
+| 3     | **Render**         | Write per-skill MDX, README block, CLAUDE.md block into `.yoke/sync-docs-tmp/`                   |
+| 4     | **Sentinel check** | Verify one start + one end marker in each of `README.md` and `CLAUDE.md`                         |
+| 5     | **Write or diff**  | Write mode copies tmp tree over live; check mode diffs and exits non-green on drift              |
 
 ## Output
 

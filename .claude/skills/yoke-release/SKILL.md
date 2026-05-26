@@ -190,7 +190,7 @@ Agent prompt:
 >   - ... (only missing; if everything is fine — empty list)
 > ```
 
-Wait for all 4 agents to finish. Collect the results.
+Wait for all 3 agents to finish. Collect the results.
 
 TodoWrite: mark "Quality" as done.
 

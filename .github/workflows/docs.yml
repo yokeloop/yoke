@@ -28,13 +28,14 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: false
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Bursts of pushes to main supersede each other — only the latest commit
+    # produces an artifact. Keeps queued runner time bounded.
+    concurrency:
+      group: pages-build
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
 
@@ -62,6 +63,10 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # Pages itself serialises by environment; never cancel an in-flight deploy.
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

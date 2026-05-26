@@ -11,11 +11,15 @@ title: /yoke:<name>
 description: <one-line description from SKILL.md frontmatter>
 ---
 
-import { Aside, Code } from "@astrojs/starlight/components";
-
 <!-- 1. Title is rendered by Starlight from `title:` above. -->
 
 <!-- 2. One-line description -->
+
+<!--
+  The renderer omits any `import { … }` line by default. Add an
+  import block here ONLY if a body section below uses Starlight
+  components like <Aside> or <Code>. Today no per-skill page does.
+-->
 
 <one-line description from SKILL.md frontmatter, full sentence>
 

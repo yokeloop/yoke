@@ -29,6 +29,6 @@ Example: `/yoke:plan` dispatches `plan-explorer` (sonnet) to gather codebase fac
 
 - **Skills** are the user-facing surface. One skill per workflow step.
 - **Agents** are internal. They keep the orchestrator's context small and let specialized roles use different models.
-- **Commands** are rare. yoke ships one local-only command (`/yoke:journal`) and no shipped commands today.
+- **Commands** are rare. yoke ships no plugin commands today — the `commands/` directory is empty. A local-only `/journal` command lives at `.claude/commands/journal.md` for repo-internal use and is not part of the published plugin.
 
 The plugin manifest at `.claude-plugin/plugin.json` declares the plugin; everything else is auto-discovered from `skills/`, `commands/`, and `hooks/`.

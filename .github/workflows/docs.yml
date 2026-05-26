@@ -1,8 +1,13 @@
 # Builds the docs site and deploys to GitHub Pages via Pages-from-Actions.
 #
-# `actions/configure-pages` runs with `enablement: true` so the first workflow
-# run also enables Pages on the repository (uses the `pages: write` permission
-# granted to the GITHUB_TOKEN below) — no manual Settings → Pages step required.
+# One-time setup (on a fresh repo): enable Pages with the workflow source.
+# The default GITHUB_TOKEN cannot create the Pages site itself, so do it once
+# with a personal token that has `repo` scope:
+#
+#   gh api --method POST repos/<owner>/<repo>/pages -f build_type=workflow
+#
+# (Equivalent UI path: Settings → Pages → Source = GitHub Actions.)
+#
 # Supersedes ADR 0001's branch-based deploy decision — see ADR 0001 Amendment.
 #
 # The workflow only runs on pushes that touch the site, the skill sources,
@@ -39,15 +44,15 @@ jobs:
       group: pages-build
       cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: 10
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: pnpm
 
       - name: Install dependencies
@@ -56,12 +61,9 @@ jobs:
       - name: Build site
         run: pnpm --filter site build
 
-      - uses: actions/configure-pages@v5
-        with:
-          # Auto-create the Pages site on first run; no manual repo setting needed.
-          enablement: true
+      - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site/dist
 
@@ -77,4 +79,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

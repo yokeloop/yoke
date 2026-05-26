@@ -2,3 +2,6 @@ _skills/
 docs/ai/
 node_modules/
 .claude/
+site/dist/
+site/node_modules/
+site/.astro/

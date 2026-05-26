@@ -2,3 +2,6 @@ node_modules
 .yoke
 .worktrees
 .config/wt.toml*
+site/dist/
+site/node_modules/
+site/.astro/

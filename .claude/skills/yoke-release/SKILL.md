@@ -97,13 +97,19 @@ Determine commit types by prefix (feat, fix, docs, chore, refactor, etc.). Remem
 
 If there are 0 commits → report: "No commits since the last release ($PREV_TAG). Nothing to publish." Exit.
 
+### 0f. Docs drift gate
+
+Run `/yoke:sync-docs --check`.
+
+On non-green exit → report: "Docs drift detected in <files named by sync-docs>. Run `/yoke:sync-docs`, review the diff, commit, and retry the release." Halt.
+
 TodoWrite: mark "Preflight" as done.
 
 ---
 
 ## Phase 1 — Quality Checks
 
-Run 4 agents in parallel via the Agent tool (model: sonnet, subagent_type: general-purpose). All agents are read-only — they do not modify files.
+Run 3 agents in parallel via the Agent tool (model: sonnet, subagent_type: general-purpose). All agents are read-only — they do not modify files.
 
 ### Agent 1 — Prose quality
 
@@ -161,37 +167,7 @@ Agent prompt:
 >   - ...
 > ```
 
-### Agent 3 — Freshness of README and CLAUDE.md
-
-Agent prompt:
-
-> Reconcile README.md and CLAUDE.md with the actual project contents. Work in the current directory.
->
-> Step 1: Get the list of all skills from the filesystem (`ls skills/`).
-> Step 2: Get the list of all documentation files (`ls docs/*.md`).
-> Step 3: Read README.md.
-> Step 4: Read CLAUDE.md.
->
-> Checks:
->
-> 1. **README — skills**: each skill from `skills/` must have a section in README (heading `### /<name>`).
-> 2. **README — links**: each skill section must contain `[Details →](docs/<name>.md)`, and the file `docs/<name>.md` must exist.
-> 3. **README — project structure**: the "Structure" section must contain all skill directories.
-> 4. **CLAUDE.md — Implemented skills**: the section must list all skills from `skills/`.
-> 5. **CLAUDE.md — Planned skills**: must not contain skills that are already implemented (present in `skills/`).
->
-> Return structured output:
->
-> ```
-> SKILLS_ON_DISK: <comma-separated list>
-> DOCS_ON_DISK: <comma-separated list>
-> ISSUES_COUNT: <number>
-> ISSUES:
->   - CHECK: <number> | DETAIL: <what's wrong, e.g. "skills/explore missing from README">
->   - ...
-> ```
-
-### Agent 4 — Freshness of SKILL.md instructions
+### Agent 3 — Freshness of SKILL.md instructions
 
 Agent prompt:
 

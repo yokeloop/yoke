@@ -362,35 +362,13 @@ Create `docs/<name>.md` from the template:
 <how it relates to other skills>
 ```
 
-### 6b. README.md
+### 6b. Sync docs
 
-Add a section for the new skill in README.md before `### /help`. Format:
+Run `/yoke:sync-docs` to regenerate the per-skill MDX page under `site/src/content/docs/skills/`, the catalog table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`.
 
-```markdown
-### /<name> — <short description>
+On failure → name the file sync-docs reports and halt.
 
-<2-3 sentences>. [Details →](docs/<name>.md)
-
-```
-/yoke:<name> <example>
-```
-
-**Output:** <artifact description>
-```
-
-Also update the structure tree in the "Structure" section, adding the new skill's directory.
-
-### 6c. CLAUDE.md
-
-Add an entry to the "Implemented skills" section:
-
-```
-- `/<name>` — <short description>
-```
-
-Check the "Planned skills" section — if the new skill was in planned, remove it from there.
-
-### 6d. Format
+### 6c. Format
 
 ```bash
 pnpm run format

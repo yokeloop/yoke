@@ -1,0 +1,139 @@
+---
+title: /yoke:gp
+description: Git push with checks and report.
+---
+
+Git push with checks and report.
+
+## Triggers
+
+Activates when the user writes:
+
+- `push`
+- `gp`
+- `git push`
+
+## Use it
+
+```
+/yoke:gp
+/yoke:gp --force-with-lease
+```
+
+## Inputs and outputs
+
+**Input:** `$ARGUMENTS` (optional) — push flags (`--force-with-lease`).
+
+```
+/yoke:gp
+/yoke:gp --force-with-lease
+```
+
+**Output:** —
+
+<details>
+<summary>Full instructions</summary>
+
+````markdown
+---
+name: gp
+description: >-
+  Git push with checks and report. Used when the user writes
+  "push", "gp", "git push", or after running /do and /review
+  to send changes.
+---
+
+# Git push with checks and report
+
+Push orchestrator: collect state, push, report. Runs autonomously — no confirmation prompts.
+
+## Input
+
+`$ARGUMENTS` — optional flags (`--force-with-lease`).
+
+---
+
+## Step 1 — Pre-check
+
+One call:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/gp-precheck.sh
+```
+
+Parse the structured block. Single-value fields are `KEY: value`; list fields (`UNCOMMITTED_LIST`) span from the line after `KEY:` to the next top-level `KEY:`.
+
+---
+
+## Step 2 — Decide
+
+Blocking (report and stop):
+
+- `ERRORS` contains `detached HEAD` → "Checkout a branch before push".
+- `ERRORS` contains `no remote` → "Add a remote: `git remote add origin <url>`".
+- `UNPUSHED_COMMITS = 0` and `HAS_UPSTREAM = true` → "Nothing to push" (if `UNCOMMITTED_FILES > 0`, add: commit first with `/yoke:gca`).
+
+Non-blocking:
+
+- `GH_AUTH != ok` → push still proceeds; only PR/URL info is skipped in the report.
+- `UNCOMMITTED_FILES > 0` → never blocks. `git push` sends only commits; note them in the report.
+
+PUSH_MODE:
+
+- `HAS_UPSTREAM = false` → `set-upstream`
+- `$ARGUMENTS` contains `--force-with-lease` → `force-with-lease`
+- otherwise → `normal`
+
+---
+
+## Step 3 — Push
+
+One call:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/gp-push.sh "<BRANCH>" "<PUSH_MODE>"
+```
+
+If `PUSH_STATUS = FAILED` → show `PUSH_ERROR`. If it contains "non-fast-forward" → suggest `git pull --rebase` or `/yoke:gp --force-with-lease`. Stop.
+
+---
+
+## Step 4 — Report
+
+Fill from the `gp-push.sh` block; `Commits:` ← `PUSHED_LIST`:
+
+```
+Pushed to origin/<BRANCH>: +<PUSHED_COMMITS> commits
+
+Commits:
+  <PUSHED_LIST>
+
+Stats: <DIFF_STAT>
+Link: <BRANCH_URL>
+```
+
+- Omit the `Link:` line when `BRANCH_URL = empty`.
+- `PR_EXISTS = true` → add `PR: <PR_TITLE> (<PR_URL>)` and suggest `/yoke:pr` to update it.
+- `PR_EXISTS = false` → suggest `/yoke:pr` to create one.
+- `UNCOMMITTED_FILES` (carried from Step 1) `> 0` → add `Uncommitted (not pushed): <N> files`.
+
+Print the report and the suggestion — do not ask a follow-up question.
+
+---
+
+## Rules
+
+- Runs autonomously: no confirmation prompts.
+- Remote: `origin`. When multiple remotes exist — push to origin.
+- `gh` is optional; its absence only removes PR/URL info, never blocks the push.
+- The only mutation is `git push` (inside `lib/gp-push.sh`).
+- Output limit: max 20 commits.
+````
+
+</details>
+
+{/* Footer */}
+
+## Source
+
+[View `SKILL.md` on GitHub →](https://github.com/yokeloop/yoke/blob/main/skills/gp/SKILL.md)

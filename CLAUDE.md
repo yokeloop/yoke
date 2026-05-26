@@ -61,23 +61,24 @@ claude --plugin-dir .
 
 <!-- yoke:skills:start -->
 
-- `/task` — define tasks for AI implementation
-- `/plan` — build an implementation plan from a task file
-- `/do` — execute a task per the plan
-- `/review` — prepare a code review report
-- `/gca` — git commit with smart grouping and a unified commit convention
-- `/gp` — git push with checks and a report
-- `/pr` — create and update GitHub pull requests
-- `/gst` — development status: branch, changes, diff, hot files
-- `/fix` — quick fix or follow-up (1–3 files, opus on code phases)
-- `/help` — how to use yoke and overview of available skills
-- `/explore` — codebase exploration: read-only Q&A loop with a summary chain
-- `/bootstrap` — prepare a project for yoke flow: stack detection, CLAUDE.md generation, `.claude/yoke-context.md` creation
-- `/grill` — interactive plan grilling: decision-tree interview via AskUserQuestion (read-only)
-- `/grill-docs` — grilling plus inline CONTEXT.md glossary and ADR maintenance
-- `/prd` — PRD from conversation context → GitHub issue + local copy in `docs/ai/`
-- `/issues` — break a plan/PRD into tracer-bullet GitHub issues + local index
-- `/handoff` — compact the conversation into a handoff doc for another agent (OS temp dir)
+- `/bootstrap` — Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md and yoke-context.md.
+- `/do` — Executes a task per plan.
+- `/explore` — Codebase exploration and brainstorming.
+- `/fix` — Quick fix or follow-up change.
+- `/gca` — Git staging and commit with smart file grouping.
+- `/gp` — Git push with checks and report.
+- `/grill` — Interviews the user one interactive question at a time about a plan or design, walking each branch of the decision tree to a shared understanding; every question offers a recommended answer.
+- `/grill-docs` — Docs-aware grilling: interrogates the user's plan one question at a time AND maintains the domain glossary (CONTEXT.md) and architecture decision records (docs/adr/) inline as decisions crystallise.
+- `/gst` — Shows development status in the repository: branch, uncommitted changes, recent commits, diff vs main, hot files, semantic summary.
+- `/handoff` — Compacts the current conversation into a handoff document so a fresh agent can continue the work, referencing existing artifacts instead of duplicating them.
+- `/help` — Explains how to use yoke and lists the available skills; also greets new users.
+- `/issues` — Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in docs/ai.
+- `/plan` — Builds an implementation plan from a task file.
+- `/pr` — Creates or updates a GitHub Pull Request.
+- `/prd` — Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in docs/ai.
+- `/review` — Finds problems in code, fixes them and produces a report.
+- `/sync-docs` — Regenerates the public skill catalog from `skills/*/SKILL.md` — per-skill MDX pages under `site/src/content/docs/skills/`, the table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`.
+- `/task` — Drafts a task file for AI implementation.
 
 <!-- yoke:skills:end -->
 

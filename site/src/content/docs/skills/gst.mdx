@@ -1,0 +1,129 @@
+---
+title: /yoke:gst
+description: Shows development status in the repository: branch, uncommitted changes, recent commits, diff vs main, hot files, semantic summary.
+---
+
+Shows development status in the repository: branch, uncommitted changes, recent commits, diff vs main, hot files, semantic summary.
+
+## Triggers
+
+Activates when the user writes:
+
+- `status`
+- `gst`
+- `git status`
+- `what's going on`
+- `repo state`
+- `show changes`
+
+## Use it
+
+```
+/yoke:gst
+```
+
+## Inputs and outputs
+
+**Input:** Fires automatically on prompts like: "status", "gst", "git status", "what's going on",
+"repo state", "show changes". No parameters.
+
+```
+/yoke:gst
+```
+
+**Output:** —
+
+<details>
+<summary>Full instructions</summary>
+
+````markdown
+---
+name: gst
+description: >-
+  Shows development status in the repository: branch, uncommitted changes,
+  recent commits, diff vs main, hot files, semantic summary.
+  Used when a developer writes "status", "gst", "git status",
+  "what's going on", "repo state", "show changes".
+---
+
+# Development status
+
+Status orchestrator: collect repository state, format a report, write a short summary. Read-only, no agent.
+
+## Step 1 — Collect
+
+One call:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/gst-collect.sh
+```
+
+Parse the structured block. A top-level field is a line matching `^[A-Z_]+:` at column 0; its value is inline (`KEY: value`) or, for list fields (`CHANGED_FILES`, `HOT_FILES`, `COMMITS`, `STASH`, `CONFLICTS`), the indented lines that follow until the next top-level field. Each `COMMITS` line is `hash|subject|relative-time|author`.
+
+## Step 2 — Format
+
+Build the report from this template; skip every empty section:
+
+```
+Branch: <BRANCH> [ahead <AHEAD>, behind <BEHIND> <UPSTREAM>]
+
+Changes: <SHORTSTAT>
+   staged: <STAGED>  unstaged: <UNSTAGED>  untracked: <UNTRACKED>
+
+Changed files (vs <DEFAULT_BRANCH>):
+   <directory>/
+     <status> <file> (+N -M)
+
+Hot files:
+   1. <path> — +N -M
+   ...
+
+Commits (from <DEFAULT_BRANCH>): +<COMMITS_COUNT> commits
+   <hash> <subject> — <relative-time>
+   ...
+
+Stash: <STASH_COUNT> entries
+
+Summary: <2-3 sentences>
+```
+
+Rules:
+
+- Group `CHANGED_FILES` by directory, not alphabetically.
+- Relative times come straight from the 3rd `COMMITS` field; never print absolute dates.
+- Skip empty sections (no stash, no hot files, no changes → hide them).
+- File status: `M` modified, `A` added, `D` deleted (renames appear as `D` + `A`).
+- Plain text, no emoji.
+
+## Step 3 — Summary
+
+Write 2-3 sentences on the outcome ("added JWT-based authentication"), not the file list. Base them on `COMMITS` and `CHANGED_FILES`.
+
+## Edge cases
+
+Exclusive states — check in order, first match wins:
+
+1. `EMPTY_REPO = true` → `New repository. Untracked files: <UNTRACKED>`. Nothing else to show.
+2. `DETACHED = true` → header `Branch: detached at <BRANCH>`, then the rest of the report.
+3. `CONFLICTS` non-empty → lead with `MERGE CONFLICTS:` and the file list, then the normal report.
+4. `ON_DEFAULT_BRANCH = true` or `MERGE_BASE = NONE` → no diff vs default; show `Recent commits:` from `COMMITS`; skip "Changed files" and "Hot files".
+
+Modifiers — apply independently:
+
+- `HAS_UPSTREAM = false` → header `Branch: <BRANCH> (no upstream)`; omit ahead/behind.
+- No changes (`STAGED`, `UNSTAGED`, `UNTRACKED` all 0) → skip Changes, Changed files, Hot files.
+
+## Rules
+
+- The script runs only read-only git commands.
+- No agent — format inline in this turn.
+- Limits: max 20 commits, max 50 file lines, max 10 stash entries.
+````
+
+</details>
+
+{/* Footer */}
+
+## Source
+
+[View `SKILL.md` on GitHub →](https://github.com/yokeloop/yoke/blob/main/skills/gst/SKILL.md)

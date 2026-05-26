@@ -1,0 +1,161 @@
+---
+title: /yoke:pr
+description: Creates or updates a GitHub Pull Request.
+---
+
+Creates or updates a GitHub Pull Request.
+
+## Triggers
+
+Activates when the user writes:
+
+- `pr`
+- `pull request`
+- `create pr`
+- `update pr`
+- `open pr`
+
+## Use it
+
+```
+/yoke:pr
+/yoke:pr --draft
+/yoke:pr --base develop
+```
+
+## Inputs and outputs
+
+**Input:** `$ARGUMENTS` (optional) — flags: `--draft`, `--base <branch>`.
+
+```
+/yoke:pr
+/yoke:pr --draft
+/yoke:pr --base develop
+```
+
+**Output:** —
+
+<details>
+<summary>Full instructions</summary>
+
+````markdown
+---
+name: pr
+description: Creates or updates a GitHub Pull Request. Activated on "pr", "pull request", "create pr", "update pr", "open pr", or after /gp.
+---
+
+# Creating and updating Pull Requests
+
+Orchestrator: collect data, generate the body, create or update the PR. Runs autonomously — no confirmation prompts.
+
+## Input
+
+`$ARGUMENTS` — optional flags (`--draft`, `--base <branch>`).
+
+---
+
+## Step 1 — Collect
+
+One call (returns small fields and file **paths**, not contents):
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/pr-collect.sh
+```
+
+Parse the structured block. Single-value fields are `KEY: value`; list fields (`COMMITS`, `AVAILABLE_LABELS`) span from the line after `KEY:` to the next top-level `KEY:`.
+
+---
+
+## Step 2 — Decide
+
+Blocking errors (from `ERRORS`) — report and stop:
+
+- `gh: not_installed` → "Install gh CLI: https://cli.github.com"
+- `gh: not_authenticated` → "Authenticate: `gh auth login`"
+- `on default branch` → "PR from the default branch is not possible"
+- `no commits` → "No commits. Push first: `/yoke:gp`"
+
+Decisions:
+
+- **MODE** — `PR_EXISTS = true` → `UPDATE`; otherwise `CREATE`.
+- **DATA_SOURCE** — `REVIEW_FILE` ≠ `NOT_FOUND` → `yoke_full`; `REVIEW_FILE` = `NOT_FOUND` and `REPORT_FILE` ≠ `NOT_FOUND` → `yoke_partial`; neither → `fallback`.
+- **IS_DRAFT** (CREATE only) — `true` if `$ARGUMENTS` contains `--draft`, else `false`. Do not ask.
+- **BASE_BRANCH** — `--base <branch>` from `$ARGUMENTS`, else `DEFAULT_BRANCH`.
+
+---
+
+## Step 3 — Generate body
+
+Run `pr-body-generator` (Sonnet) via the Agent tool:
+
+- Agent: `${CLAUDE_PLUGIN_ROOT}/skills/pr/agents/pr-body-generator.md`
+- Pass: `DATA_SOURCE`, `MODE`, `TICKET_ID`, `REVIEW_FILE`, `REPORT_FILE`, `PR_TEMPLATE`, `PR_BODY_FILE`, `PR_HAS_YOKE_MARKERS`, `COMMITS`, `DIFF_STAT`
+
+The agent reads the artifact files itself (by path) and returns ready markdown. Large content never enters the orchestrator.
+
+---
+
+## Step 4 — Execute
+
+Write the returned markdown to a temp file (e.g. `/tmp/yoke-pr-body.md`) and use `--body-file` to avoid shell-escaping issues.
+
+**Title** — `<TICKET_ID> <subject of the first commit in COMMITS>` (omit ticket if `none`; derive it from data the orchestrator already has, not from the generated body). On `UPDATE`, keep the existing title and leave the draft state unchanged.
+
+**CREATE:**
+
+```bash
+gh pr create --title "$TITLE" --body-file /tmp/yoke-pr-body.md --base "$BASE_BRANCH" [--draft]
+```
+
+**UPDATE:**
+
+```bash
+gh pr edit "$PR_NUMBER" --body-file /tmp/yoke-pr-body.md
+```
+
+**Labels** — map `COMMIT_TYPES` → labels, add only those present in `AVAILABLE_LABELS`:
+
+```bash
+gh pr edit <NUMBER> --add-label "<label>"
+```
+
+**Notify** (final artifact of the cycle):
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill pr --phase Complete --slug "$TICKET_ID" --title "PR $MODE" --body "$PR_URL"
+```
+
+**Print:**
+
+```
+PR <created|updated>: <URL>
+  Title: <title>
+  Labels: <labels>
+  Ticket: <TICKET_ID>
+  Source: <DATA_SOURCE>
+```
+
+Do not ask a follow-up question.
+
+---
+
+## Rules
+
+- Runs autonomously: no confirmation prompts.
+- Delegate body synthesis to `pr-body-generator` (Sonnet); it reads artifact files itself, so large content never enters the orchestrator.
+- Wrap the PR body in `<!-- yoke:start/end -->` markers; on update, preserve text outside them.
+- Assign only labels that exist in the repository.
+- Limit: max 30 commits.
+
+## Reference files
+
+- **`reference/pr-body-format.md`** — PR body format, section mapping, markers, template integration, auto-link, auto-labels (read by the generator).
+````
+
+</details>
+
+{/* Footer */}
+
+## Source
+
+[View `SKILL.md` on GitHub →](https://github.com/yokeloop/yoke/blob/main/skills/pr/SKILL.md)

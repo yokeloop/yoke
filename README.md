@@ -49,177 +49,26 @@ See **Full cycle** below for the complete pipeline.
 
 <!-- yoke:skills:start -->
 
-### /task — task definition
-
-Accepts a ticket URL or free-form description. Explores the codebase, analyzes architecture, and produces a prompt-task with context, requirements, constraints, and clarifying questions. [Details →](docs/task.md)
-
-```
-/yoke:task https://github.com/owner/repo/issues/86
-/yoke:task add dark theme to settings
-```
-
-**Output:** `docs/ai/<slug>/<slug>-task.md`
-
-### /plan — implementation planning
-
-Reads the task file, explores the codebase, makes design decisions, decomposes the work into atomic tasks with dependencies, picks the execution order (sequential/parallel), and reviews the plan. [Details →](docs/plan.md)
-
-```
-/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
-```
-
-**Output:** `docs/ai/<slug>/<slug>-plan.md`
-
-### /do — plan execution
-
-Dispatches sub-agents for each task. After each one, runs a two-stage review (spec compliance → code quality). Polishes the code, validates (lint, types, tests, build), updates documentation, and writes a report. [Details →](docs/do.md)
-
-```
-/yoke:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
-```
-
-**Output:** implemented code + `docs/ai/<slug>/<slug>-report.md`
-
-### /review — code review report
-
-Analyzes all changes against origin/main. Produces a report: key areas, complex decisions, risks, questions for the reviewer, manual verification scenarios. [Details →](docs/review.md)
-
-```
-/yoke:review 86-black-jack-page
-```
-
-**Output:** `docs/ai/<slug>/<slug>-review.md`
-
-### /gca — git commit with smart grouping
-
-Analyzes changed files, classifies them into groups (feature, test, docs, style, chore), and produces atomic commits following Conventional Commits in English. Resolves the ticket ID from arguments, branch name, or yoke flow. [Details →](docs/gca.md)
-
-```
-/yoke:gca
-/yoke:gca #86
-/yoke:gca https://github.com/owner/repo/issues/86
-```
-
-### /gp — git push with checks and report
-
-Inspects the repository state (branch, upstream, uncommitted changes, gh auth), pushes to remote, and prints a report: pushed commits, diff stat, branch link, PR status. [Details →](docs/gp.md)
-
-```
-/yoke:gp
-/yoke:gp --force-with-lease
-```
-
-### /pr — create and update Pull Request
-
-Creates or updates a GitHub PR. Builds the description from yoke flow artifacts (review + report): key areas, design decisions, questions for the reviewer, risks, test plan. Without artifacts, falls back to commits and diff. Supports PR templates and auto-labels. [Details →](docs/pr.md)
-
-```
-/yoke:pr
-/yoke:pr --draft
-/yoke:pr --base develop
-```
-
-### /fix — quick fix
-
-Compressed pipeline for small changes (1–3 files). Explores the codebase, implements the fix (opus), polishes, validates, and appends an entry to the fix log. Two modes: post-flow (after task/plan/do) and standalone. Supports chains of fixes and "fix from PR comment URL". [Details →](docs/fix.md)
-
-```
-/yoke:fix fix email validation — it doesn't handle empty strings
-/yoke:fix bump reconnect timeout from 5s to 15s
-/yoke:fix https://github.com/owner/repo/pull/42#discussion_r123456
-```
-
-**Output:** code + `docs/ai/<slug>/<slug>-fixes.md`
-
-### /gst — repository status
-
-Shows development status: branch, changes, commits relative to main, hot files, semantic summary. [Details →](docs/gst.md)
-
-```
-/yoke:gst
-```
-
-### /explore — codebase exploration
-
-Interactive Q&A over the codebase and brainstorming. Delegates research to a sub-agent, accumulates findings in a summary chain, and saves an exploration log. [Details →](docs/explore.md)
-
-```
-/yoke:explore how does authorization work
-/yoke:explore compare caching approaches
-/yoke:explore what if we replaced REST with gRPC
-```
-
-**Output:** `docs/ai/<slug>/<slug>-exploration.md`
-
-### /grill — interactive plan grilling
-
-Interrogates you about a plan or design, one interactive question at a time (recommended answer first, "Other" for free-form), walking down the decision tree until you share the same understanding. Read-only — no artifact. [Details →](docs/grill.md)
-
-```
-/yoke:grill should we cache sessions in Redis or Postgres
-/yoke:grill review my plan for the billing flow
-```
-
-### /grill-docs — grilling with domain docs
-
-Same interactive grilling, plus it maintains the domain glossary (`CONTEXT.md`) and architecture decision records (`docs/adr/`) inline as decisions crystallise. [Details →](docs/grill-docs.md)
-
-```
-/yoke:grill-docs design the order cancellation flow
-```
-
-**Output:** `CONTEXT.md` + `docs/adr/NNNN-*.md` (created lazily)
-
-### /prd — PRD from context
-
-Synthesises the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue (labelled `ready-for-agent`), and saves a local copy. Does not interview — uses what is already known. [Details →](docs/prd.md)
-
-```
-/yoke:prd
-```
-
-**Output:** GitHub issue + `docs/ai/<slug>/<slug>-prd.md`
-
-### /issues — break work into issues
-
-Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), published in dependency order, with a local index. [Details →](docs/issues.md)
-
-```
-/yoke:issues
-/yoke:issues https://github.com/owner/repo/issues/42
-```
-
-**Output:** GitHub issues + `docs/ai/<slug>/<slug>-issues.md`
-
-### /handoff — conversation handoff
-
-Compacts the current conversation into a handoff document for a fresh agent, referencing existing artifacts instead of duplicating them. Saves to the OS temp directory. [Details →](docs/handoff.md)
-
-```
-/yoke:handoff
-/yoke:handoff continue with the payment retry logic
-```
-
-**Output:** handoff doc in the OS temp directory
-
-### /bootstrap — prepare project for yoke flow
-
-Detects the project stack, analyzes architecture, scans conventions, and generates CLAUDE.md and `.claude/yoke-context.md`. Entry point for wiring yoke into a new project. [Details →](docs/bootstrap.md)
-
-```
-/yoke:bootstrap
-/yoke:bootstrap configure yoke for this project
-```
-
-**Output:** `CLAUDE.md` + `.claude/yoke-context.md`
-
-### /help — usage guide
-
-Help skill — explains how to use yoke, lists available skills, and the recommended workflow. Entry point for new users. [Details →](docs/help.md)
-
-```
-/yoke:help
-```
+| Command            | What it does                                                                                                                                                                                                                                                   | Output |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `/yoke:bootstrap`  | Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md and yoke-context.md.                                                                                                                                                           | —      |
+| `/yoke:do`         | Executes a task per plan.                                                                                                                                                                                                                                      | —      |
+| `/yoke:explore`    | Codebase exploration and brainstorming.                                                                                                                                                                                                                        | —      |
+| `/yoke:fix`        | Quick fix or follow-up change.                                                                                                                                                                                                                                 | —      |
+| `/yoke:gca`        | Git staging and commit with smart file grouping.                                                                                                                                                                                                               | —      |
+| `/yoke:gp`         | Git push with checks and report.                                                                                                                                                                                                                               | —      |
+| `/yoke:grill`      | Interviews the user one interactive question at a time about a plan or design, walking each branch of the decision tree to a shared understanding; every question offers a recommended answer.                                                                 | —      |
+| `/yoke:grill-docs` | Docs-aware grilling: interrogates the user's plan one question at a time AND maintains the domain glossary (CONTEXT.md) and architecture decision records (docs/adr/) inline as decisions crystallise.                                                         | —      |
+| `/yoke:gst`        | Shows development status in the repository: branch, uncommitted changes, recent commits, diff vs main, hot files, semantic summary.                                                                                                                            | —      |
+| `/yoke:handoff`    | Compacts the current conversation into a handoff document so a fresh agent can continue the work, referencing existing artifacts instead of duplicating them.                                                                                                  | —      |
+| `/yoke:help`       | Explains how to use yoke and lists the available skills; also greets new users.                                                                                                                                                                                | —      |
+| `/yoke:issues`     | Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in docs/ai.                                                                         | —      |
+| `/yoke:plan`       | Builds an implementation plan from a task file.                                                                                                                                                                                                                | —      |
+| `/yoke:pr`         | Creates or updates a GitHub Pull Request.                                                                                                                                                                                                                      | —      |
+| `/yoke:prd`        | Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in docs/ai.                                                                                                                       | —      |
+| `/yoke:review`     | Finds problems in code, fixes them and produces a report.                                                                                                                                                                                                      | —      |
+| `/yoke:sync-docs`  | Regenerates the public skill catalog from `skills/*/SKILL.md` — per-skill MDX pages under `site/src/content/docs/skills/`, the table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`. | —      |
+| `/yoke:task`       | Drafts a task file for AI implementation.                                                                                                                                                                                                                      | —      |
 
 <!-- yoke:skills:end -->
 

@@ -10,10 +10,9 @@ Close marker: `<!-- yoke:skills:end -->`
 
 For each target file (`README.md` and `CLAUDE.md`):
 
-- Exactly one open marker and exactly one close marker must exist.
-- The open marker line must precede the close marker line.
-- Sync writes only the byte range strictly between the two markers. Every
-  byte outside that range round-trips unchanged.
+- Exactly one **standalone-line** open marker and one standalone-line close marker must exist. Match with `^<!-- yoke:skills:start -->$` and `^<!-- yoke:skills:end -->$`. Occurrences of the marker text inside table cells, code blocks, or other inline content do not count — the catalog itself often mentions the markers in the sync-docs row, and that is by design.
+- The standalone open marker line must precede the standalone close marker line.
+- Sync writes only the byte range strictly between the two standalone markers. Every byte outside that range round-trips unchanged.
 
 When any of those preconditions fails, the skill aborts before any write
 and reports:
@@ -66,9 +65,9 @@ and retries.
 Running `/yoke:sync-docs` followed by `/yoke:sync-docs --check` produces no
 diff. `git diff --stat` between the two calls is empty.
 
-When the second call reports drift after a fresh write, the renderer is
-non-deterministic — fix the renderer first. Do not paper over with
-`--no-verify` or commits between calls.
+Both modes pipe their output through `prettier --write` before writing or diffing — husky's `lint-staged` would do the same on the next commit, so canonical prettier output is the round-trip target. Skipping prettier breaks idempotence the moment a commit lands.
+
+When the second call reports drift after a fresh write, the renderer is non-deterministic — fix the renderer first. Do not paper over with `--no-verify` or commits between calls.
 
 ## Side-channel rule
 

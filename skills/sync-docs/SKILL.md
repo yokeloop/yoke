@@ -112,14 +112,16 @@ After every skill is rendered:
 
 ## Phase 4 — Sentinel check
 
-For each of `README.md` and `CLAUDE.md`, count and order the markers:
+For each of `README.md` and `CLAUDE.md`, count line-anchored occurrences of each marker:
 
 ```bash
-grep -c "<!-- yoke:skills:start -->" README.md   # must be 1
-grep -c "<!-- yoke:skills:end -->" README.md     # must be 1
+grep -cE "^<!-- yoke:skills:start -->\$" README.md   # must be 1
+grep -cE "^<!-- yoke:skills:end -->\$"   README.md   # must be 1
 ```
 
-The start marker line must come before the end marker line.
+Anchor to line boundaries — the catalog table itself may mention the marker text inside cells (the sync-docs row literally describes the markers). Only standalone-line occurrences count as sentinels.
+
+The standalone start marker line must come before the standalone end marker line.
 
 On any failure:
 
@@ -147,6 +149,14 @@ blank line on each side. Leave every other byte unchanged.
 
 For `CLAUDE.md`: same procedure with `.yoke/sync-docs-tmp/claudemd-block.md`.
 
+Then normalize the output through prettier so the round-trip matches what husky's lint-staged hook would produce on commit:
+
+```bash
+pnpm exec prettier --write \
+  README.md CLAUDE.md \
+  site/src/content/docs/skills/*.mdx
+```
+
 Send the completion notification:
 
 ```bash
@@ -161,7 +171,16 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
 
 ### Check mode
 
-Compare the tmp tree against the live tree:
+Normalize the rendered tree through prettier first (so the comparison is fair against the prettier-formatted live tree):
+
+```bash
+pnpm exec prettier --write \
+  .yoke/sync-docs-tmp/skills/*.mdx \
+  .yoke/sync-docs-tmp/readme-block.md \
+  .yoke/sync-docs-tmp/claudemd-block.md
+```
+
+Then compare the tmp tree against the live tree:
 
 ```bash
 diff -r .yoke/sync-docs-tmp/skills/ site/src/content/docs/skills/

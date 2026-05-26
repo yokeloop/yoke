@@ -15,17 +15,13 @@ export default defineConfig({
       title: 'yoke',
       description:
         'Skills and slash-commands for Claude Code that ship a full dev loop.',
-      social: [
-        {
-          icon: 'github',
-          label: 'GitHub',
-          href: 'https://github.com/yokeloop/yoke',
-        },
-      ],
+      social: {
+        github: 'https://github.com/yokeloop/yoke',
+      },
       sidebar: [
-        { label: 'What is yoke?', slug: 'what-is-yoke' },
-        { label: 'Install', slug: 'install' },
-        { label: 'Concepts', slug: 'concepts' },
+        { label: 'What is yoke?', link: '/what-is-yoke/' },
+        { label: 'Install', link: '/install/' },
+        { label: 'Concepts', link: '/concepts/' },
         {
           label: 'Dev loop',
           items: [

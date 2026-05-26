@@ -1,0 +1,34 @@
+---
+title: What is yoke?
+description: yoke is a Claude Code plugin that ships a full development workflow as a sequence of skills.
+---
+
+`yoke` is a Claude Code plugin. It is a marketplace of skills and slash-commands that turn a ticket into a merged change.
+
+## The shape of the loop
+
+Each skill owns one concrete step. The default loop is:
+
+1. **`/yoke:task`** — draft a task file from a ticket URL or a free-form description.
+2. **`/yoke:plan`** — read the task file, explore the codebase, decompose into atomic tasks with dependencies.
+3. **`/yoke:do`** — execute the plan, one task at a time, with self-review and verification.
+4. **`/yoke:review`** — produce a code-review report.
+5. **`/yoke:fix`** — apply small follow-up fixes.
+
+Side-quests around the loop:
+
+- **Git**: `/yoke:gca`, `/yoke:gp`, `/yoke:pr`, `/yoke:gst`.
+- **Analysis**: `/yoke:explore`, `/yoke:grill`, `/yoke:grill-docs`.
+- **Meta**: `/yoke:prd`, `/yoke:issues`, `/yoke:handoff`, `/yoke:bootstrap`, `/yoke:help`.
+
+## Why a plugin
+
+A Claude Code plugin is installable from a marketplace. Skills auto-activate by trigger phrases written into their description. Commands stay invokable as `/yoke:<name>`. The whole catalogue lives in one repo, ships through one `plugin.json`, and updates atomically.
+
+## Why a workflow
+
+Each skill produces an artifact the next skill consumes. `/yoke:task` writes a task file, `/yoke:plan` reads it and writes a plan file, `/yoke:do` reads that and writes a report. The artifacts live in `docs/ai/<slug>/` — version-controlled, reviewable, replayable.
+
+## Distribution
+
+`yoke` is installable from the Claude Code plugin marketplace. See the [Install](/yoke/install/) page for the exact commands.

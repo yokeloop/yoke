@@ -1,0 +1,36 @@
+---
+title: Install
+description: Add yoke to Claude Code through the marketplace, or run it locally for development.
+---
+
+## From the Claude Code marketplace
+
+```
+/plugin marketplace add yokeloop/yoke
+/plugin install yoke@yokeloop-yoke
+```
+
+Once installed, every skill becomes available as `/yoke:<name>` — `/yoke:task`, `/yoke:plan`, `/yoke:do`, and so on.
+
+## Locally for development
+
+Clone the repo and start Claude Code with the plugin directory set to the working copy:
+
+```bash
+git clone https://github.com/yokeloop/yoke.git
+cd yoke
+claude --plugin-dir .
+```
+
+This loads the skills directly from disk — useful for editing a `SKILL.md` and trying it in the same session.
+
+## Dependencies
+
+The plugin itself has no runtime dependencies beyond Claude Code. The docs site (this site) uses pnpm, Astro, and Starlight; nothing in the plugin pipeline needs them.
+
+A few skills suggest optional plugins:
+
+- **revdiff** — interactive review of generated artifacts. Suggested by `/yoke:task`, `/yoke:plan`, and `/yoke:do`.
+- **elements-of-style** and **plugin-dev** — prose and structure linters used by the local development skill `/yoke-validate`.
+
+Each skill prints the install command when it needs an optional dep.

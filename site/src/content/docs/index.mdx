@@ -1,0 +1,52 @@
+---
+title: yoke
+description: Skills and slash-commands for Claude Code that ship a full dev loop.
+template: splash
+hero:
+  title: yoke
+  tagline: Skills and slash-commands for Claude Code that ship a full dev loop — task, plan, do, review, ship.
+  actions:
+    - text: Install
+      link: /yoke/install/
+      icon: download
+      variant: primary
+    - text: Browse skills
+      link: /yoke/skills/task/
+      variant: secondary
+---
+
+import { CardGrid, Card } from '@astrojs/starlight/components';
+
+## A workflow, not a toolbox
+
+`yoke` is a Claude Code plugin. It ships a sequence of skills that turn a ticket into a merged change — without losing context between steps.
+
+<CardGrid>
+  <Card title="Dev loop" icon="rocket">
+    `/yoke:task` → `/yoke:plan` → `/yoke:do` → `/yoke:review` → `/yoke:fix`. The
+    five-step loop that turns a ticket into a working commit.
+  </Card>
+
+  <Card title="Git" icon="github">
+    `/yoke:gca` commits with smart grouping. `/yoke:gp` pushes with checks.
+    `/yoke:pr` creates or updates a pull request. `/yoke:gst` shows what's going
+    on.
+  </Card>
+
+  <Card title="Analysis" icon="open-book">
+    `/yoke:explore` answers questions about the codebase. `/yoke:grill`
+    interrogates a plan one question at a time. `/yoke:grill-docs` also
+    updates the glossary and writes ADRs.
+  </Card>
+
+  <Card title="Meta" icon="setting">
+    `/yoke:prd` turns a conversation into a PRD. `/yoke:issues` breaks a PRD
+    into tracer-bullet issues. `/yoke:handoff`, `/yoke:bootstrap`, `/yoke:help`
+    cover the rest.
+  </Card>
+
+  <Card title="Plugin dev" icon="puzzle">
+    `/yoke:sync-docs` regenerates this very catalog from `skills/*/SKILL.md`.
+    One source of truth for README, CLAUDE.md, and this site.
+  </Card>
+</CardGrid>

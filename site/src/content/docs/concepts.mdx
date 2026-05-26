@@ -1,0 +1,34 @@
+---
+title: Concepts
+description: Skills, commands, and agents — three Claude Code primitives, three ways yoke uses them.
+---
+
+`yoke` builds on three Claude Code primitives.
+
+## Skills
+
+A skill lives at `skills/<name>/SKILL.md`. It is markdown with YAML frontmatter — `name` and `description`. The model auto-activates the skill when the user message matches the trigger phrases in the description.
+
+Skills are model-invoked. The user does not type the skill name; the model picks it. yoke skills tend to be long-running orchestrators with phases, sub-agents, and artifacts they write to disk.
+
+Example: `/yoke:plan` activates on "build a plan", "plan", "make a plan", or a path to a task file.
+
+## Commands
+
+A command lives at `commands/<name>.md`. It is invoked explicitly by the user — typing `/yoke:<name>` calls the command directly. Commands take `$ARGUMENTS` and have their own YAML frontmatter.
+
+yoke commands today are thin wrappers that invoke a skill with a specific argument. The distinction matters when activation must be deterministic, or when the model would otherwise hesitate to pick the skill.
+
+## Agents
+
+An agent lives at `skills/<name>/agents/<agent>.md`. It is also markdown with YAML frontmatter, but it is dispatched **by** a skill, not by the user. Skills orchestrate; agents do focused work in isolated context windows.
+
+Example: `/yoke:plan` dispatches `plan-explorer` (sonnet) to gather codebase facts and `plan-designer` (sonnet) to produce the decomposition. The orchestrator stitches their outputs together.
+
+## How yoke uses them
+
+- **Skills** are the user-facing surface. One skill per workflow step.
+- **Agents** are internal. They keep the orchestrator's context small and let specialized roles use different models.
+- **Commands** are rare. yoke ships one local-only command (`/yoke:journal`) and no shipped commands today.
+
+The plugin manifest at `.claude-plugin/plugin.json` declares the plugin; everything else is auto-discovered from `skills/`, `commands/`, and `hooks/`.

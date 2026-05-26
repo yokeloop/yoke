@@ -81,6 +81,7 @@ claude --plugin-dir .
 
 - `/yoke-create` — skill factory: analysis, design, implementation, validation, integration
 - `/yoke-release` — plugin release: quality checks, version bump, tag, push, GitHub release
+- `/yoke-validate` — runs every `SKILL.md` changed in the current branch through elements-of-style (Strunk) and plugin-dev's skill-development conventions, auto-fixes safe findings, and reports the rest. Depends on the `elements-of-style` and `plugin-dev` plugins.
 
 ## Local commands (development)
 

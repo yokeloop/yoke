@@ -33,7 +33,7 @@ git diff origin/main...HEAD --stat
 git diff origin/main...HEAD
 ```
 
-Extract SLUG from commits (scope in conventional commit) or from `docs/ai/<slug>/`.
+Extract SLUG from commits (scope in conventional commit) or from `.yoke/ai/<slug>/`.
 
 ## Step 2 — Analyze changes
 

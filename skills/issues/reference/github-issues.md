@@ -7,11 +7,11 @@ Issues and PRDs for this repo live as GitHub issues. Use the `gh` CLI for all op
 - `gh auth status` succeeds (authenticated), and
 - `gh repo view` succeeds (the repo has a GitHub remote).
 
-If either fails, skip publishing: keep the local copy in `docs/ai/<slug>/` and tell the user where it is.
+If either fails, skip publishing: keep the local copy in `.yoke/ai/<slug>/` and tell the user where it is.
 
 ## Conventions
 
-- **Create an issue**: `gh issue create --title "..." --body-file <path>`. Use `--body-file` for multi-line bodies (write the body to a temp file or a `docs/ai/` artifact first).
+- **Create an issue**: `gh issue create --title "..." --body-file <path>`. Use `--body-file` for multi-line bodies (write the body to a temp file or a `.yoke/ai/` artifact first).
 - **Read an issue**: `gh issue view <number> --comments`.
 - **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with `--label` / `--state` filters as needed.
 - **Comment**: `gh issue comment <number> --body "..."`

@@ -46,7 +46,7 @@ LATEST_DIR=$(ls -td .yoke/ai/*/ 2>/dev/null | head -1)
 if [ -n "$LATEST_DIR" ]; then
   SLUG=$(basename "$LATEST_DIR")
   MODE="post-flow"
-  SLUG_SOURCE="docs_ai"
+  SLUG_SOURCE="yoke_ai"
 else
   # From the branch name
   SLUG=$(echo "$BRANCH" | sed -E 's@^(feature|fix|hotfix|bugfix|release)/@@')
@@ -111,7 +111,7 @@ IS_DEFAULT_BRANCH: <true | false>
 
 MODE: <post-flow | standalone>
 SLUG: <value | UNKNOWN>
-SLUG_SOURCE: <docs_ai | branch | none>
+SLUG_SOURCE: <yoke_ai | branch | none>
 TICKET_ID: <extracted ID | none>
 
 FIX_NUMBER: <N>

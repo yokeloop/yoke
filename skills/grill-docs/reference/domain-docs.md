@@ -4,15 +4,14 @@ How to consume this repo's domain documentation — the glossary and ADRs that `
 
 ## Before exploring, read these
 
-- **`CONTEXT.md`** at the repo root, or
-- **`CONTEXT-MAP.md`** at the repo root if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`docs/adr/`** — read the ADRs that touch the area you're about to work in. In multi-context repos, also check `src/<context>/docs/adr/` for context-scoped decisions.
+- **`.yoke/context.md`** — the single domain glossary for the whole repo.
+- **`.yoke/adr/`** — read the ADRs that touch the area you're about to work in.
 
 If any of these files don't exist, **proceed silently**. Don't flag their absence or suggest creating them upfront — `/yoke:grill-docs` creates them lazily when terms or decisions are resolved.
 
 ## Use the glossary's vocabulary
 
-When your output names a domain concept (an issue title, a requirement, a user story, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
+When your output names a domain concept (an issue title, a requirement, a user story, a hypothesis, a test name), use the term as defined in `.yoke/context.md`. Don't drift to synonyms the glossary explicitly avoids.
 
 If a concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider), or there's a real gap (note it for `/yoke:grill-docs`).
 

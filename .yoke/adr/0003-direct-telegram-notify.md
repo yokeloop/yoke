@@ -21,7 +21,7 @@ The original notification system was two layers:
 This was unreliable in practice:
 
 - **The Stop hook only fires when the agent fully stops.** An
-  `ACTION_REQUIRED` notification is meant to ping *before* an `AskUserQuestion`
+  `ACTION_REQUIRED` notification is meant to ping _before_ an `AskUserQuestion`
   pause — but a question pause is not a Stop, so those notifications almost
   never arrived.
 - **The queue is a single file that gets overwritten.** When a skill emits more

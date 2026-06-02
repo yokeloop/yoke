@@ -9,8 +9,8 @@ Accepted
 ## Context
 
 `task` and `plan` predate `grill`, `grill-docs`, `prd` and `issues`. Their job
-was to formalise *what* to do (`task`) and *how* to do it (`plan`) before `do`
-executed. Today `grill`/`grill-docs`/`prd`/`issues` already formalise the *what*
+was to formalise _what_ to do (`task`) and _how_ to do it (`plan`) before `do`
+executed. Today `grill`/`grill-docs`/`prd`/`issues` already formalise the _what_
 and persist it as artifacts, so `task` and `plan` largely duplicate that step.
 The one piece still worth keeping is `plan`'s "how and where we change the code"
 working-out.

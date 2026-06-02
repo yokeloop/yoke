@@ -6,11 +6,11 @@ and produces a report with key areas, complex decisions, risks, and questions fo
 ## Input
 
 `$ARGUMENTS` — task slug or path to a task file. Without an argument, the skill resolves the slug
-from the branch or the latest directory under `docs/ai/`.
+from the branch or the latest directory under `.yoke/ai/`.
 
 ```
 /yoke:review 86-black-jack-page
-/yoke:review docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:review .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
 /yoke:review
 ```
 
@@ -25,7 +25,7 @@ from the branch or the latest directory under `docs/ai/`.
 
 ## Output
 
-File `docs/ai/<slug>/<slug>-review.md` with 7 sections:
+File `.yoke/ai/<slug>/<slug>-review.md` with 7 sections:
 
 - **Context and goal** — the task, what was implemented
 - **Commits and files** — commit list, affected files with stats
@@ -47,7 +47,7 @@ File `docs/ai/<slug>/<slug>-review.md` with 7 sections:
 /yoke:review 86-black-jack-page
 ```
 
-Result: `docs/ai/86-black-jack-page/86-black-jack-page-review.md`
+Result: `.yoke/ai/86-black-jack-page/86-black-jack-page-review.md`
 
 ## Connections
 

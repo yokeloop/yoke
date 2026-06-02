@@ -54,7 +54,7 @@ Examples: `#86 feat(pages): add blackjack page`, `R2-50 fix: save user ID to dat
 | docs           | Documentation (README, CHANGELOG, \*.md, JSDoc) |
 | style          | Formatting without logical changes              |
 | chore          | Configs, CI, dependencies                       |
-| yoke-artifacts | Files under docs/ai/                            |
+| yoke-artifacts | Files under .yoke/ai/                           |
 
 ## Example
 

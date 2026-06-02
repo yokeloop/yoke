@@ -26,7 +26,7 @@ The output is a task file that `/yoke:plan` turns into an implementation plan.
 
 ## Output
 
-File `docs/ai/<slug>/<slug>-task.md` with the following structure:
+File `.yoke/ai/<slug>/<slug>-task.md` with the following structure:
 
 - **Header** — Slug, Ticket, Complexity (trivial/simple/medium/complex), Type (frontend/general)
 - **Task** — one sentence: what exactly to do
@@ -59,7 +59,7 @@ File `docs/ai/<slug>/<slug>-task.md` with the following structure:
 /yoke:task https://github.com/org/repo/issues/112
 ```
 
-Result: `docs/ai/112-password-reset-email/112-password-reset-email-task.md`
+Result: `.yoke/ai/112-password-reset-email/112-password-reset-email-task.md`
 
 ## Connections
 

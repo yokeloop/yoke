@@ -63,7 +63,7 @@ git branch --show-current; echo "==="; git status --porcelain; echo "==="; git d
 
 ## Step 2 — Mode
 
-- **yoke-flow** — `$ARGUMENTS` is a path under `docs/ai/` (or a slug), or recent artifacts exist in `docs/ai/*/`. `SLUG` = path or directory name.
+- **yoke-flow** — `$ARGUMENTS` is a path under `.yoke/ai/` (or a slug), or recent artifacts exist in `.yoke/ai/*/`. `SLUG` = path or directory name.
 - **standalone** — otherwise. `SLUG` = current branch without prefix (`feature/`, `fix/`, `hotfix/`, `bugfix/`, `release/`). On `main`/`master`/`develop` — no slug.
 
 ---
@@ -84,7 +84,7 @@ Edge cases (anti-patterns, URL forms): `reference/commit-convention.md`.
 
 ### yoke-flow
 
-Stage only the artifact of the just-completed stage under `docs/ai/<SLUG>/`, matched by filename suffix. Leave non-artifact changes (code, configs) uncommitted — they are out of scope here. If no matching artifact changed, say so and stop.
+Stage only the artifact of the just-completed stage under `.yoke/ai/<SLUG>/`, matched by filename suffix. Leave non-artifact changes (code, configs) uncommitted — they are out of scope here. If no matching artifact changed, say so and stop.
 
 | Stage   | Artifact suffix | Message                                                 |
 | ------- | --------------- | ------------------------------------------------------- |
@@ -106,7 +106,7 @@ Classify each file by path, then group into atomic commits — no confirmation:
 | docs           | `*.md`, `docs/`, README, CHANGELOG              | `docs`                  |
 | style          | formatter-only output, no logic change          | `style`                 |
 | chore          | `package.json`, `*.config.*`, `.eslintrc`, CI   | `chore`                 |
-| yoke-artifacts | `docs/ai/**`                                    | `docs`                  |
+| yoke-artifacts | `.yoke/ai/**`                                   | `docs`                  |
 
 Precedence when a file matches several rows: yoke-artifacts > test > style > chore > docs > feature. `perf` and `style` are content-judgement types, not path-derivable — apply them only when the diff clearly warrants it.
 

@@ -53,7 +53,7 @@ description: Explains how to use yoke and lists the available skills; also greet
 
 Accepts a ticket URL or description text. Explores the codebase, analyzes the architecture, and produces a prompt-task: context, requirements, constraints, clarifying questions.
 
-**Input:** ticket URL or text → **Output:** `docs/ai/<slug>/<slug>-task.md`
+**Input:** ticket URL or text → **Output:** `.yoke/ai/<slug>/<slug>-task.md`
 
 ```
 /yoke:task https://github.com/owner/repo/issues/86
@@ -65,27 +65,27 @@ add dark theme to settings
 
 Reads the task file, explores the codebase, makes design decisions, and decomposes the task into atomic tasks with dependencies and order.
 
-**Input:** path to task file → **Output:** `docs/ai/<slug>/<slug>-plan.md`
+**Input:** path to task file → **Output:** `.yoke/ai/<slug>/<slug>-plan.md`
 
 ```
-/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:plan .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
 ### /do — executing the task by plan
 
 Delegates tasks to sub-agents, runs a two-stage review (spec compliance → code quality), polishes the code, validates, updates documentation, writes the report.
 
-**Input:** path to plan file → **Output:** implemented code + `docs/ai/<slug>/<slug>-report.md`
+**Input:** path to plan file → **Output:** implemented code + `.yoke/ai/<slug>/<slug>-report.md`
 
 ```
-/yoke:do docs/ai/86-black-jack-page/86-black-jack-page-plan.md
+/yoke:do .yoke/ai/86-black-jack-page/86-black-jack-page-plan.md
 ```
 
 ### /review — preparing the code review report
 
 Analyzes changes against origin/main. Produces a report: key areas, complex decisions, risks, questions for the reviewer, verification scenarios.
 
-**Input:** task-slug → **Output:** `docs/ai/<slug>/<slug>-review.md`
+**Input:** task-slug → **Output:** `.yoke/ai/<slug>/<slug>-review.md`
 
 ```
 /yoke:review 86-black-jack-page
@@ -128,7 +128,7 @@ Creates or updates a GitHub PR from yoke flow artifacts (review + report). Produ
 
 Compressed pipeline for small changes (1-3 files). Explores the codebase, implements the fix (opus), polishes, validates, writes to fix-log. Two modes: post-flow (after task/plan/do) and standalone. Supports fix chains and fix from PR comment URL.
 
-**Input:** fix description or PR comment URL → **Output:** code + `docs/ai/<slug>/<slug>-fixes.md`
+**Input:** fix description or PR comment URL → **Output:** code + `.yoke/ai/<slug>/<slug>-fixes.md`
 
 ```
 /yoke:fix correct email validation
@@ -139,7 +139,7 @@ Compressed pipeline for small changes (1-3 files). Explores the codebase, implem
 
 Read-only Q&A loop for codebase exploration and brainstorming. Classifies questions (codebase / web / hybrid), searches the code and the internet, accumulates context through a summary chain, writes an exploration log.
 
-**Input:** topic or question → **Output:** `docs/ai/<slug>/<slug>-exploration.md`
+**Input:** topic or question → **Output:** `.yoke/ai/<slug>/<slug>-exploration.md`
 
 ```
 /yoke:explore how authentication works
@@ -158,9 +158,9 @@ Interrogates you about a plan or design one question at a time via AskUserQuesti
 
 ### /grill-docs — grilling with domain docs
 
-Same grilling, plus it maintains the glossary `CONTEXT.md` and ADRs in `docs/adr/` inline as decisions land.
+Same grilling, plus it maintains the glossary `.yoke/context.md` and ADRs in `.yoke/adr/` inline as decisions land.
 
-**Input:** plan or topic → **Output:** `CONTEXT.md` + `docs/adr/NNNN-*.md`
+**Input:** plan or topic → **Output:** `.yoke/context.md` + `.yoke/adr/NNNN-*.md`
 
 ```
 /yoke:grill-docs design the order cancellation flow
@@ -170,7 +170,7 @@ Same grilling, plus it maintains the glossary `CONTEXT.md` and ADRs in `docs/adr
 
 Synthesizes the current conversation into a PRD, publishes it as a GitHub issue (`ready-for-agent`), and saves a local copy. No interview.
 
-**Input:** current context → **Output:** GitHub issue + `docs/ai/<slug>/<slug>-prd.md`
+**Input:** current context → **Output:** GitHub issue + `.yoke/ai/<slug>/<slug>-prd.md`
 
 ```
 /yoke:prd
@@ -180,7 +180,7 @@ Synthesizes the current conversation into a PRD, publishes it as a GitHub issue 
 
 Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), in dependency order.
 
-**Input:** context or issue reference → **Output:** GitHub issues + `docs/ai/<slug>/<slug>-issues.md`
+**Input:** context or issue reference → **Output:** GitHub issues + `.yoke/ai/<slug>/<slug>-issues.md`
 
 ```
 /yoke:issues

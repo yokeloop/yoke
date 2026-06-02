@@ -79,14 +79,14 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `/gca` — Git staging and commit with smart file grouping.
 - `/gp` — Git push with checks and report.
 - `/grill` — Interviews the user one interactive question at a time about a plan or design, walking each branch of the decision tree to a shared understanding; every question offers a recommended answer.
-- `/grill-docs` — Docs-aware grilling: interrogates the user's plan one question at a time AND maintains the domain glossary (CONTEXT.md) and architecture decision records (docs/adr/) inline as decisions crystallise.
+- `/grill-docs` — Docs-aware grilling: interrogates the user's plan one question at a time AND maintains the domain glossary (.yoke/context.md) and architecture decision records (.yoke/adr/) inline as decisions crystallise.
 - `/gst` — Shows development status in the repository: branch, uncommitted changes, recent commits, diff vs main, hot files, semantic summary.
 - `/handoff` — Compacts the current conversation into a handoff document so a fresh agent can continue the work, referencing existing artifacts instead of duplicating them.
 - `/help` — Explains how to use yoke and lists the available skills; also greets new users.
-- `/issues` — Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in docs/ai.
+- `/issues` — Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.
 - `/plan` — Builds an implementation plan from a task file.
 - `/pr` — Creates or updates a GitHub Pull Request.
-- `/prd` — Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in docs/ai.
+- `/prd` — Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in .yoke/ai.
 - `/review` — Finds problems in code, fixes them and produces a report.
 - `/sync-docs` — Regenerates the public skill catalog from `skills/*/SKILL.md` — per-skill MDX pages under `site/src/content/docs/skills/`, the table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`.
 - `/task` — Drafts a task file for AI implementation.

@@ -1,9 +1,9 @@
 ---
 title: /yoke:issues
-description: "Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in docs/ai."
+description: "Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai."
 ---
 
-Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in docs/ai.
+Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.
 
 ## Triggers
 
@@ -44,7 +44,7 @@ name: issues
 description: >-
   Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using
   vertical slices (tracer bullets), publishes them in dependency order, and
-  saves a local index in docs/ai. Activates when the user writes "issues",
+  saves a local index in .yoke/ai. Activates when the user writes "issues",
   "break into issues", "create tickets", "split into tasks",
   "decompose into issues", "make implementation tickets", "tracer bullets".
 ---
@@ -61,7 +61,7 @@ Work from whatever is already in the conversation context. If the user passes an
 
 ### 2. Explore the codebase (skip if already explored this session)
 
-If you have not already explored the codebase, do so to understand its current state. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `CONTEXT.md` / `CONTEXT-MAP.md` and relevant `docs/adr/`, give issue titles and descriptions the glossary's vocabulary, and flag any ADR a slice contradicts.
+If you have not already explored the codebase, do so to understand its current state. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and relevant `.yoke/adr/`, give issue titles and descriptions the glossary's vocabulary, and flag any ADR a slice contradicts.
 
 ### 3. Draft vertical slices
 
@@ -107,7 +107,7 @@ Label AFK slices `ready-for-agent` and HITL slices `ready-for-human` (per the re
 
 Once each child exists, run two best-effort follow-ups per the reference: set its type to `Task` (per "Issue types"; leave it untyped and warn if unavailable), and — if a parent issue is known (from the input argument or from a `**Tracking:** <URL>` line in a PRD artifact) — link the child as a sub-issue of the parent (per "Sub-issues"; leave it unlinked and warn if unavailable). The textual `## Parent` section in the issue body remains the human-readable fallback.
 
-Build the slug as in `/yoke:prd` — an English kebab-case description, prefixed with a ticket id if one exists; reuse the parent PRD/issue's slug when the source was one, so `<slug>-prd.md` and `<slug>-issues.md` sit together. Save a local index to `docs/ai/<slug>/<slug>-issues.md` (`mkdir -p docs/ai/<slug>` first) listing every slice: title, type, blocked-by, the created issue URL, and its body.
+Build the slug as in `/yoke:prd` — an English kebab-case description, prefixed with a ticket id if one exists; reuse the parent PRD/issue's slug when the source was one, so `<slug>-prd.md` and `<slug>-issues.md` sit together. Save a local index to `.yoke/ai/<slug>/<slug>-issues.md` (`mkdir -p .yoke/ai/<slug>` first) listing every slice: title, type, blocked-by, the created issue URL, and its body.
 
 If `gh` is not authenticated or there is no GitHub remote, skip publishing, write the full breakdown to the local index, and tell the user.
 

@@ -169,9 +169,9 @@ Repeat until the user answers every question.
 
 ### Phase 4 — Write
 
-**1.** `mkdir -p docs/ai/<task-slug>`
+**1.** `mkdir -p .yoke/ai/<task-slug>`
 
-**2.** Write `docs/ai/<task-slug>/<task-slug>-task.md`:
+**2.** Write `.yoke/ai/<task-slug>/<task-slug>-task.md`:
 
 ```
 # <Task title>
@@ -232,12 +232,12 @@ Repeat until the user answers every question.
 
 **4. Auto-commit the artifact.**
 
-Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
+Check: is `.yoke/` in `.gitignore`? If yes — tell the user and skip the commit.
 
 Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 
 ```bash
-git add docs/ai/<task-slug>/<task-slug>-task.md
+git add .yoke/ai/<task-slug>/<task-slug>-task.md
 git commit -m "TICKET docs(SLUG): add task definition"
 ```
 
@@ -254,7 +254,7 @@ Commit only the task artifact, no other files.
 Report the file path and task slug, then run the finishing loop.
 
 Send a notification:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill task --phase Complete --slug "$TASK_SLUG" --title "Task ready" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-task.md"`
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill task --phase Complete --slug "$TASK_SLUG" --title "Task ready" --body ".yoke/ai/$TASK_SLUG/$TASK_SLUG-task.md"`
 
 **Offer next step:**
 
@@ -266,8 +266,8 @@ Offer 3 options through AskUserQuestion:
 
 **Handle the choice (one-shot, no loop):**
 
-- **Run /yoke:plan:** call the Skill tool with `/yoke:plan` and the argument `docs/ai/<task-slug>/<task-slug>-task.md`. Exit.
-- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only docs/ai/<task-slug>/<task-slug>-task.md`. If the return is non-empty, apply the annotations to the task file and overwrite. Then exit. (For another pass, the user invokes `/revdiff` manually.)
+- **Run /yoke:plan:** call the Skill tool with `/yoke:plan` and the argument `.yoke/ai/<task-slug>/<task-slug>-task.md`. Exit.
+- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only .yoke/ai/<task-slug>/<task-slug>-task.md`. If the return is non-empty, apply the annotations to the task file and overwrite. Then exit. (For another pass, the user invokes `/revdiff` manually.)
   If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then exit.
 - **Finish:** report the file path. Exit.
 

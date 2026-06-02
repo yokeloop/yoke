@@ -110,7 +110,7 @@ Optional discovery & specification front-end:
 
 ```
 /yoke:grill <plan>                   # stress-test the idea interactively
-/yoke:grill-docs <plan>              # …and capture terms (CONTEXT.md) + ADRs
+/yoke:grill-docs <plan>              # …and capture terms (.yoke/context.md) + ADRs
 /yoke:prd                            # turn the discussion into a PRD → GitHub issue
 /yoke:issues                         # break it into tracer-bullet issues
 ```
@@ -183,7 +183,7 @@ yoke/
 │   │   └── agents/          # explore-agent, explore-log-writer
 │   ├── grill/               # interactive plan grilling
 │   │   └── SKILL.md
-│   ├── grill-docs/          # grilling + CONTEXT.md glossary + ADRs
+│   ├── grill-docs/          # grilling + .yoke/context.md glossary + ADRs
 │   │   ├── SKILL.md
 │   │   └── reference/       # CONTEXT-FORMAT, ADR-FORMAT, domain-docs
 │   ├── prd/                 # PRD from context → GitHub issue
@@ -207,6 +207,17 @@ yoke/
 ├── commands/
 └── docs/                    # per-skill documentation
 ```
+
+### Artifact root (`.yoke/`)
+
+Skills write their artifacts under `.yoke/` in the target project:
+
+- `.yoke/context.md` — domain glossary
+- `.yoke/adr/` — architecture decision records
+- `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
+- `.yoke/journal.md` — session journal
+
+`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` and `.yoke/notify-pending.json` are gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
 
 ## Planned skills
 
@@ -259,12 +270,12 @@ Each yoke skill that produces an artifact offers "Review via revdiff" at its Com
 
 - Task file (from `/yoke:task` Phase 6):
   ```text
-  /revdiff --only docs/ai/<slug>/<slug>-task.md
+  /revdiff --only .yoke/ai/<slug>/<slug>-task.md
   ```
   Reviews the markdown task file.
 - Plan file (from `/yoke:plan` Phase 8):
   ```text
-  /revdiff --only docs/ai/<slug>/<slug>-plan.md
+  /revdiff --only .yoke/ai/<slug>/<slug>-plan.md
   ```
   Reviews the markdown plan file.
 - Code changes (from `/yoke:do` Phase 7):
@@ -275,7 +286,7 @@ Each yoke skill that produces an artifact offers "Review via revdiff" at its Com
 
 ### Annotation fold-back
 
-revdiff returns structured annotations on quit. For task and plan files, yoke applies the annotations in place and overwrites the file. For /do code review, yoke appends the annotations to the execution report at `docs/ai/<slug>/<slug>-report.md` under a `## Review notes` heading.
+revdiff returns structured annotations on quit. For task and plan files, yoke applies the annotations in place and overwrites the file. For /do code review, yoke appends the annotations to the execution report at `.yoke/ai/<slug>/<slug>-report.md` under a `## Review notes` heading.
 
 See https://github.com/umputun/revdiff (MIT) for binary install paths and deeper documentation.
 

@@ -57,6 +57,17 @@ claude --plugin-dir .
 - **Plugin source**: `"./"` for self-contained (plugin at the marketplace root), `{ "source": "github", "repo": "owner/repo" }` for external
 - **SKILL.md frontmatter**: `name` (identifier), `description` (when to activate)
 
+### Artifact root (`.yoke/`)
+
+Skills write their artifacts under `.yoke/` in the target project:
+
+- `.yoke/context.md` — domain glossary
+- `.yoke/adr/` — architecture decision records
+- `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
+- `.yoke/journal.md` — session journal
+
+`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` and `.yoke/notify-pending.json` are gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
+
 ## Implemented skills
 
 <!-- yoke:skills:start -->
@@ -100,7 +111,7 @@ claude --plugin-dir .
 
 - `docs/notify.md` — Telegram notifications: setup, types, map of trigger points
 - `skills/issues/reference/github-issues.md` — GitHub issue tracker conventions, triage labels, issue types + sub-issues (used by `/prd`, `/issues`)
-- `skills/grill-docs/reference/domain-docs.md` — domain-doc consumer rules for CONTEXT.md/ADRs (used by `/prd`, `/issues`)
+- `skills/grill-docs/reference/domain-docs.md` — domain-doc consumer rules for `.yoke/context.md`/ADRs (used by `/prd`, `/issues`)
 
 ## Formatting
 

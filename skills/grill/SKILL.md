@@ -5,7 +5,7 @@ description: >-
   walking each branch of the decision tree to a shared understanding; every
   question offers a recommended answer. A read-only interview that writes no
   files — for the variant that also captures terminology and decisions into
-  CONTEXT.md and ADRs, use grill-docs. Activates when the user writes "grill",
+  .yoke/context.md and ADRs, use grill-docs. Activates when the user writes "grill",
   "grill me", "poke holes in this", "interrogate my design", "challenge my
   plan", "stress-test my plan", "interview me about this".
 ---
@@ -48,5 +48,5 @@ Stop when a full pass down the tree surfaces no new open decisions, or when the 
 - The recommended answer is always present and listed first.
 - Resolve dependencies in order — don't jump branches.
 - Prefer exploring the codebase over asking when the answer is discoverable there.
-- For deeper grilling that also captures terminology and decisions into `CONTEXT.md` and ADRs, use `/yoke:grill-docs`.
+- For deeper grilling that also captures terminology and decisions into `.yoke/context.md` and ADRs, use `/yoke:grill-docs`.
 - Language: match the user's language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

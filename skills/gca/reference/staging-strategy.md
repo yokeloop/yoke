@@ -17,7 +17,7 @@ Collect **all** modified/new files via `git status --porcelain` (untracked files
 | `docs`           | Documentation (`.md`, `docs/`, README, CHANGELOG)                        | `docs`                      |
 | `style`          | Formatting only (result of project formatter/linter, no logical changes) | `style`                     |
 | `chore`          | Configs, dependencies (`package.json`, `*.config.*`, `.eslintrc`, CI)    | `chore`                     |
-| `yoke-artifacts` | Yoke flow files under `docs/ai/**`                                       | `docs`                      |
+| `yoke-artifacts` | Yoke flow files under `.yoke/ai/**`                                      | `docs`                      |
 
 When a file matches several rows, tie-break by precedence: `yoke-artifacts` > `test` > `style` > `chore` > `docs` > `feature`. `perf` and `style` are content-judgement types, not path-derivable — apply them only when the diff clearly warrants it.
 

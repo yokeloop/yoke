@@ -90,7 +90,7 @@ Sync never touches:
 
 Sync expects:
 
-- `.yoke/` is gitignored (it is, per `.gitignore`).
+- `.yoke/sync-docs-tmp/` is gitignored (it is, per `.gitignore`).
 - `site/src/content/docs/skills/` exists as a directory.
 
 When `site/src/content/docs/skills/` is missing, sync creates it before

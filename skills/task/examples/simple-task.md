@@ -53,7 +53,7 @@ Figma: https://figma.com/file/aB3k.../forgot-password
 
 ## Final task file
 
-> This file is written to `docs/ai/112-password-reset-email/112-password-reset-email-task.md`
+> This file is written to `.yoke/ai/112-password-reset-email/112-password-reset-email-task.md`
 
 ---
 

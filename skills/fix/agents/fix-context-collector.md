@@ -41,8 +41,8 @@ Compare BRANCH with DEFAULT_BRANCH → `IS_DEFAULT_BRANCH: true | false`.
 Check for yoke flow artifacts:
 
 ```bash
-# Latest directory in docs/ai/
-LATEST_DIR=$(ls -td docs/ai/*/ 2>/dev/null | head -1)
+# Latest directory in .yoke/ai/
+LATEST_DIR=$(ls -td .yoke/ai/*/ 2>/dev/null | head -1)
 if [ -n "$LATEST_DIR" ]; then
   SLUG=$(basename "$LATEST_DIR")
   MODE="post-flow"
@@ -72,7 +72,7 @@ Extract from slug via a cascade:
 ### Step 4 — Fix number and fix-log
 
 ```bash
-FIX_LOG="docs/ai/$SLUG/$SLUG-fixes.md"
+FIX_LOG=".yoke/ai/$SLUG/$SLUG-fixes.md"
 
 if [ -f "$FIX_LOG" ]; then
   # Count ## Fix N: entries
@@ -89,9 +89,9 @@ fi
 ### Step 5 — Artifact paths
 
 ```bash
-TASK_FILE="docs/ai/$SLUG/$SLUG-task.md"
-PLAN_FILE="docs/ai/$SLUG/$SLUG-plan.md"
-REPORT_FILE="docs/ai/$SLUG/$SLUG-report.md"
+TASK_FILE=".yoke/ai/$SLUG/$SLUG-task.md"
+PLAN_FILE=".yoke/ai/$SLUG/$SLUG-plan.md"
+REPORT_FILE=".yoke/ai/$SLUG/$SLUG-report.md"
 
 # Check existence
 [ -f "$TASK_FILE" ] && echo "TASK_FILE: $TASK_FILE" || echo "TASK_FILE: NOT_FOUND"

@@ -14,18 +14,14 @@ The output is a plan file that `/yoke:do` executes autonomously.
 
 ## Phases
 
-The skill runs autonomously through 8 sequential phases. Interaction points: Checkpoint (Phase 5) and Complete (Phase 8).
+The skill runs autonomously through 4 sequential phases. Interaction point: Complete (Phase 4).
 
-| Phase | Name           | What happens                                                                                                |
-| ----- | -------------- | ----------------------------------------------------------------------------------------------------------- |
-| 1     | **Load**       | Read the task file, extract fields: title, slug, complexity, requirements, constraints                      |
-| 2     | **Explore**    | Sub-agent `plan-explorer` explores the codebase: change map, patterns, file intersection matrix             |
-| 3     | **Design**     | Sub-agent `plan-designer` makes design decisions, decomposes into tasks, builds the dependency DAG          |
-| 4     | **Route**      | Pick the execution strategy (mode + parallel) from the routing rules table                                  |
-| 5     | **Checkpoint** | The single approval point: all decisions, tasks, and routing in one batch. The user edits or says `approve` |
-| 6     | **Write**      | Write the plan file to `.yoke/ai/<slug>/<slug>-plan.md`                                                     |
-| 7     | **Commit**     | Auto-commit the artifact: TICKET docs(SLUG): add implementation plan                                        |
-| 8     | **Complete**   | Completion loop: run /yoke:do (recommended) / review via revdiff / finish                                   |
+| Phase | Name         | What happens                                                                                                                                                                    |
+| ----- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | **Load**     | Read the task file, extract fields: title, slug, complexity, requirements, constraints                                                                                          |
+| 2     | **Design**   | Sub-agent `plan-architect` investigates the codebase, makes design decisions, decomposes into tasks, builds the DAG, picks routing mode; interactive clarifications happen here |
+| 3     | **Write**    | Write the plan file to `.yoke/ai/<slug>/<slug>-plan.md`; self-check prose; auto-commit the artifact                                                                             |
+| 4     | **Complete** | Completion loop: run /yoke:do (recommended) / review via revdiff / finish                                                                                                       |
 
 ## Output
 
@@ -54,10 +50,9 @@ The orchestrator decides based on the file intersection matrix from the Design p
 
 ## Sub-agents
 
-| Agent           | Model  | Role                                                                                  |
-| --------------- | ------ | ------------------------------------------------------------------------------------- |
-| `plan-explorer` | sonnet | Codebase exploration: files to change, patterns, intersections, size estimate         |
-| `plan-designer` | sonnet | Architecture: design decisions, decomposition into tasks, DAG, routing recommendation |
+| Agent            | Model | Role                                                                                                                      |
+| ---------------- | ----- | ------------------------------------------------------------------------------------------------------------------------- |
+| `plan-architect` | opus  | Codebase investigation, design decisions, decomposition into tasks, file intersection matrix, DAG, routing recommendation |
 
 ## Example
 

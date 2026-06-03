@@ -1,8 +1,8 @@
 # Skill /do
 
 Executes a task from a plan end to end without stopping. Reads the plan file,
-runs tasks, runs the post-implementation pipeline (simplify, cleanup, validate,
-document), and writes a report. The developer starts it and returns on notification.
+runs tasks, runs the post-implementation pipeline (validate, document, finalize),
+and writes a report. The developer starts it and returns on notification.
 
 ## Input
 
@@ -14,17 +14,16 @@ document), and writes a report. The developer starts it and returns on notificat
 
 ## Pipeline
 
-7 stages, each tracked in TodoWrite. Stages 1–6 run without confirmations; Stage 7 has a Complete loop with an AskUserQuestion.
+6 stages, each tracked in TodoWrite. Stages 1–5 run without confirmations; Stage 6 has a Complete loop with an AskUserQuestion.
 
-| Stage | Name         | What happens                                                                                                                |
-| ----- | ------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| 1     | **Parse**    | Read the plan file, extract Mode, tasks, depends_on, verification. Build the todo list.                                     |
-| 2     | **Execute**  | Run tasks: inline (trivial/simple) or sub-agents sequential (medium/complex). Status protocol.                              |
-| 3     | **Simplify** | Sub-agent simplifies code: over-engineering, duplication, unneeded abstractions                                             |
-| 4     | **Cleanup**  | Sub-agent removes cruft: debug logs, commented-out code, unused imports                                                     |
-| 5     | **Validate** | Direct execution: lint, type-check, tests, build. One retry on failure.                                                     |
-| 6     | **Document** | Sub-agent updates README, CHANGELOG, JSDoc/TSDoc for new exports                                                            |
-| 7     | **Complete** | Write the report, format, send notification; then completion loop: /yoke:review (recommended) / review via revdiff / finish |
+| Stage | Name         | What happens                                                                                                                               |
+| ----- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1     | **Parse**    | Read the plan file, extract Mode, tasks, depends_on, verification. Build the todo list.                                                    |
+| 2     | **Execute**  | Run tasks: inline (trivial/simple) or sub-agents sequential (medium/complex). Dispatch task-executor + combined task-reviewer per task.    |
+| 3     | **Validate** | Dispatch validator + formatter in parallel: lint, type-check, tests, build; format changed files.                                          |
+| 4     | **Document** | Opt-in via `--update-docs` flag or plan frontmatter `update_docs: true`. Sub-agent updates README, CHANGELOG, JSDoc/TSDoc for new exports. |
+| 5     | **Finalize** | Write the report directly (orchestrator), format, send notification.                                                                       |
+| 6     | **Complete** | Offer completion options: /yoke:review (recommended) / review via revdiff / finish                                                         |
 
 ## Output
 
@@ -32,7 +31,7 @@ File `docs/ai/<slug>/<slug>-report.md` with the following structure:
 
 - **Header** — Plan, Mode, Status (complete / partial / failed)
 - **Tasks** — per-task status table (DONE, BLOCKED, SKIPPED)
-- **Post-implementation** — statuses for simplify, cleanup, validate, document, format
+- **Post-implementation** — statuses for validate, document, format
 - **Concerns** — concerns raised by sub-agents (when DONE_WITH_CONCERNS)
 - **Validation** — result of each command (lint, tests, build)
 - **Changes summary** — files, actions, descriptions
@@ -63,16 +62,14 @@ Sub-agents return a status after running a task:
 
 ## Sub-agents
 
-| Agent              | Model  | Role                                                           |
-| ------------------ | ------ | -------------------------------------------------------------- |
-| `task-executor`    | opus   | Runs one task: implementation, verification, commit            |
-| `spec-reviewer`    | sonnet | Checks the implementation against the spec                     |
-| `quality-reviewer` | sonnet | Evaluates code quality: patterns, readability, edge cases      |
-| `code-polisher`    | opus   | Simplifies code: over-engineering, duplication, extra wrappers |
-| `validator`        | haiku  | Lint, type-check, tests, build + auto-fix                      |
-| `doc-updater`      | sonnet | Updates README, CHANGELOG, JSDoc/TSDoc                         |
-| `formatter`        | haiku  | Detects the formatter and runs it on changed files             |
-| `report-writer`    | haiku  | Writes the structured report file                              |
+| Agent           | Model  | Role                                                                                                        |
+| --------------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| `task-executor` | opus   | Runs one task: implementation, verification, commit                                                         |
+| `task-reviewer` | sonnet | Combined spec compliance + code quality review in one pass (replaces old spec-reviewer/quality-reviewer)    |
+| `validator`     | haiku  | Lint, type-check, tests, build + auto-fix                                                                   |
+| `formatter`     | haiku  | Detects the formatter and runs it on changed files                                                          |
+| `doc-updater`   | sonnet | Updates README, CHANGELOG, JSDoc/TSDoc (Phase 4 — opt-in only)                                              |
+| `code-polisher` | opus   | Simplifies code: over-engineering, duplication, extra wrappers (exists in agents/ but not in main pipeline) |
 
 ## Example
 

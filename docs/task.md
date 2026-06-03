@@ -15,14 +15,13 @@ The output is a task file that `/yoke:plan` turns into an implementation plan.
 
 ## Phases
 
-| Phase | Name            | What happens                                                                                           |
-| ----- | --------------- | ------------------------------------------------------------------------------------------------------ |
-| 1     | **Parse**       | Fetch ticket contents, extract materials, form task-slug and TICKET_ID                                 |
-| 2     | **Investigate** | Sub-agents explore the codebase (task-explorer) and architecture (task-architect). Strictly sequential |
-| 3     | **Synthesize**  | Apply 5 dimensions to findings, determine type (frontend/general), form clarifying questions           |
-| 4     | **Write**       | Write the task file from examples (simple/complex), copyedit via sub-agent (Elements of Style)         |
-| 5     | **Commit**      | Auto-commit the artifact: `TICKET docs(SLUG): add task definition`                                     |
-| 6     | **Complete**    | Completion loop: run /yoke:plan (recommended) / review via revdiff / finish                            |
+| Phase | Name            | What happens                                                                                              |
+| ----- | --------------- | --------------------------------------------------------------------------------------------------------- |
+| 1     | **Parse**       | Fetch ticket contents, extract materials, form task-slug and TICKET_ID                                    |
+| 2     | **Investigate** | Sub-agent `task-investigator` explores the codebase: entry points, patterns, tests, risks                 |
+| 3     | **Synthesize**  | Apply 5 dimensions to findings, determine type (frontend/general), form clarifying questions              |
+| 4     | **Write**       | Write the task file; self-check prose; auto-commit the artifact: `TICKET docs(SLUG): add task definition` |
+| 5     | **Complete**    | Completion loop: run /yoke:plan (recommended) / review via revdiff / finish                               |
 
 ## Output
 
@@ -48,10 +47,9 @@ File `.yoke/ai/<slug>/<slug>-task.md` with the following structure:
 
 ## Sub-agents
 
-| Agent            | Model  | Role                                                                   |
-| ---------------- | ------ | ---------------------------------------------------------------------- |
-| `task-explorer`  | sonnet | Codebase exploration: files, patterns, tests, dependencies             |
-| `task-architect` | sonnet | Architecture analysis: patterns, integration points, risks, trade-offs |
+| Agent               | Model  | Role                                                                                          |
+| ------------------- | ------ | --------------------------------------------------------------------------------------------- |
+| `task-investigator` | sonnet | Codebase exploration: entry points, patterns to reuse, tests, integration risks, dependencies |
 
 ## Example
 

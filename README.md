@@ -98,11 +98,19 @@ Quality checks (prose, structure, documentation, links), version bump, tag, push
 
 **Output:** new tag + GitHub release
 
+### /yoke-validate — SKILL.md linter
+
+Validates every `SKILL.md` changed in the current branch against elements-of-style (Strunk) and plugin-dev skill-development conventions; auto-fixes safe findings and reports the rest.
+
+```
+/yoke-validate
+```
+
 ## Telegram notifications
 
 When working on multiple projects in parallel (tmux + worktree), skills send contextual notifications to Telegram: when questions need an answer, when a task is complete, when something is blocked. [Details →](docs/notify.md)
 
-11 notification points across 5 skills: `/task`, `/plan`, `/do`, `/fix`, `/pr`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
+13 notification points across 8 skills: `/bootstrap`, `/task`, `/plan`, `/do`, `/fix`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
 
 ## Full cycle
 
@@ -136,9 +144,11 @@ Core pipeline:
 ```
 yoke/
 ├── .claude/
-│   └── skills/              # local skills (plugin development)
-│       ├── yoke-create/     # skill factory
-│       └── yoke-release/    # plugin release
+│   ├── skills/              # local skills (plugin development)
+│   │   ├── yoke-create/     # skill factory
+│   │   ├── yoke-release/    # plugin release
+│   │   └── yoke-validate/   # SKILL.md linter
+│   └── commands/            # local dev commands (journal)
 ├── .claude-plugin/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # marketplace registry
@@ -150,21 +160,22 @@ yoke/
 │   │   └── reference/
 │   ├── task/                # task definition
 │   │   ├── SKILL.md
-│   │   ├── agents/          # task-explorer, task-architect
+│   │   ├── agents/          # task-investigator
 │   │   ├── reference/       # synthesize-guide, frontend-guide, elements-of-style
 │   │   └── examples/
 │   ├── plan/                # planning
 │   │   ├── SKILL.md
-│   │   ├── agents/          # plan-explorer, plan-designer, plan-reviewer
+│   │   ├── agents/          # plan-architect
 │   │   ├── reference/       # routing-rules, plan-format, elements-of-style
 │   │   └── examples/
 │   ├── do/                  # plan execution
 │   │   ├── SKILL.md
-│   │   ├── agents/          # task-executor, spec-reviewer, quality-reviewer, code-polisher, doc-updater
+│   │   ├── agents/          # task-executor, task-reviewer, validator, formatter, code-polisher, doc-updater
 │   │   └── reference/       # status-protocol, report-format
 │   ├── review/              # code review preparation
 │   │   ├── SKILL.md
-│   │   └── agents/          # review-analyzer
+│   │   ├── agents/          # code-reviewer, single-fix-agent
+│   │   └── reference/       # review-format
 │   ├── gca/                 # git commit with smart grouping
 │   │   ├── SKILL.md
 │   │   └── reference/       # commit-convention, staging-strategy
@@ -180,7 +191,8 @@ yoke/
 │   │   └── reference/       # fix-log-format
 │   ├── explore/             # codebase exploration and brainstorming
 │   │   ├── SKILL.md
-│   │   └── agents/          # explore-agent, explore-log-writer
+│   │   ├── agents/          # explore-agent, explore-log-writer
+│   │   └── reference/       # exploration-log-format
 │   ├── grill/               # interactive plan grilling
 │   │   └── SKILL.md
 │   ├── grill-docs/          # grilling + .yoke/context.md glossary + ADRs
@@ -193,8 +205,11 @@ yoke/
 │   │   └── reference/       # github-issues
 │   ├── handoff/             # compact the conversation for another agent
 │   │   └── SKILL.md
-│   └── gst/                 # repository status
-│       └── SKILL.md
+│   ├── gst/                 # repository status
+│   │   └── SKILL.md
+│   └── sync-docs/           # regenerate public skill catalog
+│       ├── SKILL.md
+│       └── reference/       # mdx-template, sync-spec
 ├── hooks/
 │   ├── hooks.json           # Stop hook registration (Telegram notifications)
 │   └── notify.sh            # delivery script: reads the queue → sends to Telegram
@@ -204,7 +219,6 @@ yoke/
 │   ├── gp-push.sh           # gp: runs git push, collects report
 │   ├── pr-collect.sh        # pr: read-only data collection (paths, not contents)
 │   └── gst-collect.sh       # gst: read-only repository status data
-├── commands/
 └── docs/                    # per-skill documentation
 ```
 
@@ -231,10 +245,10 @@ Skill:
 skills/<name>/SKILL.md
 ```
 
-Command:
+Command (local-only, not shipped):
 
 ```
-commands/<name>.md
+.claude/commands/<name>.md
 ```
 
 Both formats use YAML frontmatter with `name` and `description`.
@@ -268,21 +282,21 @@ revdiff launches inside a terminal overlay. One of the following is required; ot
 
 Each yoke skill that produces an artifact offers "Review via revdiff" at its Complete phase.
 
-- Task file (from `/yoke:task` Phase 6):
+- Task file (from `/yoke:task` Phase 5):
   ```text
   /revdiff --only .yoke/ai/<slug>/<slug>-task.md
   ```
   Reviews the markdown task file.
-- Plan file (from `/yoke:plan` Phase 8):
+- Plan file (from `/yoke:plan` Phase 4):
   ```text
   /revdiff --only .yoke/ai/<slug>/<slug>-plan.md
   ```
   Reviews the markdown plan file.
-- Code changes (from `/yoke:do` Phase 7):
+- Code changes (from `/yoke:do` Phase 6):
   ```text
   /revdiff <base>...HEAD
   ```
-  Reviews the diff produced by /do against the default branch. `<base>` resolves via the cascade `origin/HEAD` → `origin/main` → `origin/master` → `main` (see `skills/do/SKILL.md` Phase 7).
+  Reviews the diff produced by /do against the default branch. `<base>` resolves via the cascade `origin/HEAD` → `origin/main` → `origin/master` → `main` (see `skills/do/SKILL.md` Phase 6).
 
 ### Annotation fold-back
 

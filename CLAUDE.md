@@ -10,26 +10,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 .claude/
-  skills/              # local skills for plugin development (yoke-create, yoke-release)
+  skills/              # local skills for plugin development (yoke-create, yoke-release, yoke-validate)
+  commands/            # local dev commands (journal)
 .claude-plugin/
   plugin.json          # plugin manifest (name, version, author)
   marketplace.json     # marketplace registry (name, owner, plugins[])
 skills/                # skills — auto-discovered by SKILL.md in subdirectories
-commands/              # slash commands — auto-discovered by .md files
 hooks/                 # hooks — auto-discovered by hooks.json (Telegram notifications)
-lib/                   # shared scripts called from skills (notify.sh)
+lib/                   # shared scripts called from skills (notify.sh, gp-precheck.sh, gp-push.sh, gst-collect.sh, pr-collect.sh)
 docs/                  # reference documentation for the plugin system
 ```
 
-Components (`skills/`, `commands/`) live at the repository root, NOT inside `.claude-plugin/`.
+Components (`skills/`) live at the repository root, NOT inside `.claude-plugin/`.
 
 ## Plugin System
 
 - **Skills** (`skills/<name>/SKILL.md`): model-invoked, activated automatically by `description` in YAML frontmatter
 - **Agents** (`skills/<name>/agents/<agent>.md`): model-invoked sub-agents dispatched by skill orchestrators via the Agent tool; YAML frontmatter with `name` and `description`
-- **Commands** (`commands/<name>.md`): user-invoked via `/yoke:<name>`, YAML frontmatter with `name` and `description`
+- **Local commands** (`.claude/commands/<name>.md`): dev-only slash commands (e.g. `/journal`); NOT shipped with the plugin.
 - **Namespace**: all components are available as `/yoke:<name>` after installation
-- **`$ARGUMENTS`**: placeholder for user input in commands
+- **`$ARGUMENTS`**: placeholder for user-supplied arguments in skills and commands
 - **`${CLAUDE_PLUGIN_ROOT}`**: for paths inside the plugin in hooks and MCP configs
 
 ## Validation
@@ -38,8 +38,8 @@ Components (`skills/`, `commands/`) live at the repository root, NOT inside `.cl
 # Validate JSON manifests
 python3 -c "import json; json.load(open('.claude-plugin/plugin.json')); json.load(open('.claude-plugin/marketplace.json')); print('OK')"
 
-# Validate YAML frontmatter in skills/commands — first line must be ---
-head -1 skills/*/SKILL.md commands/*.md
+# Validate YAML frontmatter in skills — first line must be ---
+head -1 skills/*/SKILL.md
 ```
 
 ## Testing locally

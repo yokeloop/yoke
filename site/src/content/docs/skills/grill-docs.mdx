@@ -107,7 +107,7 @@ When the user states how something works, check whether the code agrees. If you 
 
 When a term is resolved, update `.yoke/context.md` right there. Don't batch these up — capture them as they happen. Use the format in [reference/CONTEXT-FORMAT.md](reference/CONTEXT-FORMAT.md).
 
-`.yoke/context.md` should be devoid of implementation details. Do not treat `.yoke/context.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
+Keep `.yoke/context.md` free of implementation details. Do not treat it as a spec, a scratchpad, or a repository for implementation decisions. It is a glossary and nothing else.
 
 ### Offer ADRs sparingly
 
@@ -124,7 +124,7 @@ If any of the three is missing, skip the ADR. Use the format in [reference/ADR-F
 ## Rules
 
 - One AskUserQuestion per question. Wait for the answer before moving on.
-- Every question offers a recommended answer, listed first; the user may answer free-form via "Other".
+- Every question must offer a recommended answer first; the user may answer free-form via "Other".
 - Capture terminology in `.yoke/context.md` and decisions in ADRs inline, lazily — create files only when there is something to write.
 - End the session by summarising the resolved decisions and confirming what was written to `.yoke/context.md` and `.yoke/adr/`.
 - For a plain interview without documentation maintenance, use `/yoke:grill`.

@@ -48,13 +48,13 @@ description: >-
 
 # PRD
 
-Turn the current conversation and codebase understanding into a PRD. Do NOT interview the user — synthesize what you already know.
+Turn the current conversation and codebase understanding into a PRD. Do NOT interview the user — synthesize what is already known.
 
 ## Process
 
-1. **Explore the repo** to understand the codebase, if you haven't already. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and the relevant `.yoke/adr/`, use the glossary's vocabulary throughout the PRD, and flag any ADR the PRD contradicts.
+1. **Explore the repo** to understand the codebase, if not already done. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and the relevant `.yoke/adr/`, use the glossary's vocabulary throughout the PRD, and flag any ADR the PRD contradicts.
 
-2. **Sketch the major modules** you'll build or modify. Look for deep modules to extract that can be tested in isolation. A deep module (as opposed to a shallow one) encapsulates substantial functionality behind a simple, testable interface that rarely changes. Briefly confirm the module breakdown with the user and which modules they want tested — a quick check, not a requirements interview.
+2. **Sketch the major modules** to build or modify. Look for deep modules to extract that can be tested in isolation. A deep module (as opposed to a shallow one) encapsulates substantial functionality behind a simple, testable interface that rarely changes. Briefly confirm the module breakdown with the user and which modules they want tested — a quick check, not a requirements interview.
 
 3. **Write the PRD** using the template below.
 

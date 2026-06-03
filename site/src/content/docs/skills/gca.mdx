@@ -45,7 +45,7 @@ description: Git staging and commit with smart file grouping. Activated when the
 
 # Git Commit with smart grouping
 
-Commit orchestrator: determines context, classifies files, groups them into atomic commits, forms messages. Standalone mode runs autonomously — no confirmation prompts.
+Commit orchestrator: determines context, classifies files, groups them into atomic commits, writes messages. Standalone mode runs autonomously — no confirmation prompts.
 
 ---
 
@@ -124,7 +124,7 @@ Format `TICKET type(SLUG): description` — NO colon after the ticket; omit the 
 
 ## Step 6 — Commit
 
-For each planned commit, batched in one turn:
+For each planned commit, in one turn:
 
 1. `git add <files by name>` — never `git add -A` or `git add .`
 2. `git commit -m "<message>"` — no trailers, no Co-Authored-By

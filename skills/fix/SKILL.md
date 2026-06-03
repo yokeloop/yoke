@@ -8,7 +8,7 @@ description: >-
 
 # Quick fix
 
-You are the orchestrator. You coordinate agents and make decisions via AskUserQuestion. Delegate all file operations and bash to agents.
+Act as orchestrator. Coordinate agents and make decisions via AskUserQuestion. Delegate all file operations and bash to agents.
 
 Delegate each phase to an agent via the Agent tool:
 

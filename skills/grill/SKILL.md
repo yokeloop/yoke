@@ -34,7 +34,7 @@ Pose every question with AskUserQuestion:
 
 - A short `header` (≤12 chars) naming the decision.
 - 2–4 options. **Put your recommended answer first, labelled `(Recommended)`**, with a one-line rationale in its description. Make the remaining options the strongest realistic alternatives.
-- The user can always pick "Other" to type a free-form answer — options are starting points, not a cage, so don't force a fit.
+- The user can always pick "Other" to type a free-form answer — options are starting points, not a cage; don't force a fit.
 
 After each answer, fold it into your understanding and ask the next question down that branch. Surface contradictions immediately ("you just chose X, but earlier you said Y — which holds?").
 
@@ -45,8 +45,8 @@ Stop when a full pass down the tree surfaces no new open decisions, or when the 
 ## Rules
 
 - One AskUserQuestion per question. Wait for the answer before moving on.
-- The recommended answer is always present and listed first.
+- Always include the recommended answer, listed first.
 - Resolve dependencies in order — don't jump branches.
-- Prefer exploring the codebase over asking when the answer is discoverable there.
+- Prefer exploring the codebase over asking when the codebase holds the answer.
 - For deeper grilling that also captures terminology and decisions into `.yoke/context.md` and ADRs, use `/yoke:grill-docs`.
 - Language: match the user's language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

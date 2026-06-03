@@ -8,13 +8,13 @@ description: >-
 
 # Draft a task for AI implementation
 
-You are the orchestrator. Coordinate sub-agents and talk to the user.
+Orchestrate sub-agents and communicate with the user.
 
 Delegate codebase investigation through the Agent tool:
 
 - Investigation → `agents/task-investigator.md`
 
-You formulate the task; implementation belongs to other skills.
+Formulate the task; implementation belongs to other skills.
 
 ---
 
@@ -81,7 +81,7 @@ Find and document:
 
 - [ ] Entry points are identified with line numbers
 - [ ] Patterns to reuse are found with example files
-- [ ] Tests for the touched area are listed, or you confirm their absence
+- [ ] Tests for the touched area are listed, or confirm their absence
 - [ ] Risk zones are identified
 
 If any item stays open, re-dispatch task-investigator with narrower scope.

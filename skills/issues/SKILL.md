@@ -20,7 +20,7 @@ Work from whatever is already in the conversation context. If the user passes an
 
 ### 2. Explore the codebase (skip if already explored this session)
 
-If you have not already explored the codebase, do so to understand its current state. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and relevant `.yoke/adr/`, give issue titles and descriptions the glossary's vocabulary, and flag any ADR a slice contradicts.
+If the codebase has not been explored this session, explore it now to understand its current state. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and relevant `.yoke/adr/`, give issue titles and descriptions the glossary's vocabulary, and flag any ADR a slice contradicts.
 
 ### 3. Draft vertical slices
 
@@ -54,7 +54,7 @@ Iterate until the user approves the breakdown.
 
 ### 5. Publish
 
-Publish in dependency order (blockers first) so you can reference real issue identifiers in the "Blocked by" field. Follow `reference/github-issues.md` for the `gh` conventions and triage labels.
+Publish in dependency order (blockers first) to reference real issue identifiers in the "Blocked by" field. Follow `reference/github-issues.md` for the `gh` conventions and triage labels.
 
 Order the slices so every blocker is created before the slices that depend on it. For each slice, in that order: write its body (the `<issue-template>` below) to a file, substitute the real issue numbers of its blockers into the "Blocked by" section, then create it:
 

@@ -9,7 +9,7 @@ description: >-
 
 # Code review with automatic fixing
 
-You are the orchestrator. You communicate with the user and coordinate sub-agents.
+Act as the orchestrator. Communicate with the user and coordinate sub-agents.
 
 Agents:
 
@@ -105,7 +105,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review -
 
 ### Phase 4 — Fix
 
-When the user chose "Skip fixes", move all issues to SKIPPED_ISSUES with reason "Skipped by user choice" and skip to Phase 5.
+When the user chooses "Skip fixes", move all issues to SKIPPED_ISSUES with reason "Skipped by user choice" and skip to Phase 5.
 
 If ISSUES_TO_FIX is non-empty:
 
@@ -143,7 +143,7 @@ Each commits its own fixes when needed.
 
 ### Phase 5 — Finalize
 
-**a)** Write `.yoke/ai/<SLUG>/<SLUG>-review.md` directly via the Write tool using the Review template (see appendix at the end of this file).
+**a)** Write `.yoke/ai/<SLUG>/<SLUG>-review.md` directly via the Write tool using the Review template (see appendix).
 
 Fill the template from data the orchestrator already holds:
 

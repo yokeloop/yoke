@@ -14,7 +14,7 @@ Write a handoff document summarizing the current conversation so a fresh agent c
 
 Cover concisely: the goal, the current state (what is done), what is left and the next steps, key decisions, gotchas or blockers, and paths or URLs to the relevant artifacts.
 
-Include a "Suggested skills" section recommending which yoke skills the next agent should invoke, chosen by where the work sits in the flow (e.g. unstarted → `/yoke:task`; planned → `/yoke:do`; implemented but unreviewed → `/yoke:review`).
+Include a "Suggested skills" section recommending which yoke skills the next agent should invoke, based on where the work sits in the flow (e.g. unstarted → `/yoke:task`; planned → `/yoke:do`; implemented but unreviewed → `/yoke:review`).
 
 Do not duplicate content already captured in other artifacts (PRDs, plans, ADRs, issues, commits, diffs). Reference them by path or URL instead. Yoke artifacts live under `.yoke/` in the workspace (e.g. `.yoke/ai/<slug>/`, `.yoke/adr/`, `.yoke/context.md`).
 

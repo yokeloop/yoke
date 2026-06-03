@@ -27,7 +27,7 @@ If a question is answerable from the codebase, the agent explores instead of ask
 
 No file. A shared understanding of the plan, plus a closing summary of resolved decisions.
 
-For a version that also records terminology in `CONTEXT.md` and decisions as ADRs, use `/yoke:grill-docs`.
+For a version that also records terminology in `.yoke/context.md` and decisions as ADRs, use `/yoke:grill-docs`.
 
 ## Connections
 

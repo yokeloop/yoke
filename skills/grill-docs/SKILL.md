@@ -2,12 +2,13 @@
 name: grill-docs
 description: >-
   Docs-aware grilling: interrogates the user's plan one question at a time AND
-  maintains the domain glossary (CONTEXT.md) and architecture decision records
-  (docs/adr/) inline as decisions crystallise. Used to stress-test a plan
-  against the project's language and documented decisions; for a plain interview
-  that writes no files, use grill. Activates when the user writes "grill-docs",
-  "grill with docs", "grill and update the glossary", "grill and write ADRs",
-  "stress-test against CONTEXT.md", "challenge my plan and capture decisions".
+  maintains the domain glossary (.yoke/context.md) and architecture decision
+  records (.yoke/adr/) inline as decisions crystallise. Used to stress-test a
+  plan against the project's language and documented decisions; for a plain
+  interview that writes no files, use grill. Activates when the user writes
+  "grill-docs", "grill with docs", "grill and update the glossary", "grill and
+  write ADRs", "stress-test against the glossary", "challenge my plan and
+  capture decisions".
 ---
 
 # Grill with docs
@@ -32,41 +33,25 @@ During codebase exploration, also look for existing documentation:
 
 ### File structure
 
-Most repos have a single context:
+A single glossary and a single ADR directory for the whole repo, under `.yoke/`:
 
 ```
 /
-├── CONTEXT.md
-├── docs/
+├── .yoke/
+│   ├── context.md
 │   └── adr/
 │       ├── 0001-event-sourced-orders.md
 │       └── 0002-postgres-for-write-model.md
 └── src/
 ```
 
-If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The map points to where each one lives:
-
-```
-/
-├── CONTEXT-MAP.md
-├── docs/
-│   └── adr/                          ← system-wide decisions
-├── src/
-│   ├── ordering/
-│   │   ├── CONTEXT.md
-│   │   └── docs/adr/                 ← context-specific decisions
-│   └── billing/
-│       ├── CONTEXT.md
-│       └── docs/adr/
-```
-
-Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create one when the first term is resolved. If no `docs/adr/` exists, create it when the first ADR is needed.
+Create files lazily — only when you have something to write. If no `.yoke/context.md` exists, create it when the first term is resolved. If no `.yoke/adr/` exists, create it when the first ADR is needed.
 
 ## During the session
 
 ### Challenge against the glossary
 
-When the user uses a term that conflicts with the existing language in `CONTEXT.md`, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
+When the user uses a term that conflicts with the existing language in `.yoke/context.md`, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
 
 ### Sharpen fuzzy language
 
@@ -80,11 +65,11 @@ When domain relationships are being discussed, stress-test them with specific sc
 
 When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
 
-### Update CONTEXT.md inline
+### Update the glossary inline
 
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [reference/CONTEXT-FORMAT.md](reference/CONTEXT-FORMAT.md).
+When a term is resolved, update `.yoke/context.md` right there. Don't batch these up — capture them as they happen. Use the format in [reference/CONTEXT-FORMAT.md](reference/CONTEXT-FORMAT.md).
 
-`CONTEXT.md` should be devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
+`.yoke/context.md` should be devoid of implementation details. Do not treat `.yoke/context.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
 
 ### Offer ADRs sparingly
 
@@ -102,7 +87,7 @@ If any of the three is missing, skip the ADR. Use the format in [reference/ADR-F
 
 - One AskUserQuestion per question. Wait for the answer before moving on.
 - Every question offers a recommended answer, listed first; the user may answer free-form via "Other".
-- Capture terminology in `CONTEXT.md` and decisions in ADRs inline, lazily — create files only when there is something to write.
-- End the session by summarising the resolved decisions and confirming what was written to `CONTEXT.md` and `docs/adr/`.
+- Capture terminology in `.yoke/context.md` and decisions in ADRs inline, lazily — create files only when there is something to write.
+- End the session by summarising the resolved decisions and confirming what was written to `.yoke/context.md` and `.yoke/adr/`.
 - For a plain interview without documentation maintenance, use `/yoke:grill`.
 - Language: match the user's language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

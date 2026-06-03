@@ -28,7 +28,7 @@ Two modes: post-flow (after task/plan/do) and standalone. Supports chains of fix
 
 ## Output
 
-Implemented code + an entry in `docs/ai/<slug>/<slug>-fixes.md`.
+Implemented code + an entry in `.yoke/ai/<slug>/<slug>-fixes.md`.
 
 The fix log contains: description, status, changed files, validation results, commits.
 
@@ -51,7 +51,7 @@ The fix log contains: description, status, changed files, validation results, co
 /yoke:fix fix email validation
 ```
 
-Result: opus implements, polishes, and validates the fix; the skill adds an entry to `docs/ai/<slug>/<slug>-fixes.md`.
+Result: opus implements, polishes, and validates the fix; the skill adds an entry to `.yoke/ai/<slug>/<slug>-fixes.md`.
 
 ## Connections
 

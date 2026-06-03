@@ -50,7 +50,7 @@ Read `reference/fix-log-format.md` — the entry template.
 ### 2. Check the fix-log file
 
 ```bash
-FIX_LOG="docs/ai/{{SLUG}}/{{SLUG}}-fixes.md"
+FIX_LOG=".yoke/ai/{{SLUG}}/{{SLUG}}-fixes.md"
 ```
 
 File exists → append a new entry.
@@ -59,7 +59,7 @@ File missing → create with header and first entry.
 ### 3. Create the directory (if needed)
 
 ```bash
-mkdir -p "docs/ai/{{SLUG}}"
+mkdir -p ".yoke/ai/{{SLUG}}"
 ```
 
 ### 4. Write the entry
@@ -71,7 +71,7 @@ Follow the template from `reference/fix-log-format.md`. Substitute data from the
 If TICKET_ID = `none` → commit without ticket prefix.
 
 ```bash
-git add "docs/ai/{{SLUG}}/{{SLUG}}-fixes.md"
+git add ".yoke/ai/{{SLUG}}/{{SLUG}}-fixes.md"
 
 # With ticket:
 git commit -m "{{TICKET_ID}} docs({{SLUG}}): add fix-{{FIX_NUMBER}}"
@@ -83,7 +83,7 @@ git commit -m "docs({{SLUG}}): add fix-{{FIX_NUMBER}}"
 ## Response format
 
 ```
-FIX_LOG_FILE: docs/ai/<SLUG>/<SLUG>-fixes.md
+FIX_LOG_FILE: .yoke/ai/<SLUG>/<SLUG>-fixes.md
 FIX_NUMBER: <N>
 COMMIT: <hash>
 ```

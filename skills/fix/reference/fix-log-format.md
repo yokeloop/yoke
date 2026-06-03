@@ -9,7 +9,7 @@ Format of the `<slug>-fixes.md` file and individual entries.
 ```markdown
 # Fix Log: <SLUG>
 
-**Task:** docs/ai/<SLUG>/<SLUG>-task.md
+**Task:** .yoke/ai/<SLUG>/<SLUG>-task.md
 ```
 
 ---

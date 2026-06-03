@@ -96,7 +96,7 @@ Determined by context:
 
 ### Within yoke flow
 
-Slug = task directory name (e.g. `86-black-jack-page` from `docs/ai/86-black-jack-page/`). Source: active task/plan file in `docs/ai/` or the passed path.
+Slug = task directory name (e.g. `86-black-jack-page` from `.yoke/ai/86-black-jack-page/`). Source: active task/plan file in `.yoke/ai/` or the passed path.
 
 ### Outside yoke flow (standalone /gca)
 

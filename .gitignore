@@ -1,5 +1,6 @@
 node_modules
-.yoke
+.yoke/sync-docs-tmp/
+.yoke/notify-pending.json
 .worktrees
 .config/wt.toml*
 site/dist/

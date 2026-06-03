@@ -22,18 +22,18 @@ Activates when the user writes:
 
 ```
 /yoke:review 86-black-jack-page
-/yoke:review docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:review .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
 /yoke:review
 ```
 
 ## Inputs and outputs
 
 **Input:** `$ARGUMENTS` — task slug or path to a task file. Without an argument, the skill resolves the slug
-from the branch or the latest directory under `docs/ai/`.
+from the branch or the latest directory under `.yoke/ai/`.
 
 ```
 /yoke:review 86-black-jack-page
-/yoke:review docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:review .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
 /yoke:review
 ```
 
@@ -71,7 +71,7 @@ The flow pauses twice: at fix-scope selection and at the final action.
 
 `$ARGUMENTS` — task-slug or path to task-file.
 
-No argument — determine slug from the current branch or the latest `docs/ai/*/` directory.
+No argument — determine slug from the current branch or the latest `.yoke/ai/*/` directory.
 
 ---
 
@@ -95,18 +95,18 @@ No argument — determine slug from the current branch or the latest `docs/ai/*/
 **1.** Determine `SLUG`:
 
 - From `$ARGUMENTS` (if slug)
-- From path to task-file: `docs/ai/<slug>/<slug>-task.md`
-- From the current branch or the latest `docs/ai/*/` directory
+- From path to task-file: `.yoke/ai/<slug>/<slug>-task.md`
+- From the current branch or the latest `.yoke/ai/*/` directory
 
-**2.** Path to task-file: `docs/ai/<SLUG>/<SLUG>-task.md`.
+**2.** Path to task-file: `.yoke/ai/<SLUG>/<SLUG>-task.md`.
 If the file is absent, pass `—` to the sub-agent.
 
 **3.** Extract `TICKET_ID` from SLUG (per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`).
 
 **4.** Post-flow awareness — check artifacts:
 
-- `docs/ai/<SLUG>/<SLUG>-report.md` — collect KNOWN_ISSUES from Concerns sections and quality review results
-- `docs/ai/<SLUG>/<SLUG>-fixes.md` — append the list of fixes to KNOWN_ISSUES
+- `.yoke/ai/<SLUG>/<SLUG>-report.md` — collect KNOWN_ISSUES from Concerns sections and quality review results
+- `.yoke/ai/<SLUG>/<SLUG>-fixes.md` — append the list of fixes to KNOWN_ISSUES
 - If no artifacts exist, set KNOWN_ISSUES = `—`
 
 **Transition:** SLUG, TICKET_ID, KNOWN_ISSUES determined → Phase 2.
@@ -188,7 +188,7 @@ Each commits its own fixes when needed.
 
 ### Phase 5 — Finalize
 
-**a)** Write `docs/ai/<SLUG>/<SLUG>-review.md` directly via the Write tool using the Review template (see appendix at the end of this file).
+**a)** Write `.yoke/ai/<SLUG>/<SLUG>-review.md` directly via the Write tool using the Review template (see appendix at the end of this file).
 
 Fill the template from data the orchestrator already holds:
 
@@ -202,12 +202,12 @@ Fill the template from data the orchestrator already holds:
 
 Replace empty tables with the placeholder text from the template's `>` blocks (e.g., "Code is clean.").
 
-After writing the report, auto-commit it. Check `docs/ai/` against `.gitignore`. If ignored — skip.
+After writing the report, auto-commit it. If `.yoke/` is gitignored — skip.
 
 Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 
 ```bash
-git add docs/ai/<SLUG>/<SLUG>-review.md
+git add .yoke/ai/<SLUG>/<SLUG>-review.md
 git commit -m "TICKET docs(SLUG): add review report"
 ```
 
@@ -235,7 +235,7 @@ Otherwise skip.
 **1.** Notification:
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --phase Complete --slug "$SLUG" --title "Review complete" --body "docs/ai/$SLUG/$SLUG-review.md"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --phase Complete --slug "$SLUG" --title "Review complete" --body ".yoke/ai/$SLUG/$SLUG-review.md"
 ```
 
 **2.** Report the result: number found / fixed / skipped, path to the review file.

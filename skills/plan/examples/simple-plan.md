@@ -12,7 +12,7 @@ Shows:
 ## Input — task file
 
 ```
-docs/ai/112-password-reset-email/112-password-reset-email-task.md
+.yoke/ai/112-password-reset-email/112-password-reset-email-task.md
 Complexity: simple
 ```
 
@@ -44,13 +44,13 @@ Standard for security-sensitive operations; no prior convention in the project.
 
 ## Final plan file
 
-> Written to `docs/ai/112-password-reset-email/112-password-reset-email-plan.md`
+> Written to `.yoke/ai/112-password-reset-email/112-password-reset-email-plan.md`
 
 ---
 
 # Add password reset via email — implementation plan
 
-**Task:** docs/ai/112-password-reset-email/112-password-reset-email-task.md
+**Task:** .yoke/ai/112-password-reset-email/112-password-reset-email-task.md
 **Complexity:** simple
 **Mode:** inline
 **Parallel:** false

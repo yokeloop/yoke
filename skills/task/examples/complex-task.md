@@ -102,7 +102,7 @@ Approach B is architecturally cleaner and leaves the player-station protocol alo
 
 ## Final task file
 
-> Written to `docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md`
+> Written to `.yoke/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md`
 
 ---
 

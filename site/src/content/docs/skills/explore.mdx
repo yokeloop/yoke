@@ -182,12 +182,12 @@ Read `agents/explore-log-writer.md`. Pass to the agent:
 - QA_PAIRS — the full QA_LOG. Each record contains fields: Q, CONTEXT, ANSWER, DETAILS, SUMMARY, KEY_FILES, WEB_SOURCES, OPTIONS (if brainstorm). Pass all fields without compression.
 - DATE — the current date
 
-The agent will create the file `docs/ai/<SLUG>/<SLUG>-exploration.md`.
+The agent will create the file `.yoke/ai/<SLUG>/<SLUG>-exploration.md`.
 
 Print the result:
 
 ```
-Exploration log: docs/ai/<SLUG>/<SLUG>-exploration.md
+Exploration log: .yoke/ai/<SLUG>/<SLUG>-exploration.md
 Questions explored: <ITERATION>
 ```
 

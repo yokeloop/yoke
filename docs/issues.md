@@ -27,7 +27,7 @@ Each slice is a thin, end-to-end path through ALL layers (schema, API, UI, tests
 
 ## Output
 
-- `docs/ai/<slug>/<slug>-issues.md` — local index: title, type, blocked-by, issue URL, and body for each slice.
+- `.yoke/ai/<slug>/<slug>-issues.md` — local index: title, type, blocked-by, issue URL, and body for each slice.
 - GitHub issues (when `gh` is available), labelled `ready-for-agent`, published blockers-first so "Blocked by" cites real issue numbers. See [github-issues.md](../skills/issues/reference/github-issues.md). Falls back to local-only otherwise.
 
 Does not close or modify any parent issue.

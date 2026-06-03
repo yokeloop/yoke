@@ -34,7 +34,7 @@ Read `reference/exploration-log-format.md` — the template for the file and Q&A
 ### 2. Check whether the file exists
 
 ```bash
-EXPLORATION_LOG="docs/ai/{{SLUG}}/{{SLUG}}-exploration.md"
+EXPLORATION_LOG=".yoke/ai/{{SLUG}}/{{SLUG}}-exploration.md"
 ```
 
 New file → create it (steps 3–4–5).
@@ -43,7 +43,7 @@ File exists → switch to append mode (step 3a).
 ### 3. Create the directory
 
 ```bash
-mkdir -p "docs/ai/{{SLUG}}"
+mkdir -p ".yoke/ai/{{SLUG}}"
 ```
 
 ### 3a. Append mode (file exists)
@@ -74,7 +74,7 @@ Build the file from the template in `reference/exploration-log-format.md`:
 ## Response format
 
 ```text
-EXPLORATION_LOG_FILE: docs/ai/<SLUG>/<SLUG>-exploration.md
+EXPLORATION_LOG_FILE: .yoke/ai/<SLUG>/<SLUG>-exploration.md
 ```
 
 ## Rules

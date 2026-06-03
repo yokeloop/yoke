@@ -13,7 +13,7 @@ Shows:
 ## Input — task file
 
 ```
-docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
+.yoke/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
 Complexity: complex
 ```
 
@@ -32,13 +32,13 @@ Complexity: complex
 
 ## Final plan file
 
-> Written to `docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-plan.md`
+> Written to `.yoke/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-plan.md`
 
 ---
 
 # Real-time leaderboard updates — implementation plan
 
-**Task:** docs/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
+**Task:** .yoke/ai/RSA-44-leaderboard-realtime/RSA-44-leaderboard-realtime-task.md
 **Complexity:** complex
 **Mode:** sub-agents
 **Parallel:** true

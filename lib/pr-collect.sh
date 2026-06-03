@@ -47,10 +47,10 @@ fi
 
 find_artifact() { # $1 = suffix (review|report)
   local suffix="$1" latest f
-  if [ -f "docs/ai/$SLUG/$SLUG-$suffix.md" ]; then
-    printf '%s' "docs/ai/$SLUG/$SLUG-$suffix.md"; return
+  if [ -f ".yoke/ai/$SLUG/$SLUG-$suffix.md" ]; then
+    printf '%s' ".yoke/ai/$SLUG/$SLUG-$suffix.md"; return
   fi
-  latest=$(ls -td docs/ai/*/ 2>/dev/null | head -1)
+  latest=$(ls -td .yoke/ai/*/ 2>/dev/null | head -1)
   if [ -n "$latest" ]; then
     f=$(ls "${latest}"*-"$suffix".md 2>/dev/null | head -1)
     [ -n "$f" ] && { printf '%s' "$f"; return; }

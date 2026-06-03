@@ -9,7 +9,7 @@ The output is a plan file that `/yoke:do` executes autonomously.
 `$ARGUMENTS` — path to the task file produced by `/yoke:task`.
 
 ```
-/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:plan .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
 ## Phases
@@ -23,13 +23,13 @@ The skill runs autonomously through 8 sequential phases. Interaction points: Che
 | 3     | **Design**     | Sub-agent `plan-designer` makes design decisions, decomposes into tasks, builds the dependency DAG          |
 | 4     | **Route**      | Pick the execution strategy (mode + parallel) from the routing rules table                                  |
 | 5     | **Checkpoint** | The single approval point: all decisions, tasks, and routing in one batch. The user edits or says `approve` |
-| 6     | **Write**      | Write the plan file to `docs/ai/<slug>/<slug>-plan.md`                                                      |
+| 6     | **Write**      | Write the plan file to `.yoke/ai/<slug>/<slug>-plan.md`                                                     |
 | 7     | **Commit**     | Auto-commit the artifact: TICKET docs(SLUG): add implementation plan                                        |
 | 8     | **Complete**   | Completion loop: run /yoke:do (recommended) / review via revdiff / finish                                   |
 
 ## Output
 
-File `docs/ai/<slug>/<slug>-plan.md` with the following structure:
+File `.yoke/ai/<slug>/<slug>-plan.md` with the following structure:
 
 - **Header** — Task, Complexity, Mode, Parallel
 - **Design decisions** — numbered (DD-1, DD-2…), with rationale and alternatives
@@ -62,7 +62,7 @@ The orchestrator decides based on the file intersection matrix from the Design p
 ## Example
 
 ```
-/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:plan .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
 ## Connections

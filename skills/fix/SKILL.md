@@ -224,7 +224,7 @@ Read `agents/fix-log-writer.md`, pass to the agent:
 - Concerns (if any)
 - TICKET_ID
 
-The agent writes/appends `docs/ai/<SLUG>/<SLUG>-fixes.md` and commits.
+The agent writes/appends `.yoke/ai/<SLUG>/<SLUG>-fixes.md` and commits.
 
 Transition → Phase 7.
 

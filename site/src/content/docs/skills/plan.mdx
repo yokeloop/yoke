@@ -18,7 +18,7 @@ Activates when the user writes:
 ## Use it
 
 ```
-/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:plan .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
 ## Inputs and outputs
@@ -26,7 +26,7 @@ Activates when the user writes:
 **Input:** `$ARGUMENTS` — path to the task file produced by `/yoke:task`.
 
 ```
-/yoke:plan docs/ai/86-black-jack-page/86-black-jack-page-task.md
+/yoke:plan .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
 ```
 
 **Output:** —
@@ -57,7 +57,7 @@ The output is a plan file that `/yoke:do` executes.
 
 ## Input
 
-`$ARGUMENTS` — path to a task file, for example `docs/ai/86-black-jack-page/86-black-jack-page-task.md`
+`$ARGUMENTS` — path to a task file, for example `.yoke/ai/86-black-jack-page/86-black-jack-page-task.md`
 
 If the path is missing — request it from the user.
 
@@ -158,7 +158,7 @@ The architect's self-check covers requirements coverage, dependency validity, an
 
 ### Phase 3 — Write
 
-**1.** Write the file `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md` using this format:
+**1.** Write the file `.yoke/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md` using this format:
 
 ```markdown
 # <Task title> — implementation plan
@@ -245,12 +245,12 @@ For the full template with annotations and barrier/parallel grammar, see `refere
 
 **3. Auto-commit the artifact.**
 
-Check: is `docs/ai/` in `.gitignore`? If yes — tell the user and skip the commit.
+Check: is `.yoke/` in `.gitignore`? If yes — tell the user and skip the commit.
 
 Otherwise commit per the convention in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`:
 
 ```bash
-git add docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md
+git add .yoke/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md
 git commit -m "TICKET docs(SLUG): add implementation plan"
 ```
 
@@ -269,7 +269,7 @@ Commit only the plan artifact, no other files.
 Report the plan file path and run the finishing loop.
 
 Send a notification:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill plan --phase Complete --slug "$TASK_SLUG" --title "Plan ready" --body "docs/ai/$TASK_SLUG/$TASK_SLUG-plan.md"`
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill plan --phase Complete --slug "$TASK_SLUG" --title "Plan ready" --body ".yoke/ai/$TASK_SLUG/$TASK_SLUG-plan.md"`
 
 **Offer next step:**
 
@@ -281,8 +281,8 @@ Offer 3 options through AskUserQuestion:
 
 **Handle the choice (one-shot, no loop):**
 
-- **Run /yoke:do:** call the Skill tool with `/yoke:do` and the argument `docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit.
-- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only docs/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. If the return is non-empty, apply the annotations to the plan file and overwrite. Then exit. (For another pass, the user invokes `/revdiff` manually.)
+- **Run /yoke:do:** call the Skill tool with `/yoke:do` and the argument `.yoke/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. Exit.
+- **Review via revdiff:** call the Skill tool with `/revdiff` and the argument `--only .yoke/ai/<TASK_SLUG>/<TASK_SLUG>-plan.md`. If the return is non-empty, apply the annotations to the plan file and overwrite. Then exit. (For another pass, the user invokes `/revdiff` manually.)
   If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then exit.
 - **Finish:** report the file path. Exit.
 

@@ -12,13 +12,13 @@ No arguments. Works from the current conversation context.
 
 ## Process
 
-| Step | What happens                                                           |
-| ---- | ---------------------------------------------------------------------- |
-| 1    | Explore the repo; follow domain-doc consumer rules (CONTEXT.md, ADRs)  |
-| 2    | Sketch the major modules; favour deep, testable modules; confirm tests |
-| 3    | Write the PRD from the template                                        |
-| 4    | Save a local copy to `docs/ai/<slug>/<slug>-prd.md`                    |
-| 5    | Publish as a GitHub issue, apply `ready-for-agent`                     |
+| Step | What happens                                                                |
+| ---- | --------------------------------------------------------------------------- |
+| 1    | Explore the repo; follow domain-doc consumer rules (.yoke/context.md, ADRs) |
+| 2    | Sketch the major modules; favour deep, testable modules; confirm tests      |
+| 3    | Write the PRD from the template                                             |
+| 4    | Save a local copy to `.yoke/ai/<slug>/<slug>-prd.md`                        |
+| 5    | Publish as a GitHub issue, apply `ready-for-agent`                          |
 
 ## PRD template
 
@@ -28,7 +28,7 @@ No file paths or code snippets (they go stale) — except a decision-encoding pr
 
 ## Output
 
-- `docs/ai/<slug>/<slug>-prd.md` — local copy.
+- `.yoke/ai/<slug>/<slug>-prd.md` — local copy.
 - A GitHub issue (when `gh` is authenticated and a GitHub remote exists), labelled `ready-for-agent`. See [github-issues.md](../skills/issues/reference/github-issues.md). Falls back to local-only otherwise.
 
 ## Connections

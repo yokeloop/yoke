@@ -24,16 +24,16 @@ accumulates findings in a summary chain, and saves an exploration log when done.
 
 ## Output
 
-Exploration log: `docs/ai/<slug>/<slug>-exploration.md`.
+Exploration log: `.yoke/ai/<slug>/<slug>-exploration.md`.
 
 Each Q&A entry contains structured sections: question context, answer, details (file:line, code snippets), alternatives (brainstorm), key files, sources. A final summary closes the log.
 
 ## Sub-agents
 
-| Agent                | Model  | Role                                                                          |
-| -------------------- | ------ | ----------------------------------------------------------------------------- |
-| `explore-agent`      | sonnet | Exploration: code search, analysis, structured-output answer                  |
-| `explore-log-writer` | haiku  | Writes a structured exploration log to `docs/ai/<slug>/<slug>-exploration.md` |
+| Agent                | Model  | Role                                                                           |
+| -------------------- | ------ | ------------------------------------------------------------------------------ |
+| `explore-agent`      | sonnet | Exploration: code search, analysis, structured-output answer                   |
+| `explore-log-writer` | haiku  | Writes a structured exploration log to `.yoke/ai/<slug>/<slug>-exploration.md` |
 
 ## Example
 

@@ -2,7 +2,7 @@
 name: prd
 description: >-
   Turns the current conversation and codebase understanding into a PRD,
-  publishes it as a GitHub issue, and saves a local copy in docs/ai. Does not
+  publishes it as a GitHub issue, and saves a local copy in .yoke/ai. Does not
   interview — synthesizes what is already known. Activates when the user writes
   "prd", "create a prd", "write a prd", "turn this into a prd",
   "product requirements doc", "draft requirements".
@@ -14,18 +14,18 @@ Turn the current conversation and codebase understanding into a PRD. Do NOT inte
 
 ## Process
 
-1. **Explore the repo** to understand the codebase, if you haven't already. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `CONTEXT.md` / `CONTEXT-MAP.md` and the relevant `docs/adr/`, use the glossary's vocabulary throughout the PRD, and flag any ADR the PRD contradicts.
+1. **Explore the repo** to understand the codebase, if you haven't already. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and the relevant `.yoke/adr/`, use the glossary's vocabulary throughout the PRD, and flag any ADR the PRD contradicts.
 
 2. **Sketch the major modules** you'll build or modify. Look for deep modules to extract that can be tested in isolation. A deep module (as opposed to a shallow one) encapsulates substantial functionality behind a simple, testable interface that rarely changes. Briefly confirm the module breakdown with the user and which modules they want tested — a quick check, not a requirements interview.
 
 3. **Write the PRD** using the template below.
 
-4. **Build the slug** — an English kebab-case description, prefixed with a ticket id only if one exists in context (e.g. `86-balance-on-accounts`, otherwise `dark-mode-settings`). Derive the PRD title from the slug's human-readable form and add it as a top-level `# <title>` heading at the top of the PRD body. Save a local copy to `docs/ai/<slug>/<slug>-prd.md` (`mkdir -p docs/ai/<slug>` first).
+4. **Build the slug** — an English kebab-case description, prefixed with a ticket id only if one exists in context (e.g. `86-balance-on-accounts`, otherwise `dark-mode-settings`). Derive the PRD title from the slug's human-readable form and add it as a top-level `# <title>` heading at the top of the PRD body. Save a local copy to `.yoke/ai/<slug>/<slug>-prd.md` (`mkdir -p .yoke/ai/<slug>` first).
 
-5. **Publish to GitHub.** Follow `${CLAUDE_PLUGIN_ROOT}/skills/issues/reference/github-issues.md` for the `gh` conventions and triage labels. First check it is safe to publish: if `docs/ai/<slug>/<slug>-prd.md` already existed or an open issue carries the same title, ask the user whether to update the existing issue (`gh issue edit <n> --body-file ...`) or create a new one. Otherwise:
+5. **Publish to GitHub.** Follow `${CLAUDE_PLUGIN_ROOT}/skills/issues/reference/github-issues.md` for the `gh` conventions and triage labels. First check it is safe to publish: if `.yoke/ai/<slug>/<slug>-prd.md` already existed or an open issue carries the same title, ask the user whether to update the existing issue (`gh issue edit <n> --body-file ...`) or create a new one. Otherwise:
 
    ```bash
-   gh issue create --title "<PRD title>" --body-file docs/ai/<slug>/<slug>-prd.md
+   gh issue create --title "<PRD title>" --body-file .yoke/ai/<slug>/<slug>-prd.md
    ```
 
    Apply the `ready-for-agent` label per the reference (create it if the repo lacks it, unless the user objects). Then set the issue's type to `Feature` per the reference's "Issue types" section — a best-effort API call after creation; if the repo has no issue types, leave it untyped and warn rather than failing. Write the resulting issue URL into the local PRD artifact as a `**Tracking:** <URL>` line directly under the `# <title>` heading, so `/yoke:issues` can later use it as the parent for sub-issue linking; skip the write if a `**Tracking:**` line already exists. Finally, print the issue URL.

@@ -1,0 +1,21 @@
+# Telegram-уведомления о событиях репозитория.
+# Тонкий вызов общего reusable workflow из yokeloop/.github — вся логика и
+# формат сообщения там. Секреты (TELEGRAM_TOKEN/TELEGRAM_TO) — org-level,
+# прокидываются через `secrets: inherit`.
+
+name: telegram-notify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, closed, reopened]
+  issues:
+    types: [opened, closed]
+  release:
+    types: [published]
+
+jobs:
+  notify:
+    uses: yokeloop/.github/.github/workflows/telegram-notify.yml@main
+    secrets: inherit

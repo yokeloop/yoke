@@ -4,11 +4,7 @@
 flowchart LR
   grill --> prd --> issues --> do
   do --> review --> gca --> gp --> pr
-  do --> fix
-  fix --> do
   subgraph utility
-    gst
-    explore
     grill-docs
     bootstrap
     handoff
@@ -109,7 +105,7 @@ Validates every `SKILL.md` changed in the current branch against elements-of-sty
 
 When working on multiple projects in parallel (tmux + worktree), skills send contextual notifications to Telegram: when questions need an answer, when a task is complete, when something is blocked. [Details →](docs/notify.md)
 
-Notification points across skills: `/bootstrap`, `/do`, `/fix`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
+Notification points across skills: `/bootstrap`, `/do`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
 
 ## Full cycle
 
@@ -128,10 +124,11 @@ Core pipeline:
 /yoke:do <ticket or description>     # plan and execute (auto-detects mode)
   → /yoke:do <issue URL>             #   sub-agents: plan → pause for confirmation → implement
   → /yoke:do <PRD with sub-issues>   #   team: parallel agents per issue
-/yoke:fix <description>              # quick fix after /do
 /yoke:review <slug>                  # prepare the review
+/yoke:gca                            # commit changes
 /yoke:gp                             # push to remote
 /yoke:pr                             # create a pull request
+/yoke:journal                        # save session memory (manual, end of session)
 ```
 
 `/yoke:handoff` compacts the conversation for a fresh agent at any point.
@@ -171,14 +168,6 @@ yoke/
 │   │   ├── SKILL.md
 │   │   ├── agents/          # pr-body-generator
 │   │   └── reference/       # pr-body-format
-│   ├── fix/                 # quick fix (1–3 files)
-│   │   ├── SKILL.md
-│   │   ├── agents/          # fix-context-collector, fix-investigator, fix-log-writer
-│   │   └── reference/       # fix-log-format
-│   ├── explore/             # codebase exploration and brainstorming
-│   │   ├── SKILL.md
-│   │   ├── agents/          # explore-agent, explore-log-writer
-│   │   └── reference/       # exploration-log-format
 │   ├── grill/               # interactive plan grilling
 │   │   └── SKILL.md
 │   ├── grill-docs/          # grilling + .yoke/context.md glossary + ADRs
@@ -191,8 +180,6 @@ yoke/
 │   │   └── reference/       # github-issues
 │   ├── handoff/             # compact the conversation for another agent
 │   │   └── SKILL.md
-│   ├── gst/                 # repository status
-│   │   └── SKILL.md
 │   └── sync-docs/           # regenerate public skill catalog
 │       ├── SKILL.md
 │       └── reference/       # mdx-template, sync-spec
@@ -203,8 +190,7 @@ yoke/
 │   ├── notify.sh            # write library: skills call it to enqueue messages
 │   ├── gp-precheck.sh       # gp: read-only pre-push state
 │   ├── gp-push.sh           # gp: runs git push, collects report
-│   ├── pr-collect.sh        # pr: read-only data collection (paths, not contents)
-│   └── gst-collect.sh       # gst: read-only repository status data
+│   └── pr-collect.sh        # pr: read-only data collection (paths, not contents)
 └── docs/                    # per-skill documentation
 ```
 

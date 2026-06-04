@@ -364,7 +364,7 @@ Create `docs/<name>.md` from the template:
 
 ### 6b. Sync docs
 
-Run `/yoke:sync-docs` to regenerate the per-skill MDX page under `site/src/content/docs/skills/`, the catalog table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`.
+Run `/sync-docs` to regenerate the per-skill MDX page under `site/src/content/docs/skills/`, the catalog table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`.
 
 On failure → name the file sync-docs reports and halt.
 

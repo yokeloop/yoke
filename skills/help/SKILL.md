@@ -68,28 +68,6 @@ Creates or updates a GitHub PR from yoke flow artifacts (review + report). Produ
 /yoke:pr --draft
 ```
 
-### /fix — quick fix
-
-Compressed pipeline for small changes (1-3 files). Explores the codebase, implements the fix, polishes, validates, writes to fix-log. Two modes: post-flow (after `/do`) and standalone. Supports fix chains and fix from PR comment URL.
-
-**Input:** fix description or PR comment URL → **Output:** code + `.yoke/ai/<slug>/<slug>-fixes.md`
-
-```
-/yoke:fix correct email validation
-/yoke:fix https://github.com/owner/repo/pull/42#discussion_r123456
-```
-
-### /explore — exploring the codebase
-
-Read-only Q&A loop for codebase exploration and brainstorming. Classifies questions (codebase / web / hybrid), searches the code and the internet, accumulates context through a summary chain, writes an exploration log.
-
-**Input:** topic or question → **Output:** `.yoke/ai/<slug>/<slug>-exploration.md`
-
-```
-/yoke:explore how authentication works
-/yoke:explore compare Framer Motion and react-spring for our animations
-```
-
 ### /grill — interactive plan grilling
 
 Interrogates you about a plan or design one question at a time via AskUserQuestion (recommended answer first), walking the decision tree until you share understanding. Read-only.
@@ -144,15 +122,16 @@ Compacts the conversation into a handoff document for a fresh agent, referencing
 ## Full cycle
 
 ```
-/yoke:explore <topic>                # explore the codebase (optional)
 /yoke:grill <plan>                   # stress-test the idea (optional)
+/yoke:grill-docs <plan>              # …and capture terms + ADRs (optional)
 /yoke:prd                            # PRD → GitHub issue (optional)
 /yoke:issues                         # break into issues (optional)
 /yoke:do <ticket | description>      # execute — inline / sub-agents / team
-/yoke:fix <description>              # quick fix after /do (optional)
 /yoke:review <slug>                  # prepare review
+/yoke:gca                            # commit changes
 /yoke:gp                             # push to remote
 /yoke:pr                             # create pull request
+/yoke:journal                        # save session memory (manual, end of session)
 ```
 
 ## Planned skills

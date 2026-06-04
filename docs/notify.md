@@ -51,19 +51,12 @@ All three types are always on.
 
 ## Notification point map
 
-| Skill | Phase      | Type            | Description                  |
-| ----- | ---------- | --------------- | ---------------------------- |
-| task  | Synthesize | ACTION_REQUIRED | Clarifying questions         |
-| task  | Complete   | STAGE_COMPLETE  | Task file ready              |
-| plan  | Design     | ACTION_REQUIRED | Implementation questions     |
-| plan  | Complete   | STAGE_COMPLETE  | Plan ready                   |
-| do    | Execute    | ALERT           | Task blocked                 |
-| do    | Complete   | STAGE_COMPLETE  | Implementation complete      |
-| fix   | Decide     | ALERT           | Large fix (scope guard)      |
-| fix   | Decide     | ACTION_REQUIRED | Clarification required       |
-| fix   | Complete   | STAGE_COMPLETE  | Fix complete                 |
-| pr    | Decide     | ACTION_REQUIRED | Choose PR type (draft/ready) |
-| pr    | Complete   | STAGE_COMPLETE  | PR created or updated        |
+| Skill | Phase    | Type            | Description                  |
+| ----- | -------- | --------------- | ---------------------------- |
+| do    | Execute  | ALERT           | Task blocked                 |
+| do    | Complete | STAGE_COMPLETE  | Implementation complete      |
+| pr    | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready) |
+| pr    | Complete | STAGE_COMPLETE  | PR created or updated        |
 
 ---
 

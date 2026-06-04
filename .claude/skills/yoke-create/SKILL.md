@@ -91,7 +91,7 @@ Prompt:
 > 3. Note stylistic conventions: language, header format, phrase templates
 >
 > Also read:
-> - One docs file (`docs/fix.md` or `docs/explore.md`) as a documentation template
+> - One docs file (`docs/review.md`) as a documentation template
 > - README.md — the "Skills" section as a template for the new entry
 > - CLAUDE.md — the "Implemented skills" section
 >

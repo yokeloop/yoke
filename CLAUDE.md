@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   marketplace.json     # marketplace registry (name, owner, plugins[])
 skills/                # skills — auto-discovered by SKILL.md in subdirectories
 hooks/                 # hooks — auto-discovered by hooks.json (Telegram notifications)
-lib/                   # shared scripts called from skills (notify.sh, gp-precheck.sh, gp-push.sh, gst-collect.sh, pr-collect.sh)
+lib/                   # shared scripts called from skills (notify.sh, gp-precheck.sh, gp-push.sh, pr-collect.sh)
 docs/                  # reference documentation for the plugin system
 ```
 
@@ -93,6 +93,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `/yoke-create` — skill factory: analysis, design, implementation, validation, integration
 - `/yoke-release` — plugin release: quality checks, version bump, tag, push, GitHub release
 - `/yoke-validate` — runs every `SKILL.md` changed in the current branch through elements-of-style (Strunk) and plugin-dev's skill-development conventions, auto-fixes safe findings, and reports the rest. Depends on the `elements-of-style` and `plugin-dev` plugins.
+- `/sync-docs` — regenerates the shipped skill catalog (per-skill MDX, README + CLAUDE.md sentinel blocks); repo-internal, not shipped to the marketplace.
 
 ## Planned skills
 

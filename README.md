@@ -137,7 +137,8 @@ yoke/
 │   └── skills/              # local skills (plugin development)
 │       ├── yoke-create/     # skill factory
 │       ├── yoke-release/    # plugin release
-│       └── yoke-validate/   # SKILL.md linter
+│       ├── yoke-validate/   # SKILL.md linter
+│       └── sync-docs/       # regenerate the skill catalog (repo-internal)
 ├── .claude-plugin/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # marketplace registry
@@ -174,11 +175,8 @@ yoke/
 │   ├── issues/              # break a plan/PRD into tracer-bullet issues
 │   │   ├── SKILL.md
 │   │   └── reference/       # github-issues
-│   ├── handoff/             # compact the conversation for another agent
-│   │   └── SKILL.md
-│   └── sync-docs/           # regenerate public skill catalog
-│       ├── SKILL.md
-│       └── reference/       # mdx-template, sync-spec
+│   └── handoff/             # compact the conversation for another agent
+│       └── SKILL.md
 ├── hooks/
 │   ├── hooks.json           # Stop hook registration (Telegram notifications)
 │   └── notify.sh            # delivery script: reads the queue → sends to Telegram

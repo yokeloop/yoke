@@ -264,7 +264,7 @@ Transition → Phase 5.
 ### Notification
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill bootstrap --phase Confirm --slug "bootstrap" --title "Bootstrap ready" --body "CLAUDE.md and yoke-context.md created"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill bootstrap --title "Bootstrap ready" --body "CLAUDE.md and yoke-context.md created"
 ```
 
 ### Show the result
@@ -331,7 +331,7 @@ git commit -m "chore: bootstrap yoke flow context and .yoke/ scaffold"
 ### 6c. Notification
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill bootstrap --phase Complete --slug "bootstrap" --title "Bootstrap complete" --body "CLAUDE.md + yoke-context.md committed"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill bootstrap --title "Bootstrap complete" --body "CLAUDE.md + yoke-context.md committed"
 ```
 
 ### 6d. Summary

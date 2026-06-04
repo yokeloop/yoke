@@ -101,7 +101,7 @@ Validates every `SKILL.md` changed in the current branch against elements-of-sty
 
 When working on multiple projects in parallel (tmux + worktree), skills send contextual notifications to Telegram: when questions need an answer, when a task is complete, when something is blocked. [Details →](docs/notify.md)
 
-Notification points across skills: `/bootstrap`, `/do`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
+Skills call `lib/notify.sh` inline; it POSTs directly to the Telegram Bot API via `curl` — no stop hook, no queue. Notification points across skills: `/bootstrap`, `/do`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
 
 ## Full cycle
 
@@ -177,9 +177,6 @@ yoke/
 │   │   └── reference/       # github-issues
 │   └── handoff/             # compact the conversation for another agent
 │       └── SKILL.md
-├── hooks/
-│   ├── hooks.json           # Stop hook registration (Telegram notifications)
-│   └── notify.sh            # delivery script: reads the queue → sends to Telegram
 ├── lib/
 │   ├── notify.sh            # write library: skills call it to enqueue messages
 │   ├── gp-precheck.sh       # gp: read-only pre-push state
@@ -197,7 +194,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
 - `.yoke/journal.md` — session journal
 
-`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` and `.yoke/notify-pending.json` are gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
+`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` is gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
 
 ## Planned skills
 

@@ -15,7 +15,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   plugin.json          # plugin manifest (name, version, author)
   marketplace.json     # marketplace registry (name, owner, plugins[])
 skills/                # skills — auto-discovered by SKILL.md in subdirectories
-hooks/                 # hooks — auto-discovered by hooks.json (Telegram notifications)
 lib/                   # shared scripts called from skills (notify.sh, gp-precheck.sh, gp-push.sh, pr-collect.sh)
 docs/                  # reference documentation for the plugin system
 ```
@@ -28,7 +27,7 @@ Components (`skills/`) live at the repository root, NOT inside `.claude-plugin/`
 - **Agents** (`skills/<name>/agents/<agent>.md`): model-invoked sub-agents dispatched by skill orchestrators via the Agent tool; YAML frontmatter with `name` and `description`
 - **Namespace**: all components are available as `/yoke:<name>` after installation
 - **`$ARGUMENTS`**: placeholder for user-supplied arguments in skills and commands
-- **`${CLAUDE_PLUGIN_ROOT}`**: for paths inside the plugin in hooks and MCP configs
+- **`${CLAUDE_PLUGIN_ROOT}`**: for paths inside the plugin (e.g. `${CLAUDE_PLUGIN_ROOT}/lib/notify.sh`) in skills and MCP configs
 
 ## Validation
 
@@ -64,7 +63,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
 - `.yoke/journal.md` — session journal
 
-`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` and `.yoke/notify-pending.json` are gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
+`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` is gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
 
 ## Implemented skills
 

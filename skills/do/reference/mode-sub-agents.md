@@ -172,7 +172,7 @@ Without parallel groups, dispatch sequentially.
 ```
 
 **On BLOCKED:** skip only the tasks that depend on the blocked one; run the rest. Send a notification:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill do --phase Execute --slug "$SLUG" --title "Task blocked" --body "<block reason and number of skipped tasks>"`
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill do --title "Task blocked" --body "<block reason and number of skipped tasks>"`
 
 Save the list of changed and created files for Phases 4–6.
 
@@ -227,7 +227,7 @@ Fill it from data the orchestrator already holds: task statuses (DONE / DONE_WIT
 Print a summary: `<SLUG> done (N/M tasks)` or `<SLUG> done with issues (N/M tasks, K blocked)`, plus the report path.
 
 Send the STAGE_COMPLETE notification:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill do --phase Complete --slug "$SLUG" --title "<SLUG> done (N/M tasks)" --body ".yoke/ai/$SLUG/$SLUG-report.md"`
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill do --title "<SLUG> done (N/M tasks)" --body ".yoke/ai/$SLUG/$SLUG-report.md"`
 
 **Transition →** Phase 7.
 

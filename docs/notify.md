@@ -1,7 +1,6 @@
 # Telegram notifications
 
-Two-layer notification system: skills write JSON to a queue; a stop hook sends the accumulated messages to Telegram.
-Notifications are opt-in — without the env vars, the system silently skips sending.
+Skills call `${CLAUDE_PLUGIN_ROOT}/lib/notify.sh` inline and it POSTs directly to the Telegram Bot API via `curl`. No queue file, no stop hook, no `jq` required. Notifications are opt-in — without the env vars the system silently skips sending.
 
 ---
 
@@ -18,9 +17,9 @@ Notifications are opt-in — without the env vars, the system silently skips sen
 - Send any message to your bot
 - Call the API:
   ```bash
-  curl -s "https://api.telegram.org/bot<TOKEN>/getUpdates" | jq '.result[0].message.chat.id'
+  curl -s "https://api.telegram.org/bot<TOKEN>/getUpdates"
   ```
-- Save the resulting `chat_id`
+  Look for `.result[0].message.chat.id` in the JSON response and save the value.
 
 ### 3. Set environment variables
 
@@ -33,7 +32,15 @@ export CC_TELEGRAM_CHAT_ID="YOUR_CHAT_ID"
 
 Then reload the shell: `source ~/.zshrc`
 
-The variables are forwarded to the hook via `allowedEnvVars` in `hooks/hooks.json`.
+### 4. Filter by level (optional)
+
+By default all three notification types are sent. To receive only a subset, set:
+
+```bash
+export CC_NOTIFY_LEVELS="ACTION_REQUIRED,ALERT"
+```
+
+Any type not in the list is silently suppressed.
 
 ---
 
@@ -45,62 +52,68 @@ The variables are forwarded to the hook via `allowedEnvVars` in `hooks/hooks.jso
 | STAGE_COMPLETE  | ✅     | Task, plan, PR, or other artifact is ready |
 | ALERT           | ⚠️     | Block, scope guard, critical situation     |
 
-All three types are always on.
+---
+
+## Behavior
+
+- **Silent**: `notify.sh` never prints output; always exits 0.
+- **No-op conditions**: missing `CC_TELEGRAM_BOT_TOKEN` or `CC_TELEGRAM_CHAT_ID`, `curl` not found, or the notification type filtered out by `CC_NOTIFY_LEVELS`.
+- **Bounded**: the `curl` call runs with `--max-time 10`. If the request times out or fails, the script exits 0 and the session continues normally.
+- **Message meta line**: `project / skill` where `project` is `basename "$PWD"`.
+
+---
+
+## Flags
+
+| Flag      | Required | Values                                           |
+| --------- | -------- | ------------------------------------------------ |
+| `--type`  | yes      | `ACTION_REQUIRED` \| `STAGE_COMPLETE` \| `ALERT` |
+| `--title` | yes      | Short heading shown in the notification          |
+| `--body`  | yes      | Detail text                                      |
+| `--skill` | yes      | Skill name (e.g. `do`, `pr`, `review`)           |
 
 ---
 
 ## Notification point map
 
-| Skill | Phase    | Type            | Description                  |
-| ----- | -------- | --------------- | ---------------------------- |
-| do    | Execute  | ALERT           | Task blocked                 |
-| do    | Complete | STAGE_COMPLETE  | Implementation complete      |
-| pr    | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready) |
-| pr    | Complete | STAGE_COMPLETE  | PR created or updated        |
+| Skill     | Phase    | Type            | Description                  |
+| --------- | -------- | --------------- | ---------------------------- |
+| bootstrap | Complete | STAGE_COMPLETE  | Project scaffolded           |
+| do        | Execute  | ALERT           | Task blocked                 |
+| do        | Complete | STAGE_COMPLETE  | Implementation complete      |
+| pr        | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready) |
+| pr        | Complete | STAGE_COMPLETE  | PR created or updated        |
+| review    | Complete | STAGE_COMPLETE  | Review report ready          |
+| sync-docs | Complete | STAGE_COMPLETE  | Skill catalog regenerated    |
 
 ---
 
-## Testing
-
-Call notify.sh directly and inspect the queue:
+## Example call
 
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
   --type STAGE_COMPLETE \
-  --skill task \
-  --phase Complete \
-  --slug test \
-  --title "Test" \
-  --body "test body"
+  --skill do \
+  --title "Implementation complete" \
+  --body "All changes committed. Ready for review."
 ```
-
-Then check the queue file contents:
-
-```bash
-cat .yoke/notify-pending.json
-```
-
-The file should contain a JSON object with a single notification entry. The stop hook (`hooks/notify.sh`) will pick it up when the session ends and send it to Telegram.
 
 ---
 
 ## Dependencies
 
-- **jq** — for JSON handling (required by both scripts)
-- **curl** — for HTTP requests to the Telegram Bot API (required by the stop hook)
+- **curl** — for HTTP requests to the Telegram Bot API (required; if missing, script exits 0)
 
-If jq or curl is missing, the scripts exit 0.
+No `jq` dependency. The script constructs the JSON payload with plain shell string substitution.
 
 ---
 
 ## Troubleshooting
 
-| Problem                        | Check                                                                                                                                                 |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Notifications don't arrive     | Verify `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID` are set: `echo $CC_TELEGRAM_BOT_TOKEN`                                                       |
-| curl not found                 | Install curl: `sudo apt install curl` / `brew install curl`                                                                                           |
-| jq not found                   | Install jq: `sudo apt install jq` / `brew install jq`                                                                                                 |
-| 401 from Telegram              | Bad bot token — recreate it via @BotFather                                                                                                            |
-| 400 (chat not found)           | Bad chat_id — message the bot and rerun getUpdates                                                                                                    |
-| Queue isn't draining           | Confirm `hooks/notify.sh` is registered as a stop hook in `hooks/hooks.json`                                                                          |
-| Telegram unreachable / timeout | curl waits up to 8 seconds (hook timeout 10s). On failure `notify-pending.json` is removed; no retry. Delete manually: `rm .yoke/notify-pending.json` |
+| Problem                    | Check                                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| Notifications don't arrive | Verify `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID` are set: `echo $CC_TELEGRAM_BOT_TOKEN` |
+| curl not found             | Install curl: `sudo apt install curl` / `brew install curl`                                     |
+| 401 from Telegram          | Bad bot token — recreate it via @BotFather                                                      |
+| 400 (chat not found)       | Bad chat_id — message the bot and rerun getUpdates                                              |
+| Telegram unreachable       | `curl` bounded by `--max-time 10`; timeout is a silent no-op                                    |

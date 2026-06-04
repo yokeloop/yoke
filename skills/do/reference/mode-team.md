@@ -112,7 +112,7 @@ For each sub-issue in `SUB_ISSUES`, in dependency order:
 
 5. If an entire sub-issue is BLOCKED, mark every sub-issue that Depends on it as
    SKIPPED, then continue with the independent sub-issues. Send:
-   bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill do --phase Dispatch --slug "$SLUG" --title "Sub-issue blocked" --body "<sub-issue number, reason, count of skipped sub-issues>"
+   bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ALERT --skill do --title "Sub-issue blocked" --body "<sub-issue number, reason, count of skipped sub-issues>"
 
 6. Mark the sub-issue in TodoWrite: [x]
 ```
@@ -136,7 +136,7 @@ Fill it from data the orchestrator already holds across all sub-issue runs:
 **Auto-commit the report with the escape-hatch:** Check: is `.yoke/` in `.gitignore`? If yes — tell the user and skip the commit. Otherwise `git add .yoke/ai/<SLUG>/<SLUG>-report.md` and commit `TICKET docs(SLUG): add execution report` (NO colon after the ticket).
 
 Send the STAGE_COMPLETE notification:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill do --phase Complete --slug "$SLUG" --title "<SLUG> done (X/Y sub-issues)" --body ".yoke/ai/$SLUG/$SLUG-report.md"`
+`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill do --title "<SLUG> done (X/Y sub-issues)" --body ".yoke/ai/$SLUG/$SLUG-report.md"`
 
 Report the path to the aggregate report file.
 

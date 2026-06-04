@@ -2,8 +2,8 @@
 
 ```mermaid
 flowchart LR
-  grill --> prd --> issues --> task
-  task --> plan --> do --> review --> gca --> gp --> pr
+  grill --> prd --> issues --> do
+  do --> review --> gca --> gp --> pr
   do --> fix
   fix --> do
   subgraph utility
@@ -40,7 +40,7 @@ After install, start with the help skill, prepare the project, then run the pipe
 ```
 /yoke:help               # overview of skills
 /yoke:bootstrap          # detect stack, generate CLAUDE.md
-/yoke:task <ticket>      # define the first task
+/yoke:do <ticket>        # plan and execute the first task
 ```
 
 See **Full cycle** below for the complete pipeline.
@@ -110,7 +110,7 @@ Validates every `SKILL.md` changed in the current branch against elements-of-sty
 
 When working on multiple projects in parallel (tmux + worktree), skills send contextual notifications to Telegram: when questions need an answer, when a task is complete, when something is blocked. [Details →](docs/notify.md)
 
-13 notification points across 8 skills: `/bootstrap`, `/task`, `/plan`, `/do`, `/fix`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
+Notification points across skills: `/bootstrap`, `/do`, `/fix`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
 
 ## Full cycle
 
@@ -126,11 +126,9 @@ Optional discovery & specification front-end:
 Core pipeline:
 
 ```
-/yoke:task <ticket or description>   # define the task
-  → answer questions in the file
-/yoke:plan <path to task file>       # build the plan
-  → answer questions in the file
-/yoke:do <path to plan file>         # execute the plan
+/yoke:do <ticket or description>     # plan and execute (auto-detects mode)
+  → /yoke:do <issue URL>             #   sub-agents: plan → pause for confirmation → implement
+  → /yoke:do <PRD with sub-issues>   #   team: parallel agents per issue
 /yoke:fix <description>              # quick fix after /do
 /yoke:review <slug>                  # prepare the review
 /yoke:gp                             # push to remote
@@ -158,17 +156,7 @@ yoke/
 │   │   ├── SKILL.md
 │   │   ├── agents/          # stack-detector, architecture-mapper, convention-scanner, etc.
 │   │   └── reference/
-│   ├── task/                # task definition
-│   │   ├── SKILL.md
-│   │   ├── agents/          # task-investigator
-│   │   ├── reference/       # synthesize-guide, frontend-guide, elements-of-style
-│   │   └── examples/
-│   ├── plan/                # planning
-│   │   ├── SKILL.md
-│   │   ├── agents/          # plan-architect
-│   │   ├── reference/       # routing-rules, plan-format, elements-of-style
-│   │   └── examples/
-│   ├── do/                  # plan execution
+│   ├── do/                  # universal execution (inline / sub-agents / team)
 │   │   ├── SKILL.md
 │   │   ├── agents/          # task-executor, task-reviewer, validator, formatter, code-polisher, doc-updater
 │   │   └── reference/       # status-protocol, report-format
@@ -282,25 +270,20 @@ revdiff launches inside a terminal overlay. One of the following is required; ot
 
 Each yoke skill that produces an artifact offers "Review via revdiff" at its Complete phase.
 
-- Task file (from `/yoke:task` Phase 5):
-  ```text
-  /revdiff --only .yoke/ai/<slug>/<slug>-task.md
-  ```
-  Reviews the markdown task file.
-- Plan file (from `/yoke:plan` Phase 4):
+- Plan file (from `/yoke:do` planning phase):
   ```text
   /revdiff --only .yoke/ai/<slug>/<slug>-plan.md
   ```
-  Reviews the markdown plan file.
-- Code changes (from `/yoke:do` Phase 6):
+  Reviews the markdown plan file before execution proceeds.
+- Code changes (from `/yoke:do` execution phase):
   ```text
   /revdiff <base>...HEAD
   ```
-  Reviews the diff produced by /do against the default branch. `<base>` resolves via the cascade `origin/HEAD` → `origin/main` → `origin/master` → `main` (see `skills/do/SKILL.md` Phase 6).
+  Reviews the diff produced by /do against the default branch. `<base>` resolves via the cascade `origin/HEAD` → `origin/main` → `origin/master` → `main` (see `skills/do/SKILL.md`).
 
 ### Annotation fold-back
 
-revdiff returns structured annotations on quit. For task and plan files, yoke applies the annotations in place and overwrites the file. For /do code review, yoke appends the annotations to the execution report at `.yoke/ai/<slug>/<slug>-report.md` under a `## Review notes` heading.
+revdiff returns structured annotations on quit. For plan files, yoke applies the annotations in place and overwrites the file. For /do code review, yoke appends the annotations to the execution report at `.yoke/ai/<slug>/<slug>-report.md` under a `## Review notes` heading.
 
 See https://github.com/umputun/revdiff (MIT) for binary install paths and deeper documentation.
 

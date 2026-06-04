@@ -70,6 +70,8 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 ## Implemented skills
 
+`/do` is the universal execution tool: no args → inline execution; an issue URL → sub-agents (plan then pause for confirmation); a PRD with sub-issues → team of parallel agents. `/task` and `/plan` are deprecated and have moved to `deprecated/`.
+
 <!-- yoke:skills:start -->
 
 - `/bootstrap` — Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md and yoke-context.md.

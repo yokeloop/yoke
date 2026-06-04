@@ -14,7 +14,7 @@ If `.claude/yoke-context.md` exists, read it for stack, architecture, and valida
 
 ## Mission
 
-Give the orchestrator enough information to write a self-contained task file. Stop at: entry points, patterns, tests, risks, reusable code. Implementation design belongs to `/yoke:plan`.
+Give the orchestrator enough information to plan a self-contained change. Stop at: entry points, patterns, tests, risks, reusable code. Implementation design belongs to `/yoke:do`'s Plan phase.
 
 ## Process
 

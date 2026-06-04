@@ -22,8 +22,8 @@ on the docs site.
 detection.
 
 ```
-/yoke:sync-docs
-/yoke:sync-docs --check
+/sync-docs
+/sync-docs --check
 ```
 
 ## Phases
@@ -193,7 +193,7 @@ On any drift:
 
 ```
 Docs drift detected in: <files, newline-separated>
-Run `/yoke:sync-docs` to regenerate, review the diff, commit, and retry.
+Run `/sync-docs` to regenerate, review the diff, commit, and retry.
 ```
 
 Exit non-green.
@@ -211,7 +211,7 @@ When the live tree matches the tmp tree byte-for-byte → exit zero.
   Every other byte must round-trip unchanged.
 - The raw SKILL.md inside `<details>` is the source of truth — never edit
   it during render.
-- Idempotence: running `/yoke:sync-docs` then `/yoke:sync-docs --check`
+- Idempotence: running `/sync-docs` then `/sync-docs --check`
   must produce no diff. If the check call reports drift after a fresh write,
   the renderer is non-deterministic — fix the renderer before relying on
   the release gate.
@@ -227,14 +227,14 @@ When the live tree matches the tmp tree byte-for-byte → exit zero.
 ## Example
 
 ```
-/yoke:sync-docs
+/sync-docs
 ```
 
 → Writes `site/src/content/docs/skills/<name>.mdx` for all 13 skills,
 regenerates the README and CLAUDE.md catalog blocks.
 
 ```
-/yoke:sync-docs --check
+/sync-docs --check
 ```
 
 → Exits zero when everything is in sync; exits non-green and lists the
@@ -243,6 +243,6 @@ affected files on any drift.
 ## Connections
 
 ```
-/yoke-create  → /yoke:sync-docs  (Phase 6b tail; regenerates catalog for the new skill)
-/yoke-release → /yoke:sync-docs --check  (Phase 0f gate; halts release on drift)
+/yoke-create  → /sync-docs  (Phase 6b tail; regenerates catalog for the new skill)
+/yoke-release → /sync-docs --check  (Phase 0f gate; halts release on drift)
 ```

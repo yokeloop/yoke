@@ -1,6 +1,6 @@
 # Sync spec
 
-The contract `/yoke:sync-docs` honours. Read this before changing the
+The contract `/sync-docs` honours. Read this before changing the
 skill or the renderer.
 
 ## Sentinel rules
@@ -46,7 +46,7 @@ issues, journal, pr, prd, review`.
 
 ## Check-mode contract
 
-`/yoke:sync-docs --check` performs the full Render phase against
+`/sync-docs --check` performs the full Render phase against
 `.yoke/sync-docs-tmp/`, then compares:
 
 1. `.yoke/sync-docs-tmp/skills/<name>.mdx` vs `site/src/content/docs/skills/<name>.mdx` for every shipped skill.
@@ -57,12 +57,12 @@ Any difference (presence, absence, or byte-level mismatch) is drift. The
 skill lists every affected file (newline-separated) and exits non-green.
 
 `/yoke-release` invokes `--check` as its `0f. Docs drift gate` step. On drift,
-the release halts and the author runs `/yoke:sync-docs`, reviews, commits,
+the release halts and the author runs `/sync-docs`, reviews, commits,
 and retries.
 
 ## Idempotence rule
 
-Running `/yoke:sync-docs` followed by `/yoke:sync-docs --check` produces no
+Running `/sync-docs` followed by `/sync-docs --check` produces no
 diff. `git diff --stat` between the two calls is empty.
 
 Both modes pipe their output through `prettier --write` before writing or diffing — husky's `lint-staged` would do the same on the next commit, so canonical prettier output is the round-trip target. Skipping prettier breaks idempotence the moment a commit lands.

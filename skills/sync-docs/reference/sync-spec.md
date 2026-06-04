@@ -40,9 +40,9 @@ The shipped catalog excludes:
   must never appear on the public site, in the `README.md` table, or in
   the `CLAUDE.md` `## Implemented skills` block.
 
-The current shipped catalog is 18 skills:
+The current shipped catalog is 16 skills:
 `bootstrap, do, explore, fix, gca, gp, grill, grill-docs, gst, handoff,
-help, issues, plan, pr, prd, review, sync-docs, task`.
+help, issues, pr, prd, review, sync-docs`.
 
 ## Check-mode contract
 

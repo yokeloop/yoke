@@ -163,8 +163,6 @@ Send the completion notification:
 bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
   --type STAGE_COMPLETE \
   --skill sync-docs \
-  \
-  \
   --title "Docs synced" \
   --body "<N> MDX pages written; README + CLAUDE.md catalog blocks regenerated"
 ```

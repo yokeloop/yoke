@@ -48,9 +48,9 @@ Any type not in the list is silently suppressed.
 
 | Type            | Marker | When it fires                              |
 | --------------- | ------ | ------------------------------------------ |
-| ACTION_REQUIRED | ⏸      | Before questions that require an answer    |
+| ACTION_REQUIRED | ❓     | Before questions that require an answer    |
 | STAGE_COMPLETE  | ✅     | Task, plan, PR, or other artifact is ready |
-| ALERT           | ⚠️     | Block, scope guard, critical situation     |
+| ALERT           | 🚨     | Block, scope guard, critical situation     |
 
 ---
 
@@ -76,15 +76,17 @@ Any type not in the list is silently suppressed.
 
 ## Notification point map
 
-| Skill     | Phase    | Type            | Description                  |
-| --------- | -------- | --------------- | ---------------------------- |
-| bootstrap | Complete | STAGE_COMPLETE  | Project scaffolded           |
-| do        | Execute  | ALERT           | Task blocked                 |
-| do        | Complete | STAGE_COMPLETE  | Implementation complete      |
-| pr        | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready) |
-| pr        | Complete | STAGE_COMPLETE  | PR created or updated        |
-| review    | Complete | STAGE_COMPLETE  | Review report ready          |
-| sync-docs | Complete | STAGE_COMPLETE  | Skill catalog regenerated    |
+| Skill     | Phase    | Type            | Description                     |
+| --------- | -------- | --------------- | ------------------------------- |
+| bootstrap | Confirm  | ACTION_REQUIRED | Bootstrap ready — confirm phase |
+| bootstrap | Complete | STAGE_COMPLETE  | Bootstrap complete              |
+| do        | Execute  | ALERT           | Task blocked                    |
+| do        | Complete | STAGE_COMPLETE  | Implementation complete         |
+| pr        | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready)    |
+| pr        | Complete | STAGE_COMPLETE  | PR created or updated           |
+| review    | Scope    | ACTION_REQUIRED | Found N issues — select scope   |
+| review    | Complete | STAGE_COMPLETE  | Review complete                 |
+| sync-docs | Complete | STAGE_COMPLETE  | Skill catalog regenerated       |
 
 ---
 
@@ -105,6 +107,12 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
 - **curl** — for HTTP requests to the Telegram Bot API (required; if missing, script exits 0)
 
 No `jq` dependency. The script constructs the JSON payload with plain shell string substitution.
+
+---
+
+## Security
+
+The bot token is part of the Telegram API URL, so it appears in curl's process arguments for the duration of the request. Load it from the `CC_TELEGRAM_BOT_TOKEN` environment variable (never inline it) and avoid shared shell history.
 
 ---
 

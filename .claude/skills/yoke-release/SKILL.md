@@ -346,8 +346,6 @@ TodoWrite: mark "Release" as done.
 bash ./lib/notify.sh \
   --type STAGE_COMPLETE \
   --skill release \
-  \
-  \
   --title "yoke v<NEW_VERSION> released" \
   --body "<RELEASE_URL>"
 ```

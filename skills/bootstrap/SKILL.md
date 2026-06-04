@@ -234,10 +234,10 @@ Dispatch **bootstrap-verifier** (sonnet) via the Agent tool.
 
 Read `agents/bootstrap-verifier.md`, pass the prompt to the agent.
 
-The agent checks CLAUDE.md and .claude/yoke-context.md and returns:
+The agent checks CLAUDE.md, .claude/yoke-context.md, and the `.yoke/` skeleton and returns:
 
 ```yaml
-FILES_OK, SECTIONS_OK, COMMANDS_OK, PATHS_OK
+FILES_OK, YOKE_SKELETON_OK, SECTIONS_OK, COMMANDS_OK, PATHS_OK
 QUALITY_SCORE: <0-100>
 QUALITY_GRADE: <A|B|C|D|F>
 ISSUES: <list of problems>
@@ -245,7 +245,8 @@ ISSUES: <list of problems>
 
 ### Handling the result
 
-- **QUALITY_GRADE = A** → transition to Phase 5
+- **YOKE_SKELETON_OK = false** → re-dispatch yoke-context-generator to re-scaffold the missing `.yoke/` paths (max 1 retry), then re-verify.
+- **QUALITY_GRADE = A and YOKE_SKELETON_OK = true** → transition to Phase 5
 - **QUALITY_GRADE < A and ISSUES is non-empty** → re-dispatch claude-md-generator with ISSUES (max 1 retry):
   1. Pass ISSUES to the claude-md-generator agent
   2. Wait for completion
@@ -352,6 +353,6 @@ Mark in TodoWrite: `[x] Commit`
 - **Parallel dispatch.** Phase 1: 6 agents. Phase 3: 3 agents.
 - **TodoWrite.** Mark each phase immediately upon completion.
 - **CLI output.** Run commands with long output through `2>&1 | tail -20`.
-- **Idempotency.** On re-run: CLAUDE.md is extended (Edit via an agent), yoke-context is overwritten (Write via an agent).
+- **Idempotency.** On re-run: CLAUDE.md is extended (Edit via an agent); `.claude/yoke-context.md` is regenerated from the codebase (Write); `.yoke/context.md` and `.yoke/journal.md` are created only when absent — never clobber user edits.
 - **Language.** Match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
 - **Substitution.** When dispatching an agent, replace `{{PLACEHOLDER}}` in the prompt with data from findings. Agents receive real values, not template variables.

@@ -84,6 +84,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `/handoff` — Compacts the current conversation into a handoff document so a fresh agent can continue the work, referencing existing artifacts instead of duplicating them.
 - `/help` — Explains how to use yoke and lists the available skills; also greets new users.
 - `/issues` — Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.
+- `/journal` — Appends a concise, newest-first entry to `.yoke/journal.md` summarizing the session's real work and linking the relevant `.yoke/ai/<slug>/` artifacts — the first layer of yoke's connected memory.
 - `/pr` — Creates or updates a GitHub Pull Request.
 - `/prd` — Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in .yoke/ai.
 - `/review` — Finds problems in code, fixes them and produces a report.

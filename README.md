@@ -141,11 +141,10 @@ Core pipeline:
 ```
 yoke/
 ├── .claude/
-│   ├── skills/              # local skills (plugin development)
-│   │   ├── yoke-create/     # skill factory
-│   │   ├── yoke-release/    # plugin release
-│   │   └── yoke-validate/   # SKILL.md linter
-│   └── commands/            # local dev commands (journal)
+│   └── skills/              # local skills (plugin development)
+│       ├── yoke-create/     # skill factory
+│       ├── yoke-release/    # plugin release
+│       └── yoke-validate/   # SKILL.md linter
 ├── .claude-plugin/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # marketplace registry
@@ -232,13 +231,7 @@ Skill:
 skills/<name>/SKILL.md
 ```
 
-Command (local-only, not shipped):
-
-```
-.claude/commands/<name>.md
-```
-
-Both formats use YAML frontmatter with `name` and `description`.
+The format uses YAML frontmatter with `name` and `description`.
 
 ## Interactive review (revdiff)
 

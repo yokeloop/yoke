@@ -122,7 +122,7 @@ gh pr edit <NUMBER> --add-label "<label>"
 **Notify** (final artifact of the cycle):
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill pr --phase Complete --slug "$TICKET_ID" --title "PR $MODE" --body "$PR_URL"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill pr --title "PR $MODE" --body "$PR_URL"
 ```
 
 **Print:**

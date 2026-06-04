@@ -72,7 +72,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 <!-- yoke:skills:start -->
 
-- `/bootstrap` — Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md and yoke-context.md.
+- `/bootstrap` — Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md and yoke-context.md.
 - `/do` — Executes a task per plan.
 - `/explore` — Codebase exploration and brainstorming.
 - `/fix` — Quick fix or follow-up change.

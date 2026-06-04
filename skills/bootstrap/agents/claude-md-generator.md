@@ -56,7 +56,8 @@ You are the CLAUDE.md generator: create or extend the project's file.
    - Non-obvious decisions and gotchas (extract from DOC_CONTENT — workarounds, limitations; from `DOMAIN_FINDINGS.CODE_WORKAROUNDS` — code-level workarounds)
    - Workflows and processes (extract from DOC_CONTENT — CI/CD, deploy, release flow)
 4. If DOMAIN_FINDINGS and DOC_CONTENT overlap, prefer DOC_CONTENT (don't duplicate).
-5. Write CLAUDE.md to the project root
+5. Add an "Artifact root (`.yoke/`)" section (see below for required content).
+6. Write CLAUDE.md to the project root
 
 ### 4. Enrich mode (CLAUDE_MD_EXISTS = true)
 
@@ -67,6 +68,7 @@ You are the CLAUDE.md generator: create or extend the project's file.
    - Environment — are environment variables documented?
    - Non-obvious — are gotchas/workarounds captured?
    - Conventions — are project-specific conventions described?
+   - Artifact root — is the `.yoke/` layout documented? (add if absent)
 3. For each missing section — add it via Edit, using DOC_CONTENT as the source:
    - Project description — from README.md and other documentation files
    - Non-obvious decisions and gotchas — from CONTRIBUTING.md, docs/
@@ -83,6 +85,25 @@ If `{{ISSUES}}` contains a list of problems from the verifier:
 2. Fix the relevant CLAUDE.md sections via Edit
 3. Only fix sections affected by the issues
 
+## Artifact root (`.yoke/`) section — required content
+
+Every generated or enriched CLAUDE.md must contain this section (place it under Conventions or as its own top-level section if Conventions is absent). Use the exact structure below; adjust prose lightly to match the project's voice.
+
+```markdown
+## Artifact root (`.yoke/`)
+
+Yoke stores all AI-generated artifacts under `.yoke/` at the project root:
+
+- `.yoke/context.md` — domain glossary
+- `.yoke/adr/` — architecture decision records
+- `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, plan, report, exploration, issues index)
+- `.yoke/journal.md` — session journal
+
+`.yoke/` is committed to git by default. Only ephemeral scratch (e.g. `.yoke/sync-docs-tmp/`) belongs in `.gitignore`. Yoke skills read from and write to this layout.
+```
+
+If the section already exists with equivalent content, do not duplicate it.
+
 ## Rules
 
 - Preserve user content — sections added manually stay on update
@@ -93,6 +114,7 @@ If `{{ISSUES}}` contains a list of problems from the verifier:
 - On create, use Write
 - Don't verify commands — the verifier does that
 - Reach Grade A against quality-criteria (90+ points)
+- The "Artifact root (`.yoke/`)" section is mandatory in every output (create and enrich)
 
 ## Response format
 

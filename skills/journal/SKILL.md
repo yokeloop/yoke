@@ -1,0 +1,74 @@
+---
+name: journal
+description: >-
+  Appends a concise, newest-first entry to `.yoke/journal.md` summarizing the
+  session's real work and linking the relevant `.yoke/ai/<slug>/` artifacts —
+  the first layer of yoke's connected memory. Manual trigger only, no hook.
+  Activates when the user writes "journal", "log the session", "session
+  journal", "write a journal entry", "log what changed", "update the journal",
+  "record this session".
+---
+
+# Journal
+
+Append a short summary of this session's real work to `.yoke/journal.md` — an
+index into the detail, not a duplicate of it. The journal is the first layer of
+yoke's connected memory: journal → `.yoke/ai/<slug>/` artifacts → the future git
+layer. Run it manually at or during the end of a session; no hook triggers it.
+
+Resolve the current timestamp with a shell call (`date '+%Y-%m-%d %H:%M %Z'`) —
+never invent the date or time. Treat any `$ARGUMENTS` as an optional focus or
+title for the entry.
+
+## What to log
+
+Record only concrete work and the decisions behind it:
+
+- changes to skills, commands, agents, docs, or code; new, deleted, or renamed files; config changes
+- fixes and their root causes
+- alternatives deliberately rejected, so no one revisits them
+
+Link the session's relevant artifacts by path — `.yoke/ai/<slug>/<slug>-plan.md`,
+`.yoke/ai/<slug>/<slug>-report.md`, `.yoke/adr/NNNN-*.md` — instead of restating
+their contents.
+
+Skip discussions without changes, Q&A, dead-end diagnostics, and file reads. When
+nothing is worth recording, tell the user and write nothing.
+
+## Format
+
+`.yoke/journal.md` is newest-first: the latest date section sits right after the
+title, and within a date the newest sub-entry comes first. Group by
+`## YYYY-MM-DD`, then by `### HH:MM TZ — <short title>`.
+
+Steps:
+
+1. Read `.yoke/journal.md`. When it is missing, create it with the title
+   `# Journal` and a one-line note.
+2. Find today's `## YYYY-MM-DD` section; when absent, add one at the top, right
+   after the title.
+3. Add a sub-entry at the top of today's section and fill in only the fields that
+   apply, keeping each terse:
+
+```markdown
+### 14:32 CET — <short title>
+
+**What done:** what exactly changed (1–3 sentences)
+**Files:** `path/one`, `path/two`
+**Artifacts:** `.yoke/ai/<slug>/<slug>-plan.md`, `.yoke/ai/<slug>/<slug>-report.md` (if any)
+**Why:** reason / context
+**Rejected:** the alternative and why it was dropped (if any)
+**Commit:** `<sha>` (check `git log`) or "not committed"
+```
+
+When an entry for this work already exists (a prior `/yoke:journal` run this
+session), augment it instead of writing a duplicate. Repeated runs append; never
+overwrite earlier entries.
+
+Write entries in English, whatever the conversation language.
+
+## After writing
+
+Leave staging and committing to the user (e.g. via `/yoke:gca`) — `.yoke/` is
+committed by default unless the user ignores it. Report what was added and under
+which date and time.

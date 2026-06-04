@@ -11,7 +11,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 .claude/
   skills/              # local skills for plugin development (yoke-create, yoke-release, yoke-validate)
-  commands/            # local dev commands (journal)
 .claude-plugin/
   plugin.json          # plugin manifest (name, version, author)
   marketplace.json     # marketplace registry (name, owner, plugins[])
@@ -27,7 +26,6 @@ Components (`skills/`) live at the repository root, NOT inside `.claude-plugin/`
 
 - **Skills** (`skills/<name>/SKILL.md`): model-invoked, activated automatically by `description` in YAML frontmatter
 - **Agents** (`skills/<name>/agents/<agent>.md`): model-invoked sub-agents dispatched by skill orchestrators via the Agent tool; YAML frontmatter with `name` and `description`
-- **Local commands** (`.claude/commands/<name>.md`): dev-only slash commands (e.g. `/journal`); NOT shipped with the plugin.
 - **Namespace**: all components are available as `/yoke:<name>` after installation
 - **`$ARGUMENTS`**: placeholder for user-supplied arguments in skills and commands
 - **`${CLAUDE_PLUGIN_ROOT}`**: for paths inside the plugin in hooks and MCP configs
@@ -98,10 +96,6 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `/yoke-create` — skill factory: analysis, design, implementation, validation, integration
 - `/yoke-release` — plugin release: quality checks, version bump, tag, push, GitHub release
 - `/yoke-validate` — runs every `SKILL.md` changed in the current branch through elements-of-style (Strunk) and plugin-dev's skill-development conventions, auto-fixes safe findings, and reports the rest. Depends on the `elements-of-style` and `plugin-dev` plugins.
-
-## Local commands (development)
-
-- `/journal` — append a summary of the session's real changes to `journal.md` (repo root). Newest-first, English entries, write-only (commit separately). Not shipped to the marketplace.
 
 ## Planned skills
 

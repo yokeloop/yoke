@@ -84,7 +84,7 @@ changes decomposition or architecture. Max 3.
 
 **Auto-detect parallel/sequential.** Trust the architect's routing call, which reuses the complexity × file-intersection logic: tasks with no shared files and no `depends_on` run in parallel groups; shared files or dependencies force sequence. Record `PARALLEL` and `PARALLEL_GROUPS`.
 
-**3. Write the plan file** to `.yoke/ai/<SLUG>/<SLUG>-plan.md` using the plan-file format in `skills/plan/reference/plan-format.md`:
+**3. Write the plan file** to `.yoke/ai/<SLUG>/<SLUG>-plan.md` using the plan-file format in `reference/plan-format.md`:
 
 - `**Mode:**` and `**Parallel:**` header fields (required — Execute reads them).
 - `## Design decisions` — numbered DD-1, DD-2…, each with Decision / Rationale (code reference) / Alternative.

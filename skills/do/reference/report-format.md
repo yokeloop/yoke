@@ -10,7 +10,7 @@ Format of the output file `<slug>-report.md`. Written in Phase 6.
 # Report: <slug>
 
 **Plan:** <path to the plan file>
-**Mode:** <actual mode (inline | sub-agents)>
+**Mode:** <actual mode (inline | sub-agents | team)>
 **Status:** ✅ complete | ⚠️ partial | ❌ failed
 
 ## Tasks

@@ -8,7 +8,7 @@ description: >-
 
 # Execute task per plan
 
-You are the orchestrator. Detect the input shape, pick a mode, and run that
+Act as the orchestrator. Detect the input shape, pick a mode, and run that
 mode's procedure from its reference file. Each mode runs start to finish without
 stops or confirmations beyond the single plan-confirmation pause that the
 sub-agents and team modes define.

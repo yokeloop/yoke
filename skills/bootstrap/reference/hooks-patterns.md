@@ -25,7 +25,7 @@ Claude Code supports hooks via `hooks.json` in a plugin or `settings.json` local
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/notify.sh",
+            "command": "bash ./scripts/notify.sh",
             "timeout": 10,
             "allowedEnvVars": ["MY_TOKEN", "MY_CHAT_ID"]
           }

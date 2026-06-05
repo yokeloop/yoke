@@ -2,13 +2,9 @@
 
 ```mermaid
 flowchart LR
-  grill --> prd --> issues --> task
-  task --> plan --> do --> review --> gca --> gp --> pr
-  do --> fix
-  fix --> do
+  grill --> prd --> issues --> do
+  do --> review --> gca --> gp --> pr
   subgraph utility
-    gst
-    explore
     grill-docs
     bootstrap
     handoff
@@ -40,7 +36,7 @@ After install, start with the help skill, prepare the project, then run the pipe
 ```
 /yoke:help               # overview of skills
 /yoke:bootstrap          # detect stack, generate CLAUDE.md
-/yoke:task <ticket>      # define the first task
+/yoke:do <ticket>        # plan and execute the first task
 ```
 
 See **Full cycle** below for the complete pipeline.
@@ -49,26 +45,21 @@ See **Full cycle** below for the complete pipeline.
 
 <!-- yoke:skills:start -->
 
-| Command            | What it does                                                                                                                                                                                                                                                   | Output |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `/yoke:bootstrap`  | Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md and yoke-context.md.                                                                                                                                                           | —      |
-| `/yoke:do`         | Executes a task per plan.                                                                                                                                                                                                                                      | —      |
-| `/yoke:explore`    | Codebase exploration and brainstorming.                                                                                                                                                                                                                        | —      |
-| `/yoke:fix`        | Quick fix or follow-up change.                                                                                                                                                                                                                                 | —      |
-| `/yoke:gca`        | Git staging and commit with smart file grouping.                                                                                                                                                                                                               | —      |
-| `/yoke:gp`         | Git push with checks and report.                                                                                                                                                                                                                               | —      |
-| `/yoke:grill`      | Interviews the user one interactive question at a time about a plan or design, walking each branch of the decision tree to a shared understanding; every question offers a recommended answer.                                                                 | —      |
-| `/yoke:grill-docs` | Docs-aware grilling: interrogates the user's plan one question at a time AND maintains the domain glossary (.yoke/context.md) and architecture decision records (.yoke/adr/) inline as decisions crystallise.                                                  | —      |
-| `/yoke:gst`        | Shows development status in the repository: branch, uncommitted changes, recent commits, diff vs main, hot files, semantic summary.                                                                                                                            | —      |
-| `/yoke:handoff`    | Compacts the current conversation into a handoff document so a fresh agent can continue the work, referencing existing artifacts instead of duplicating them.                                                                                                  | —      |
-| `/yoke:help`       | Explains how to use yoke and lists the available skills; also greets new users.                                                                                                                                                                                | —      |
-| `/yoke:issues`     | Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.                                                                        | —      |
-| `/yoke:plan`       | Builds an implementation plan from a task file.                                                                                                                                                                                                                | —      |
-| `/yoke:pr`         | Creates or updates a GitHub Pull Request.                                                                                                                                                                                                                      | —      |
-| `/yoke:prd`        | Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in .yoke/ai.                                                                                                                      | —      |
-| `/yoke:review`     | Finds problems in code, fixes them and produces a report.                                                                                                                                                                                                      | —      |
-| `/yoke:sync-docs`  | Regenerates the public skill catalog from `skills/*/SKILL.md` — per-skill MDX pages under `site/src/content/docs/skills/`, the table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`. | —      |
-| `/yoke:task`       | Drafts a task file for AI implementation.                                                                                                                                                                                                                      | —      |
+| Command            | What it does                                                                                                                                                                                                  | Output |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `/yoke:bootstrap`  | Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md and yoke-context.md.                                                                     | —      |
+| `/yoke:do`         | Executes a task per plan.                                                                                                                                                                                     | —      |
+| `/yoke:gca`        | Git staging and commit with smart file grouping.                                                                                                                                                              | —      |
+| `/yoke:gp`         | Git push with checks and report.                                                                                                                                                                              | —      |
+| `/yoke:grill`      | Interviews the user one interactive question at a time about a plan or design, walking each branch of the decision tree to a shared understanding; every question offers a recommended answer.                | —      |
+| `/yoke:grill-docs` | Docs-aware grilling: interrogates the user's plan one question at a time AND maintains the domain glossary (.yoke/context.md) and architecture decision records (.yoke/adr/) inline as decisions crystallise. | —      |
+| `/yoke:handoff`    | Compacts the current conversation into a handoff document so a fresh agent can continue the work, referencing existing artifacts instead of duplicating them.                                                 | —      |
+| `/yoke:help`       | Explains how to use yoke and lists the available skills; also greets new users.                                                                                                                               | —      |
+| `/yoke:issues`     | Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.                       | —      |
+| `/yoke:journal`    | Appends a concise, newest-first entry to `.yoke/journal.md` summarizing the session's real work and linking the relevant `.yoke/ai/<slug>/` artifacts — the first layer of yoke's connected memory.           | —      |
+| `/yoke:pr`         | Creates or updates a GitHub Pull Request.                                                                                                                                                                     | —      |
+| `/yoke:prd`        | Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in .yoke/ai.                                                                     | —      |
+| `/yoke:review`     | Finds problems in code, fixes them and produces a report.                                                                                                                                                     | —      |
 
 <!-- yoke:skills:end -->
 
@@ -110,7 +101,7 @@ Validates every `SKILL.md` changed in the current branch against elements-of-sty
 
 When working on multiple projects in parallel (tmux + worktree), skills send contextual notifications to Telegram: when questions need an answer, when a task is complete, when something is blocked. [Details →](docs/notify.md)
 
-13 notification points across 8 skills: `/bootstrap`, `/task`, `/plan`, `/do`, `/fix`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
+Skills call `lib/notify.sh` inline; it POSTs directly to the Telegram Bot API via `curl` — no stop hook, no queue. Notification points across skills: `/bootstrap`, `/do`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
 
 ## Full cycle
 
@@ -126,15 +117,14 @@ Optional discovery & specification front-end:
 Core pipeline:
 
 ```
-/yoke:task <ticket or description>   # define the task
-  → answer questions in the file
-/yoke:plan <path to task file>       # build the plan
-  → answer questions in the file
-/yoke:do <path to plan file>         # execute the plan
-/yoke:fix <description>              # quick fix after /do
+/yoke:do <ticket or description>     # plan and execute (auto-detects mode)
+  → /yoke:do <issue URL>             #   sub-agents: plan → pause for confirmation → implement
+  → /yoke:do <PRD with sub-issues>   #   team: parallel agents per issue
 /yoke:review <slug>                  # prepare the review
+/yoke:gca                            # commit changes
 /yoke:gp                             # push to remote
 /yoke:pr                             # create a pull request
+/yoke:journal                        # save session memory (manual, end of session)
 ```
 
 `/yoke:handoff` compacts the conversation for a fresh agent at any point.
@@ -144,11 +134,11 @@ Core pipeline:
 ```
 yoke/
 ├── .claude/
-│   ├── skills/              # local skills (plugin development)
-│   │   ├── yoke-create/     # skill factory
-│   │   ├── yoke-release/    # plugin release
-│   │   └── yoke-validate/   # SKILL.md linter
-│   └── commands/            # local dev commands (journal)
+│   └── skills/              # local skills (plugin development)
+│       ├── yoke-create/     # skill factory
+│       ├── yoke-release/    # plugin release
+│       ├── yoke-validate/   # SKILL.md linter
+│       └── sync-docs/       # regenerate the skill catalog (repo-internal)
 ├── .claude-plugin/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # marketplace registry
@@ -158,17 +148,7 @@ yoke/
 │   │   ├── SKILL.md
 │   │   ├── agents/          # stack-detector, architecture-mapper, convention-scanner, etc.
 │   │   └── reference/
-│   ├── task/                # task definition
-│   │   ├── SKILL.md
-│   │   ├── agents/          # task-investigator
-│   │   ├── reference/       # synthesize-guide, frontend-guide, elements-of-style
-│   │   └── examples/
-│   ├── plan/                # planning
-│   │   ├── SKILL.md
-│   │   ├── agents/          # plan-architect
-│   │   ├── reference/       # routing-rules, plan-format, elements-of-style
-│   │   └── examples/
-│   ├── do/                  # plan execution
+│   ├── do/                  # universal execution (inline / sub-agents / team)
 │   │   ├── SKILL.md
 │   │   ├── agents/          # task-executor, task-reviewer, validator, formatter, code-polisher, doc-updater
 │   │   └── reference/       # status-protocol, report-format
@@ -185,14 +165,6 @@ yoke/
 │   │   ├── SKILL.md
 │   │   ├── agents/          # pr-body-generator
 │   │   └── reference/       # pr-body-format
-│   ├── fix/                 # quick fix (1–3 files)
-│   │   ├── SKILL.md
-│   │   ├── agents/          # fix-context-collector, fix-investigator, fix-log-writer
-│   │   └── reference/       # fix-log-format
-│   ├── explore/             # codebase exploration and brainstorming
-│   │   ├── SKILL.md
-│   │   ├── agents/          # explore-agent, explore-log-writer
-│   │   └── reference/       # exploration-log-format
 │   ├── grill/               # interactive plan grilling
 │   │   └── SKILL.md
 │   ├── grill-docs/          # grilling + .yoke/context.md glossary + ADRs
@@ -203,22 +175,13 @@ yoke/
 │   ├── issues/              # break a plan/PRD into tracer-bullet issues
 │   │   ├── SKILL.md
 │   │   └── reference/       # github-issues
-│   ├── handoff/             # compact the conversation for another agent
-│   │   └── SKILL.md
-│   ├── gst/                 # repository status
-│   │   └── SKILL.md
-│   └── sync-docs/           # regenerate public skill catalog
-│       ├── SKILL.md
-│       └── reference/       # mdx-template, sync-spec
-├── hooks/
-│   ├── hooks.json           # Stop hook registration (Telegram notifications)
-│   └── notify.sh            # delivery script: reads the queue → sends to Telegram
+│   └── handoff/             # compact the conversation for another agent
+│       └── SKILL.md
 ├── lib/
 │   ├── notify.sh            # write library: skills call it to enqueue messages
 │   ├── gp-precheck.sh       # gp: read-only pre-push state
 │   ├── gp-push.sh           # gp: runs git push, collects report
-│   ├── pr-collect.sh        # pr: read-only data collection (paths, not contents)
-│   └── gst-collect.sh       # gst: read-only repository status data
+│   └── pr-collect.sh        # pr: read-only data collection (paths, not contents)
 └── docs/                    # per-skill documentation
 ```
 
@@ -231,7 +194,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
 - `.yoke/journal.md` — session journal
 
-`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` and `.yoke/notify-pending.json` are gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
+`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` is gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
 
 ## Planned skills
 
@@ -245,13 +208,7 @@ Skill:
 skills/<name>/SKILL.md
 ```
 
-Command (local-only, not shipped):
-
-```
-.claude/commands/<name>.md
-```
-
-Both formats use YAML frontmatter with `name` and `description`.
+The format uses YAML frontmatter with `name` and `description`.
 
 ## Interactive review (revdiff)
 
@@ -282,25 +239,20 @@ revdiff launches inside a terminal overlay. One of the following is required; ot
 
 Each yoke skill that produces an artifact offers "Review via revdiff" at its Complete phase.
 
-- Task file (from `/yoke:task` Phase 5):
-  ```text
-  /revdiff --only .yoke/ai/<slug>/<slug>-task.md
-  ```
-  Reviews the markdown task file.
-- Plan file (from `/yoke:plan` Phase 4):
+- Plan file (from `/yoke:do` planning phase):
   ```text
   /revdiff --only .yoke/ai/<slug>/<slug>-plan.md
   ```
-  Reviews the markdown plan file.
-- Code changes (from `/yoke:do` Phase 6):
+  Reviews the markdown plan file before execution proceeds.
+- Code changes (from `/yoke:do` execution phase):
   ```text
   /revdiff <base>...HEAD
   ```
-  Reviews the diff produced by /do against the default branch. `<base>` resolves via the cascade `origin/HEAD` → `origin/main` → `origin/master` → `main` (see `skills/do/SKILL.md` Phase 6).
+  Reviews the diff produced by /do against the default branch. `<base>` resolves via the cascade `origin/HEAD` → `origin/main` → `origin/master` → `main` (see `skills/do/SKILL.md`).
 
 ### Annotation fold-back
 
-revdiff returns structured annotations on quit. For task and plan files, yoke applies the annotations in place and overwrites the file. For /do code review, yoke appends the annotations to the execution report at `.yoke/ai/<slug>/<slug>-report.md` under a `## Review notes` heading.
+revdiff returns structured annotations on quit. For plan files, yoke applies the annotations in place and overwrites the file. For /do code review, yoke appends the annotations to the execution report at `.yoke/ai/<slug>/<slug>-report.md` under a `## Review notes` heading.
 
 See https://github.com/umputun/revdiff (MIT) for binary install paths and deeper documentation.
 

@@ -11,13 +11,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 .claude/
   skills/              # local skills for plugin development (yoke-create, yoke-release, yoke-validate)
-  commands/            # local dev commands (journal)
 .claude-plugin/
   plugin.json          # plugin manifest (name, version, author)
   marketplace.json     # marketplace registry (name, owner, plugins[])
 skills/                # skills — auto-discovered by SKILL.md in subdirectories
-hooks/                 # hooks — auto-discovered by hooks.json (Telegram notifications)
-lib/                   # shared scripts called from skills (notify.sh, gp-precheck.sh, gp-push.sh, gst-collect.sh, pr-collect.sh)
+lib/                   # shared scripts called from skills (notify.sh, gp-precheck.sh, gp-push.sh, pr-collect.sh)
 docs/                  # reference documentation for the plugin system
 ```
 
@@ -27,10 +25,9 @@ Components (`skills/`) live at the repository root, NOT inside `.claude-plugin/`
 
 - **Skills** (`skills/<name>/SKILL.md`): model-invoked, activated automatically by `description` in YAML frontmatter
 - **Agents** (`skills/<name>/agents/<agent>.md`): model-invoked sub-agents dispatched by skill orchestrators via the Agent tool; YAML frontmatter with `name` and `description`
-- **Local commands** (`.claude/commands/<name>.md`): dev-only slash commands (e.g. `/journal`); NOT shipped with the plugin.
 - **Namespace**: all components are available as `/yoke:<name>` after installation
 - **`$ARGUMENTS`**: placeholder for user-supplied arguments in skills and commands
-- **`${CLAUDE_PLUGIN_ROOT}`**: for paths inside the plugin in hooks and MCP configs
+- **`${CLAUDE_PLUGIN_ROOT}`**: for paths inside the plugin (e.g. `${CLAUDE_PLUGIN_ROOT}/lib/notify.sh`) in skills and MCP configs
 
 ## Validation
 
@@ -66,30 +63,27 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
 - `.yoke/journal.md` — session journal
 
-`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` and `.yoke/notify-pending.json` are gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
+`.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` is gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
 
 ## Implemented skills
 
+`/do` is the universal execution tool: no args → inline execution; an issue URL → sub-agents (plan then pause for confirmation); a PRD with sub-issues → team of parallel agents. `/task` and `/plan` are deprecated and have moved to `deprecated/`.
+
 <!-- yoke:skills:start -->
 
-- `/bootstrap` — Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md and yoke-context.md.
+- `/bootstrap` — Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md and yoke-context.md.
 - `/do` — Executes a task per plan.
-- `/explore` — Codebase exploration and brainstorming.
-- `/fix` — Quick fix or follow-up change.
 - `/gca` — Git staging and commit with smart file grouping.
 - `/gp` — Git push with checks and report.
 - `/grill` — Interviews the user one interactive question at a time about a plan or design, walking each branch of the decision tree to a shared understanding; every question offers a recommended answer.
 - `/grill-docs` — Docs-aware grilling: interrogates the user's plan one question at a time AND maintains the domain glossary (.yoke/context.md) and architecture decision records (.yoke/adr/) inline as decisions crystallise.
-- `/gst` — Shows development status in the repository: branch, uncommitted changes, recent commits, diff vs main, hot files, semantic summary.
 - `/handoff` — Compacts the current conversation into a handoff document so a fresh agent can continue the work, referencing existing artifacts instead of duplicating them.
 - `/help` — Explains how to use yoke and lists the available skills; also greets new users.
 - `/issues` — Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.
-- `/plan` — Builds an implementation plan from a task file.
+- `/journal` — Appends a concise, newest-first entry to `.yoke/journal.md` summarizing the session's real work and linking the relevant `.yoke/ai/<slug>/` artifacts — the first layer of yoke's connected memory.
 - `/pr` — Creates or updates a GitHub Pull Request.
 - `/prd` — Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in .yoke/ai.
 - `/review` — Finds problems in code, fixes them and produces a report.
-- `/sync-docs` — Regenerates the public skill catalog from `skills/*/SKILL.md` — per-skill MDX pages under `site/src/content/docs/skills/`, the table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`.
-- `/task` — Drafts a task file for AI implementation.
 
 <!-- yoke:skills:end -->
 
@@ -98,10 +92,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `/yoke-create` — skill factory: analysis, design, implementation, validation, integration
 - `/yoke-release` — plugin release: quality checks, version bump, tag, push, GitHub release
 - `/yoke-validate` — runs every `SKILL.md` changed in the current branch through elements-of-style (Strunk) and plugin-dev's skill-development conventions, auto-fixes safe findings, and reports the rest. Depends on the `elements-of-style` and `plugin-dev` plugins.
-
-## Local commands (development)
-
-- `/journal` — append a summary of the session's real changes to `journal.md` (repo root). Newest-first, English entries, write-only (commit separately). Not shipped to the marketplace.
+- `/sync-docs` — regenerates the shipped skill catalog (per-skill MDX, README + CLAUDE.md sentinel blocks); repo-internal, not shipped to the marketplace.
 
 ## Planned skills
 

@@ -61,7 +61,7 @@ The user passes a ticket ID or URL.
 
 ### From yoke flow
 
-Within yoke flow (`/task` -> `/plan` -> `/do` -> `/review`) the ticket ID is extracted from the slug:
+Within yoke flow (`/do` -> `/review`) the ticket ID is extracted from the slug:
 
 | Slug pattern                               | Ticket ID | Example |
 | ------------------------------------------ | --------- | ------- |
@@ -122,8 +122,6 @@ style: apply code formatting
 Commits for yoke flow artifacts (format `TICKET docs(SLUG): description`):
 
 ```
-#86 docs(86-black-jack-page): add task definition           # after /task
-#86 docs(86-black-jack-page): add implementation plan       # after /plan
 #86 docs(86-black-jack-page): add execution report          # after /do
 #86 docs(86-black-jack-page): add review report             # after /review
 ```

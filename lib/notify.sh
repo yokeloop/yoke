@@ -1,69 +1,63 @@
 #!/usr/bin/env bash
-# notify.sh — write a notification JSON atomically to .yoke/notify-pending.json
-# Usage: notify.sh --type TYPE --skill SKILL --phase PHASE --slug SLUG --title TITLE --body BODY
+# notify.sh — send a Telegram notification directly, inline, on each call.
+# Usage: notify.sh --type TYPE --title TITLE --body BODY --skill SKILL
+#
+# Reads CC_TELEGRAM_BOT_TOKEN and CC_TELEGRAM_CHAT_ID from the environment.
+# Optional CC_NOTIFY_LEVELS (comma-separated, e.g. "ACTION_REQUIRED,ALERT")
+# filters which types send; unset means all three send.
+# Always silent, always exits 0 — a missing dependency, missing credentials,
+# a filtered level, or a failed POST never breaks the calling skill.
 
-# --- Parse arguments ---
 TYPE=""
-SKILL=""
-PHASE=""
-SLUG=""
 TITLE=""
 BODY=""
+SKILL=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --type)  TYPE="$2";  shift 2 ;;
-    --skill) SKILL="$2"; shift 2 ;;
-    --phase) PHASE="$2"; shift 2 ;;
-    --slug)  SLUG="$2";  shift 2 ;;
     --title) TITLE="$2"; shift 2 ;;
     --body)  BODY="$2";  shift 2 ;;
+    --skill) SKILL="$2"; shift 2 ;;
+    --slug | --phase) shift 2 ;; # dropped flags — ignore for back-compat
     *) shift ;;
   esac
 done
 
-# --- Project directory ---
-PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
+# Credentials must be present.
+[ -n "$CC_TELEGRAM_BOT_TOKEN" ] && [ -n "$CC_TELEGRAM_CHAT_ID" ] || exit 0
 
-# --- jq is required (hooks/notify.sh also requires it) ---
-command -v jq >/dev/null 2>&1 || exit 0
+# curl is the only external dependency.
+command -v curl >/dev/null 2>&1 || exit 0
 
-# --- Auto-detect project_name ---
-PROJECT_NAME=""
-if [ -f "$PROJECT_DIR/package.json" ]; then
-  PROJECT_NAME=$(jq -r '.name // empty' "$PROJECT_DIR/package.json" 2>/dev/null) || true
-fi
-if [ -z "$PROJECT_NAME" ]; then
-  PROJECT_NAME=$(basename "$PROJECT_DIR") || true
-fi
-
-# --- Auto-detect tmux session ---
-TMUX_SESSION=""
-if [ -n "$TMUX_PANE" ]; then
-  TMUX_SESSION=$(tmux display-message -p '#S:#W' 2>/dev/null) || true
+# Optional level filter.
+if [ -n "$CC_NOTIFY_LEVELS" ]; then
+  case ",$CC_NOTIFY_LEVELS," in
+    *",$TYPE,"*) : ;;
+    *) exit 0 ;;
+  esac
 fi
 
-# --- Timestamp ---
-TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null) || true
+PROJECT_NAME=$(basename "$PWD")
 
-# --- Ensure output directory ---
-mkdir -p "$PROJECT_DIR/.yoke" || exit 0
+# Type prefix.
+case "$TYPE" in
+  ACTION_REQUIRED) ICON="❓" ;;
+  STAGE_COMPLETE)  ICON="✅" ;;
+  ALERT)           ICON="🚨" ;;
+  *)               ICON="🔔" ;;
+esac
 
-# --- Build JSON via jq ---
-JSON=$(jq -n \
-  --arg type "$TYPE" \
-  --arg skill "$SKILL" \
-  --arg phase "$PHASE" \
-  --arg slug "$SLUG" \
-  --arg title "$TITLE" \
-  --arg body "$BODY" \
-  --arg project_name "$PROJECT_NAME" \
-  --arg tmux_session "$TMUX_SESSION" \
-  --arg timestamp "$TIMESTAMP" \
-  '{type:$type,skill:$skill,phase:$phase,slug:$slug,title:$title,body:$body,project_name:$project_name,tmux_session:$tmux_session,timestamp:$timestamp}' \
-) || exit 0
+# Message: "<icon> <title>" / "<project> / <skill>" / "<body>".
+MSG="${ICON} ${TITLE}
+${PROJECT_NAME} / ${SKILL}"
+[ -n "$BODY" ] && MSG="${MSG}
+${BODY}"
 
-# --- Atomic write via tmp + mv ---
-TMP=$(mktemp "$PROJECT_DIR/.yoke/notify-pending.XXXXXX") || exit 0
-printf '%s\n' "$JSON" > "$TMP" || { rm -f "$TMP"; exit 0; }
-mv "$TMP" "$PROJECT_DIR/.yoke/notify-pending.json" || { rm -f "$TMP"; exit 0; }
+curl -s --max-time 10 \
+  --data-urlencode "chat_id=${CC_TELEGRAM_CHAT_ID}" \
+  --data-urlencode "text=${MSG}" \
+  "https://api.telegram.org/bot${CC_TELEGRAM_BOT_TOKEN}/sendMessage" \
+  >/dev/null 2>&1
+
+exit 0

@@ -130,7 +130,7 @@ When ISSUES_COUNT = 0, skip to Phase 5 and report without fixes.
 **1.** Send notification:
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review --phase Select --slug "$SLUG" --title "Found N issues" --body "Critical: X, Important: Y, Minor: Z"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill review --title "Found N issues" --body "Critical: X, Important: Y, Minor: Z"
 ```
 
 **2.** Show the user all issues: severity, category, file:line, description.
@@ -235,7 +235,7 @@ Otherwise skip.
 **1.** Notification:
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --phase Complete --slug "$SLUG" --title "Review complete" --body ".yoke/ai/$SLUG/$SLUG-review.md"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill review --title "Review complete" --body ".yoke/ai/$SLUG/$SLUG-review.md"
 ```
 
 **2.** Report the result: number found / fixed / skipped, path to the review file.

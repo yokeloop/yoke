@@ -1,6 +1,6 @@
 ---
 name: bootstrap-verifier
-description: Verifies the generated CLAUDE.md and yoke-context.md — existence, sections, commands, quality.
+description: Verifies the generated CLAUDE.md, yoke-context.md, and the .yoke/ skeleton — existence, sections, commands, quality.
 tools: Read, Bash, Glob
 model: sonnet
 color: orange
@@ -18,6 +18,17 @@ Check that both files exist:
 
 - `CLAUDE.md` in the project root
 - `.claude/yoke-context.md` in the project root
+
+### Step 1b. `.yoke/` skeleton check
+
+Confirm the scaffolded `.yoke/` layout exists:
+
+- `.yoke/context.md` — domain glossary
+- `.yoke/journal.md` — session journal
+- `.yoke/ai/` directory (or `.yoke/ai/.gitkeep`)
+- `.yoke/adr/` directory (or `.yoke/adr/.gitkeep`)
+
+Report `YOKE_SKELETON_OK: true|false` with per-path status. A missing path is a `FILES_OK: false` condition and must appear in ISSUES.
 
 ### Step 2. Sections check
 
@@ -80,6 +91,7 @@ Sum the points and determine the grade: A (90-100), B (70-89), C (55-69), D (40-
 
 ```yaml
 FILES_OK: true|false
+YOKE_SKELETON_OK: true|false — <per-path status for .yoke/context.md, .yoke/journal.md, .yoke/ai/, .yoke/adr/>
 SECTIONS_OK: true|false — <list of found/missing sections in CLAUDE.md>
 YOKE_CONTEXT_SECTIONS_OK: true|false — <required yoke-context.md sections; conditional: format ok/issues>
 COMMANDS_OK: true|false — <commands: pass/fail for each>

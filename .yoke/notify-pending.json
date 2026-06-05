@@ -1,0 +1,11 @@
+{
+  "type": "STAGE_COMPLETE",
+  "skill": "do",
+  "phase": "Complete",
+  "slug": "21-do-universal-rework",
+  "title": "21-do-universal-rework done (11/11 tasks)",
+  "body": "docs/ai/21-do-universal-rework/21-do-universal-rework-report.md",
+  "project_name": "yoke",
+  "tmux_session": "main:yoke",
+  "timestamp": "2026-06-04T12:19:49Z"
+}

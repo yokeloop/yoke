@@ -1,43 +1,4 @@
 ---
-title: /yoke:sync-docs
-description: "Regenerates the public skill catalog from `skills/*/SKILL.md` — per-skill MDX pages under `site/src/content/docs/skills/`, the table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`."
----
-
-Regenerates the public skill catalog from `skills/*/SKILL.md` — per-skill MDX pages under `site/src/content/docs/skills/`, the table between `<!-- yoke:skills:start -->` markers in `README.md`, and the bullet list between the same markers in `CLAUDE.md`.
-
-## Triggers
-
-Activates when the user writes:
-
-- `sync docs`
-- `regenerate docs`
-- `update the skill catalog`
-- `rebuild docs`
-- `refresh the catalog`
-
-## Use it
-
-```
-/yoke:sync-docs
-/yoke:sync-docs --check
-```
-
-## Inputs and outputs
-
-**Input:** `$ARGUMENTS` — empty for write mode (default), or `--check` for drift detection.
-
-```
-/yoke:sync-docs
-/yoke:sync-docs --check
-```
-
-**Output:** —
-
-<details>
-<summary>Full instructions</summary>
-
-````markdown
----
 name: sync-docs
 description: >-
   Regenerates the public skill catalog from `skills/*/SKILL.md` — per-skill MDX
@@ -61,8 +22,8 @@ on the docs site.
 detection.
 
 ```
-/yoke:sync-docs
-/yoke:sync-docs --check
+/sync-docs
+/sync-docs --check
 ```
 
 ## Phases
@@ -72,7 +33,7 @@ The skill runs through 5 phases. No user interaction.
 | Phase | Name               | What happens                                                                                             |
 | ----- | ------------------ | -------------------------------------------------------------------------------------------------------- |
 | 1     | **Preflight**      | Verify the repo (`.claude-plugin/plugin.json` exists, `skills/` is a directory); parse `--check`         |
-| 2     | **Enumerate**      | List every directory under `skills/` (18 today, including `sync-docs`); never include `.claude/skills/*` |
+| 2     | **Enumerate**      | List every directory under `skills/` (13 today); never include `.claude/skills/*` |
 | 3     | **Render**         | Write per-skill MDX, README block, CLAUDE.md block into `.yoke/sync-docs-tmp/`                           |
 | 4     | **Sentinel check** | Verify exactly one `start` and one `end` marker in each of `README.md` and `CLAUDE.md`; start < end      |
 | 5     | **Write or diff**  | Write mode → copy tmp tree over live; check mode → diff and exit non-green on drift                      |
@@ -107,9 +68,9 @@ include anything under `.claude/skills/` — `yoke-create`, `yoke-release`, and
 `yoke-validate` are local-only tools and must not appear in the public
 catalog.
 
-The shipped catalog today is 18 skills:
-`bootstrap, do, explore, fix, gca, gp, grill, grill-docs, gst, handoff, help,
-issues, plan, pr, prd, review, sync-docs, task`.
+The shipped catalog today is 13 skills:
+`bootstrap, do, gca, gp, grill, grill-docs, handoff, help, issues,
+journal, pr, prd, review`.
 
 ## Phase 3 — Render
 
@@ -202,8 +163,6 @@ Send the completion notification:
 bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
   --type STAGE_COMPLETE \
   --skill sync-docs \
-  --phase Write \
-  --slug sync-docs \
   --title "Docs synced" \
   --body "<N> MDX pages written; README + CLAUDE.md catalog blocks regenerated"
 ```
@@ -232,7 +191,7 @@ On any drift:
 
 ```
 Docs drift detected in: <files, newline-separated>
-Run `/yoke:sync-docs` to regenerate, review the diff, commit, and retry.
+Run `/sync-docs` to regenerate, review the diff, commit, and retry.
 ```
 
 Exit non-green.
@@ -242,7 +201,7 @@ When the live tree matches the tmp tree byte-for-byte → exit zero.
 ## Rules
 
 - Catalog membership: every directory under `skills/` that contains a
-  `SKILL.md` (18 today, including `sync-docs`). Never include
+  `SKILL.md` (13 today). Never include
   `.claude/skills/*` skills (`yoke-create`, `yoke-release`, `yoke-validate`).
 - Sentinels are required. Refuse to write when they are missing or
   unbalanced. Never auto-insert.
@@ -250,7 +209,7 @@ When the live tree matches the tmp tree byte-for-byte → exit zero.
   Every other byte must round-trip unchanged.
 - The raw SKILL.md inside `<details>` is the source of truth — never edit
   it during render.
-- Idempotence: running `/yoke:sync-docs` then `/yoke:sync-docs --check`
+- Idempotence: running `/sync-docs` then `/sync-docs --check`
   must produce no diff. If the check call reports drift after a fresh write,
   the renderer is non-deterministic — fix the renderer before relying on
   the release gate.
@@ -266,14 +225,14 @@ When the live tree matches the tmp tree byte-for-byte → exit zero.
 ## Example
 
 ```
-/yoke:sync-docs
+/sync-docs
 ```
 
-→ Writes `site/src/content/docs/skills/<name>.mdx` for all 18 skills,
+→ Writes `site/src/content/docs/skills/<name>.mdx` for all 13 skills,
 regenerates the README and CLAUDE.md catalog blocks.
 
 ```
-/yoke:sync-docs --check
+/sync-docs --check
 ```
 
 → Exits zero when everything is in sync; exits non-green and lists the
@@ -282,15 +241,6 @@ affected files on any drift.
 ## Connections
 
 ```
-/yoke-create  → /yoke:sync-docs  (Phase 6b tail; regenerates catalog for the new skill)
-/yoke-release → /yoke:sync-docs --check  (Phase 0f gate; halts release on drift)
+/yoke-create  → /sync-docs  (Phase 6b tail; regenerates catalog for the new skill)
+/yoke-release → /sync-docs --check  (Phase 0f gate; halts release on drift)
 ```
-````
-
-</details>
-
-{/* Footer */}
-
-## Source
-
-[View `SKILL.md` on GitHub →](https://github.com/yokeloop/yoke/blob/main/skills/sync-docs/SKILL.md)

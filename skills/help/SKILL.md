@@ -9,36 +9,20 @@ description: Explains how to use yoke and lists the available skills; also greet
 
 ## Skills
 
-### /task — task formulation
+### /do — universal execution
 
-Accepts a ticket URL or description text. Explores the codebase, analyzes the architecture, and produces a prompt-task: context, requirements, constraints, clarifying questions.
+Auto-detects the scope from its input and picks the right execution mode:
 
-**Input:** ticket URL or text → **Output:** `.yoke/ai/<slug>/<slug>-task.md`
+- **Plain description** → inline (implements directly in-session, no pause).
+- **Single ticket / issue URL** → sub-agents (writes a plan, pauses for confirmation, then executes with parallel sub-agents).
+- **PRD or issue with sub-issues** → team (orchestrates a fleet of agents across all sub-issues).
 
-```
-/yoke:task https://github.com/owner/repo/issues/86
-
-add dark theme to settings
-```
-
-### /plan — building the implementation plan
-
-Reads the task file, explores the codebase, makes design decisions, and decomposes the task into atomic tasks with dependencies and order.
-
-**Input:** path to task file → **Output:** `.yoke/ai/<slug>/<slug>-plan.md`
+**Input:** ticket URL, description, or nothing (uses current context) → **Output:** implemented code + `.yoke/ai/<slug>/<slug>-report.md`
 
 ```
-/yoke:plan .yoke/ai/86-black-jack-page/86-black-jack-page-task.md
-```
-
-### /do — executing the task by plan
-
-Delegates tasks to sub-agents, runs a two-stage review (spec compliance → code quality), polishes the code, validates, updates documentation, writes the report.
-
-**Input:** path to plan file → **Output:** implemented code + `.yoke/ai/<slug>/<slug>-report.md`
-
-```
-/yoke:do .yoke/ai/86-black-jack-page/86-black-jack-page-plan.md
+/yoke:do https://github.com/owner/repo/issues/86
+/yoke:do add dark theme to settings
+/yoke:do
 ```
 
 ### /review — preparing the code review report
@@ -82,28 +66,6 @@ Creates or updates a GitHub PR from yoke flow artifacts (review + report). Produ
 ```
 /yoke:pr
 /yoke:pr --draft
-```
-
-### /fix — quick fix
-
-Compressed pipeline for small changes (1-3 files). Explores the codebase, implements the fix (opus), polishes, validates, writes to fix-log. Two modes: post-flow (after task/plan/do) and standalone. Supports fix chains and fix from PR comment URL.
-
-**Input:** fix description or PR comment URL → **Output:** code + `.yoke/ai/<slug>/<slug>-fixes.md`
-
-```
-/yoke:fix correct email validation
-/yoke:fix https://github.com/owner/repo/pull/42#discussion_r123456
-```
-
-### /explore — exploring the codebase
-
-Read-only Q&A loop for codebase exploration and brainstorming. Classifies questions (codebase / web / hybrid), searches the code and the internet, accumulates context through a summary chain, writes an exploration log.
-
-**Input:** topic or question → **Output:** `.yoke/ai/<slug>/<slug>-exploration.md`
-
-```
-/yoke:explore how authentication works
-/yoke:explore compare Framer Motion and react-spring for our animations
 ```
 
 ### /grill — interactive plan grilling
@@ -160,19 +122,16 @@ Compacts the conversation into a handoff document for a fresh agent, referencing
 ## Full cycle
 
 ```
-/yoke:explore <topic>                # explore the codebase
 /yoke:grill <plan>                   # stress-test the idea (optional)
+/yoke:grill-docs <plan>              # …and capture terms + ADRs (optional)
 /yoke:prd                            # PRD → GitHub issue (optional)
 /yoke:issues                         # break into issues (optional)
-/yoke:task <ticket or description>   # formulate the task
-  → answer questions in the file
-/yoke:plan <path to task file>       # build the plan
-  → answer questions in the file
-/yoke:do <path to plan file>         # execute the plan
-/yoke:fix <description>              # quick fix after /do
+/yoke:do <ticket | description>      # execute — inline / sub-agents / team
 /yoke:review <slug>                  # prepare review
+/yoke:gca                            # commit changes
 /yoke:gp                             # push to remote
 /yoke:pr                             # create pull request
+/yoke:journal                        # save session memory (manual, end of session)
 ```
 
 ## Planned skills

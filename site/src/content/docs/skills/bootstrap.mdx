@@ -1,9 +1,9 @@
 ---
 title: /yoke:bootstrap
-description: "Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md and yoke-context.md."
+description: "Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md and yoke-context.md."
 ---
 
-Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md and yoke-context.md.
+Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md and yoke-context.md.
 
 ## Triggers
 
@@ -42,10 +42,10 @@ Activates when the user writes:
 ---
 name: bootstrap
 description: >-
-  Prepares a project for the yoke flow — stack detection, generation of CLAUDE.md
-  and yoke-context.md. Used when the user writes "bootstrap", "set up yoke",
-  "prepare the project", "yoke init", "setup yoke", "first run",
-  "connect yoke", "create CLAUDE.md".
+  Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/`
+  layout, and generation of CLAUDE.md and yoke-context.md. Used when the user
+  writes "bootstrap", "set up yoke", "prepare the project", "yoke init",
+  "setup yoke", "first run", "connect yoke", "create CLAUDE.md".
 ---
 
 # Prepare a project for the yoke flow
@@ -87,7 +87,7 @@ If empty — the skill detects stack, architecture, and conventions.
 0. Preflight    → verify git-repo, not a yoke-repo
 1. Detect       → 6 parallel agents investigate the project
 2. Synthesize   → aggregate PROJECT_PROFILE
-3. Generate     → CLAUDE.md + yoke-context + recommendations
+3. Generate     → CLAUDE.md + yoke-context + .yoke/ skeleton + recommendations
 4. Verify       → check files and quality
 5. Confirm      → show the result, AskUserQuestion
 6. Commit       → commit the artifacts
@@ -255,7 +255,7 @@ Dispatch 3 agents **in parallel** via the Agent tool:
    - the entire PROJECT_PROFILE
    - DOC_CONTENT from PROJECT_PROFILE.existing_rules.doc_content
    - DOMAIN_FINDINGS from PROJECT_PROFILE.domain
-     Result → YOKE_CONTEXT_FILE (path to .claude/yoke-context.md)
+     Result → YOKE_CONTEXT_FILE (path to .claude/yoke-context.md) and YOKE_SKELETON (the scaffolded `.yoke/` layout). The agent writes `.claude/yoke-context.md` (stack context) AND scaffolds the `.yoke/` skeleton: `.yoke/context.md` (domain glossary seeded from DOMAIN_FINDINGS), `.yoke/journal.md` (empty), `.yoke/ai/.gitkeep`, `.yoke/adr/.gitkeep`.
 
 3. **automation-recommender** (haiku) — read `agents/automation-recommender.md`, pass to the agent:
    - PROJECT_PROFILE (stack, frameworks, commands)
@@ -275,10 +275,10 @@ Dispatch **bootstrap-verifier** (sonnet) via the Agent tool.
 
 Read `agents/bootstrap-verifier.md`, pass the prompt to the agent.
 
-The agent checks CLAUDE.md and .claude/yoke-context.md and returns:
+The agent checks CLAUDE.md, .claude/yoke-context.md, and the `.yoke/` skeleton and returns:
 
 ```yaml
-FILES_OK, SECTIONS_OK, COMMANDS_OK, PATHS_OK
+FILES_OK, YOKE_SKELETON_OK, SECTIONS_OK, COMMANDS_OK, PATHS_OK
 QUALITY_SCORE: <0-100>
 QUALITY_GRADE: <A|B|C|D|F>
 ISSUES: <list of problems>
@@ -286,7 +286,8 @@ ISSUES: <list of problems>
 
 ### Handling the result
 
-- **QUALITY_GRADE = A** → transition to Phase 5
+- **YOKE_SKELETON_OK = false** → re-dispatch yoke-context-generator to re-scaffold the missing `.yoke/` paths (max 1 retry), then re-verify.
+- **QUALITY_GRADE = A and YOKE_SKELETON_OK = true** → transition to Phase 5
 - **QUALITY_GRADE < A and ISSUES is non-empty** → re-dispatch claude-md-generator with ISSUES (max 1 retry):
   1. Pass ISSUES to the claude-md-generator agent
   2. Wait for completion
@@ -304,7 +305,7 @@ Transition → Phase 5.
 ### Notification
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill bootstrap --phase Confirm --slug "bootstrap" --title "Bootstrap ready" --body "CLAUDE.md and yoke-context.md created"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type ACTION_REQUIRED --skill bootstrap --title "Bootstrap ready" --body "CLAUDE.md and yoke-context.md created"
 ```
 
 ### Show the result
@@ -314,8 +315,9 @@ Show the user:
 1. **PROJECT_PROFILE summary:** stack, architecture, commands (compact)
 2. **CLAUDE.md quality:** Grade + score from verification
 3. **Contents of .claude/yoke-context.md:** first 30 lines
-4. **Recommendations:** RECOMMENDATIONS from automation-recommender
-5. **Notes:** VERIFY_NOTES (if any after retry)
+4. **`.yoke/` skeleton:** the scaffolded layout (`context.md`, `journal.md`, `ai/`, `adr/`)
+5. **Recommendations:** RECOMMENDATIONS from automation-recommender
+6. **Notes:** VERIFY_NOTES (if any after retry)
 
 ### User choice
 
@@ -356,21 +358,21 @@ AskUserQuestion:
 ### 6b. Git commit
 
 ```bash
-git add CLAUDE.md .claude/yoke-context.md
-git commit -m "chore: bootstrap yoke flow context"
+git add CLAUDE.md .claude/yoke-context.md .yoke/
+git commit -m "chore: bootstrap yoke flow context and .yoke/ scaffold"
 ```
 
-If the user chose "only CLAUDE.md" in step 6a:
+`.yoke/` is committed by default (the convention). If the user chose "only CLAUDE.md" in step 6a (because `.claude/` is ignored):
 
 ```bash
-git add CLAUDE.md
-git commit -m "chore: bootstrap yoke flow context"
+git add CLAUDE.md .yoke/
+git commit -m "chore: bootstrap yoke flow context and .yoke/ scaffold"
 ```
 
 ### 6c. Notification
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill bootstrap --phase Complete --slug "bootstrap" --title "Bootstrap complete" --body "CLAUDE.md + yoke-context.md committed"
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill bootstrap --title "Bootstrap complete" --body "CLAUDE.md + yoke-context.md committed"
 ```
 
 ### 6d. Summary
@@ -378,8 +380,8 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill bootstrap
 Show:
 
 - Commit hash (from `git log -1 --format=%h`)
-- Paths to files: `CLAUDE.md`, `.claude/yoke-context.md`
-- Next step: "The project is ready to work with yoke. Try `/yoke:task` to create the first task."
+- Paths to files: `CLAUDE.md`, `.claude/yoke-context.md`, `.yoke/` (context.md, journal.md, ai/, adr/)
+- Next step: "The project is ready to work with yoke. Try `/yoke:do` to start the first change."
 
 Mark in TodoWrite: `[x] Commit`
 
@@ -392,7 +394,7 @@ Mark in TodoWrite: `[x] Commit`
 - **Parallel dispatch.** Phase 1: 6 agents. Phase 3: 3 agents.
 - **TodoWrite.** Mark each phase immediately upon completion.
 - **CLI output.** Run commands with long output through `2>&1 | tail -20`.
-- **Idempotency.** On re-run: CLAUDE.md is extended (Edit via an agent), yoke-context is overwritten (Write via an agent).
+- **Idempotency.** On re-run: CLAUDE.md is extended (Edit via an agent); `.claude/yoke-context.md` is regenerated from the codebase (Write); `.yoke/context.md` and `.yoke/journal.md` are created only when absent — never clobber user edits.
 - **Language.** Match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
 - **Substitution.** When dispatching an agent, replace `{{PLACEHOLDER}}` in the prompt with data from findings. Agents receive real values, not template variables.
 ````

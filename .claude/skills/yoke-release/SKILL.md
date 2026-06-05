@@ -99,9 +99,9 @@ If there are 0 commits → report: "No commits since the last release ($PREV_TAG
 
 ### 0f. Docs drift gate
 
-Run `/yoke:sync-docs --check`.
+Run `/sync-docs --check`.
 
-On non-green exit → report: "Docs drift detected in <files named by sync-docs>. Run `/yoke:sync-docs`, review the diff, commit, and retry the release." Halt.
+On non-green exit → report: "Docs drift detected in <files named by sync-docs>. Run `/sync-docs`, review the diff, commit, and retry the release." Halt.
 
 TodoWrite: mark "Preflight" as done.
 
@@ -346,8 +346,6 @@ TodoWrite: mark "Release" as done.
 bash ./lib/notify.sh \
   --type STAGE_COMPLETE \
   --skill release \
-  --phase Complete \
-  --slug "v<NEW_VERSION>" \
   --title "yoke v<NEW_VERSION> released" \
   --body "<RELEASE_URL>"
 ```

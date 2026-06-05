@@ -1,15 +1,16 @@
 # yoke
 
 ```mermaid
-flowchart LR
-  grill --> prd --> issues --> do
-  do --> review --> gca --> gp --> pr
-  subgraph utility
-    grill-docs
-    bootstrap
-    handoff
-    help
-  end
+flowchart TD
+  bootstrap["/yoke:bootstrap — prepare project (once)"] --> entry["/yoke:grill or /yoke:grill-docs — discuss"]
+  entry -->|quick: inline| do["/yoke:do — plan and execute"]
+  entry -->|spec| prd["/yoke:prd — epic issue"]
+  prd --> issues["/yoke:issues — sub-tasks"]
+  issues -->|epic / sub-task URLs| do
+  do --> review["/yoke:review"]
+  review --> gca["/yoke:gca"]
+  gca --> gp["/yoke:gp"]
+  gp --> pr["/yoke:pr"]
 ```
 
 A marketplace of skills and commands for Claude Code, inspired by:
@@ -31,15 +32,22 @@ claude --plugin-dir ./yoke
 
 ## How to use
 
-After install, start with the help skill, prepare the project, then run the pipeline:
+Run `/yoke:bootstrap` once to prepare the project, then pick a path — discuss the work, then either hand it straight to `/yoke:do`, or spec it out through `/yoke:prd` + `/yoke:issues` first:
 
 ```
-/yoke:help               # overview of skills
-/yoke:bootstrap          # detect stack, generate CLAUDE.md
-/yoke:do <ticket>        # plan and execute the first task
+/yoke:bootstrap                  # one-time: detect stack, scaffold .yoke/, write CLAUDE.md
+
+# Quick path — discuss, then do it:
+/yoke:grill <idea>               # interview yourself into a shared plan
+/yoke:do                         # execute what was just discussed (inline)
+
+# Spec path — for larger, trackable work:
+/yoke:prd                        # turn the discussion into an epic GitHub issue
+/yoke:issues                     # break the epic into sub-task issues
+/yoke:do <epic or sub-task URL>  # execute via sub-agents / team
 ```
 
-See **Full cycle** below for the complete pipeline.
+`/yoke:grill-docs` is `/yoke:grill` plus a maintained glossary and ADRs. See **Full cycle** below for the complete pipeline.
 
 ## Skills
 
@@ -105,25 +113,45 @@ Skills call `lib/notify.sh` inline; it POSTs directly to the Telegram Bot API vi
 
 ## Full cycle
 
-Optional discovery & specification front-end:
+yoke is a pipeline: enter at discovery, branch by size, converge on `/yoke:do`, then deliver. Every step is optional — start wherever the work sits.
+
+**1. Prepare** (once per project):
 
 ```
-/yoke:grill <plan>                   # stress-test the idea interactively
-/yoke:grill-docs <plan>              # …and capture terms (.yoke/context.md) + ADRs
-/yoke:prd                            # turn the discussion into a PRD → GitHub issue
-/yoke:issues                         # break it into tracer-bullet issues
+/yoke:bootstrap                      # detect stack, scaffold .yoke/, generate CLAUDE.md
 ```
 
-Core pipeline:
+**2. Discuss** — stress-test the idea one question at a time:
 
 ```
-/yoke:do <ticket or description>     # plan and execute (auto-detects mode)
-  → /yoke:do <issue URL>             #   sub-agents: plan → pause for confirmation → implement
-  → /yoke:do <PRD with sub-issues>   #   team: parallel agents per issue
-/yoke:review <slug>                  # prepare the review
-/yoke:gca                            # commit changes
+/yoke:grill <plan>                   # read-only interview → shared understanding
+/yoke:grill-docs <plan>              # …and capture terms (.yoke/context.md) + ADRs (.yoke/adr/)
+```
+
+**3a. Quick path** — small, self-contained work. Hand the discussion straight to `do`:
+
+```
+/yoke:do                             # no args → inline: plan briefly, execute in this session
+```
+
+**3b. Spec path** — larger work worth tracking. Turn the discussion into issues, then execute them:
+
+```
+/yoke:prd                            # → an epic GitHub issue (PRD)
+/yoke:issues                         # → tracer-bullet sub-task issues, in dependency order
+/yoke:do <sub-task URL>              # → sub-agents: plan → confirm → implement one issue
+/yoke:do <epic URL>                  # → team: parallel agents across all sub-issues
+```
+
+`/yoke:do` auto-detects its mode from the input: a description or nothing → **inline**; a single issue URL → **sub-agents** (plans, pauses for confirmation, executes); an epic/PRD with sub-issues → **team** (parallel agents per issue).
+
+**4. Deliver** — after `do`:
+
+```
+/yoke:review <slug>                  # prepare the review report
+/yoke:gca                            # commit changes (smart grouping)
 /yoke:gp                             # push to remote
-/yoke:pr                             # create a pull request
+/yoke:pr                             # open or update the pull request
 /yoke:journal                        # save session memory (manual, end of session)
 ```
 

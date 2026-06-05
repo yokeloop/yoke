@@ -150,7 +150,7 @@ yoke/
 │   │   └── reference/
 │   ├── do/                  # universal execution (inline / sub-agents / team)
 │   │   ├── SKILL.md
-│   │   ├── agents/          # task-executor, task-reviewer, validator, formatter, code-polisher, doc-updater
+│   │   ├── agents/          # task-executor, task-reviewer, validator, formatter, doc-updater, plan-architect, task-investigator
 │   │   └── reference/       # status-protocol, report-format
 │   ├── review/              # code review preparation
 │   │   ├── SKILL.md

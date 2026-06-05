@@ -1,6 +1,6 @@
 ---
 name: task-investigator
-description: Investigates the codebase area touched by a new task — entry points with file:line, patterns to reuse, tests in the area, integration risks, reusable building blocks. Output feeds /task's writing phase.
+description: Investigates the codebase area touched by a new task — entry points with file:line, patterns to reuse, tests in the area, integration risks, reusable building blocks. Output feeds /yoke:do's Plan phase.
 tools: Glob, Grep, LS, Read, NotebookRead, WebFetch, WebSearch
 model: sonnet
 color: yellow

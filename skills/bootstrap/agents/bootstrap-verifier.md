@@ -8,7 +8,7 @@ color: orange
 
 # bootstrap-verifier
 
-Verify the quality of the generated CLAUDE.md and .claude/yoke-context.md files.
+Verify the quality of the generated CLAUDE.md, .claude/yoke-context.md, and the `.yoke/` skeleton.
 
 ## Process
 

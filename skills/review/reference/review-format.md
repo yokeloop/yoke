@@ -1,6 +1,6 @@
 # Review Report Format
 
-Format of the output file `<SLUG>-review.md`. The review-report-writer agent writes this file.
+Format of the output file `<SLUG>-review.md`. The review orchestrator writes this file inline in Phase 5.
 
 ---
 

@@ -235,22 +235,11 @@ Send the STAGE_COMPLETE notification:
 
 ## Phase 7 — Complete
 
-Report the path to the report file and offer 3 options via **AskUserQuestion**:
+Print the result and the suggested next step, then exit — no AskUserQuestion. The run is fire-and-return: the developer picks up from the STAGE_COMPLETE notification and chooses what to do next.
 
-1. **Run /yoke:review (Recommended)** — automatic transition to code review.
-2. **Review via revdiff** — interactive annotation of the /do diff.
-3. **Finish** — exit.
-
-**Handling the choice (one-shot, no loop):**
-
-- **Run /yoke:review:** invoke the Skill tool with `/yoke:review` and argument `<SLUG>`. Exit.
-- **Review via revdiff:** Resolve the default base via the cascade `git symbolic-ref refs/remotes/origin/HEAD` → `origin/main` → `origin/master` → fallback `main`. Call the Skill tool with `/revdiff` and the argument `<default-base>...HEAD`.
-  - If the return is empty, exit.
-  - If annotations describe code changes, apply them inline (orchestrator edits — do not dispatch a sub-agent). If prose-only, skip the code-edit step.
-  - Append the full annotation text to `.yoke/ai/<SLUG>/<SLUG>-report.md` under a `## Review notes` heading (create the heading if absent).
-  - Check `.gitignore` for `.yoke/` (same escape-hatch as Phase 6a). If ignored, skip the auto-commit. Otherwise `git add .yoke/ai/<SLUG>/<SLUG>-report.md && git commit -m "TICKET docs(SLUG): append review notes"`. Exit.
-  - If the plugin is missing — print `Install the revdiff plugin:` followed by `  /plugin marketplace add umputun/revdiff` and `  /plugin install revdiff@umputun-revdiff`, then exit.
-- **Finish:** report the path to the report file. Exit.
+- Print: `<SLUG> done (N/M tasks). Report: .yoke/ai/<SLUG>/<SLUG>-report.md`.
+- Suggest the next command: `/yoke:review <SLUG>` to review the changes, then `/yoke:gca` + `/yoke:gp`. To annotate the diff interactively, run `/revdiff <base>...HEAD`.
+- Do not auto-invoke another skill and do not call AskUserQuestion.
 
 ---
 

@@ -1,6 +1,6 @@
 # Plan Format
 
-The output file format for `<slug>-plan.md` in Phase 6 (Write).
+The output file format for `<slug>-plan.md`, written in the Plan phase.
 
 ---
 

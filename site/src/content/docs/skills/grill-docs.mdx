@@ -53,9 +53,9 @@ description: >-
 
 <what-to-do>
 
-Interview the user relentlessly about every aspect of this plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
+Interview the user relentlessly about every aspect of this plan until reaching a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
 
-Ask **one question at a time through the AskUserQuestion tool**, waiting for the answer before continuing. Use a short `header` (≤12 chars) per question, and present 2–4 options with your **recommended answer first, labelled `(Recommended)`** and a one-line rationale; the user can pick "Other" to answer free-form. A later question usually depends on an earlier answer — resolve the branch in order, don't batch unrelated questions.
+Ask **one question at a time through the AskUserQuestion tool**, waiting for the answer before continuing. Use a short `header` (≤12 chars) per question, and present 2–4 options with the **recommended answer first, labelled `(Recommended)`** and a one-line rationale; the user can pick "Other" to answer free-form. A later question usually depends on an earlier answer — resolve the branch in order, don't batch unrelated questions.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
 
@@ -83,7 +83,7 @@ A single glossary and a single ADR directory for the whole repo, under `.yoke/`:
 └── src/
 ```
 
-Create files lazily — only when you have something to write. If no `.yoke/context.md` exists, create it when the first term is resolved. If no `.yoke/adr/` exists, create it when the first ADR is needed.
+Create files lazily — only when there is something to write. If no `.yoke/context.md` exists, create it when the first term is resolved. If no `.yoke/adr/` exists, create it when the first ADR is needed.
 
 ## During the session
 
@@ -101,7 +101,7 @@ When domain relationships are being discussed, stress-test them with specific sc
 
 ### Cross-reference with code
 
-When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
+When the user states how something works, check whether the code agrees. On finding a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
 
 ### Update the glossary inline
 
@@ -113,9 +113,9 @@ Keep `.yoke/context.md` free of implementation details. Do not treat it as a spe
 
 Only offer to create an ADR when all three are true:
 
-1. **Hard to reverse** — the cost of changing your mind later is meaningful
+1. **Hard to reverse** — the cost of reversing it later is meaningful
 2. **Surprising without context** — a future reader will wonder "why did they do it this way?"
-3. **The result of a real trade-off** — there were genuine alternatives and you picked one for specific reasons
+3. **The result of a real trade-off** — there were genuine alternatives and one was chosen for specific reasons
 
 If any of the three is missing, skip the ADR. Use the format in [reference/ADR-FORMAT.md](reference/ADR-FORMAT.md).
 

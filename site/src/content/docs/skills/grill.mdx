@@ -53,7 +53,7 @@ description: >-
 
 # Grill
 
-Interview the user relentlessly about every aspect of this plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
+Interview the user relentlessly about every aspect of this plan until reaching a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
 
 Ask **one question at a time through the AskUserQuestion tool**, and wait for the answer before moving to the next. A later question usually depends on an earlier answer, so resolve the branch in order — don't batch unrelated questions.
 
@@ -74,10 +74,10 @@ This is a read-only interview — it writes no files. The output is the shared u
 Pose every question with AskUserQuestion:
 
 - A short `header` (≤12 chars) naming the decision.
-- 2–4 options. **Put your recommended answer first, labelled `(Recommended)`**, with a one-line rationale in its description. Make the remaining options the strongest realistic alternatives.
+- 2–4 options. **Put the recommended answer first, labelled `(Recommended)`**, with a one-line rationale in its description. Make the remaining options the strongest realistic alternatives.
 - The user can always pick "Other" to type a free-form answer — options are starting points, not a cage; don't force a fit.
 
-After each answer, fold it into your understanding and ask the next question down that branch. Surface contradictions immediately ("you just chose X, but earlier you said Y — which holds?").
+After each answer, fold it into the running understanding and ask the next question down that branch. Surface contradictions immediately ("you just chose X, but earlier you said Y — which holds?").
 
 Stop when a full pass down the tree surfaces no new open decisions, or when the user signals they're satisfied. After about 15 questions, check in: ask whether to keep going or wrap up. Summarise the resolved decisions at the end.
 

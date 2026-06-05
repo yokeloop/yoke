@@ -27,8 +27,6 @@ Format of the output file `<slug>-report.md`. Written in Phase 6.
 
 | Step          | Status  | Commit    |
 | ------------- | ------- | --------- |
-| Simplify      | ✅ done | `aaa1111` |
-| Cleanup       | ✅ done | `bbb2222` |
 | Validate      | ✅ pass | —         |
 | Documentation | ✅ done | `ccc3333` |
 | Format        | ✅ done | `ddd4444` |
@@ -70,8 +68,6 @@ Format of the output file `<slug>-report.md`. Written in Phase 6.
 - `def5678` feat(112-password-reset): reset-password endpoint
 - `ghi9012` test(112-password-reset): endpoint tests
 - `jkl3456` chore(112-password-reset): validation
-- `aaa1111` refactor(112-password-reset): simplify
-- `bbb2222` chore(112-password-reset): cleanup
 - `ccc3333` docs(112-password-reset): update documentation
 - `ddd4444` chore(112-password-reset): format
 ```

@@ -15,7 +15,7 @@ Delegate each phase to an agent via the Agent tool:
 - Context → `agents/fix-context-collector.md`
 - Investigation → `agents/fix-investigator.md`
 - Implementation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/task-executor.md`
-- Polish → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md`
+- Polish → `agents/code-polisher.md`
 - Validation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/validator.md`
 - Documentation → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/doc-updater.md`
 - Formatting → `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/formatter.md`
@@ -177,7 +177,7 @@ Runs the full /do post-processing pipeline. Save the list of files changed in Ph
 
 ### 5a. Polish
 
-Dispatch `${CLAUDE_PLUGIN_ROOT}/skills/do/agents/code-polisher.md` with the model from the agent's frontmatter.
+Dispatch `agents/code-polisher.md` with the model from the agent's frontmatter.
 
 Pass: changed files, CONSTRAINTS.
 

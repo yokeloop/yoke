@@ -125,6 +125,7 @@ If any of the three is missing, skip the ADR. Use the format in [reference/ADR-F
 
 - One AskUserQuestion per question. Wait for the answer before moving on.
 - Every question must offer a recommended answer first; the user may answer free-form via "Other".
+- Stop when a full pass down the decision tree surfaces no new open decisions. Around 15 questions, check in: ask whether to keep going or wrap up.
 - Capture terminology in `.yoke/context.md` and decisions in ADRs inline, lazily — create files only when there is something to write.
 - End the session by summarising the resolved decisions and confirming what was written to `.yoke/context.md` and `.yoke/adr/`.
 - For a plain interview without documentation maintenance, use `/yoke:grill`.

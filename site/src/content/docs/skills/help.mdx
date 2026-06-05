@@ -49,6 +49,16 @@ description: Explains how to use yoke and lists the available skills; also greet
 
 ## Skills
 
+### /bootstrap — prepare the project
+
+Prepares a repo for the yoke flow on first run: detects the stack, scaffolds the `.yoke/` layout (`context.md`, `journal.md`, `ai/`, `adr/`), seeds the glossary, and wires `CLAUDE.md` to the `.yoke/` conventions.
+
+**Input:** the project (current directory) → **Output:** `.yoke/` skeleton + `CLAUDE.md` + `.claude/yoke-context.md`
+
+```
+/yoke:bootstrap
+```
+
 ### /do — universal execution
 
 Auto-detects the scope from its input and picks the right execution mode:
@@ -159,9 +169,20 @@ Compacts the conversation into a handoff document for a fresh agent, referencing
 /yoke:handoff
 ```
 
+### /journal — session memory
+
+Appends a concise, newest-first entry to `.yoke/journal.md` summarizing the session's work and linking the relevant `.yoke/ai/<slug>/` artifacts — the first layer of yoke's connected memory. Triggered manually.
+
+**Input:** current session → **Output:** appended entry in `.yoke/journal.md`
+
+```
+/yoke:journal
+```
+
 ## Full cycle
 
 ```
+/yoke:bootstrap                      # prepare the project (first run)
 /yoke:grill <plan>                   # stress-test the idea (optional)
 /yoke:grill-docs <plan>              # …and capture terms + ADRs (optional)
 /yoke:prd                            # PRD → GitHub issue (optional)

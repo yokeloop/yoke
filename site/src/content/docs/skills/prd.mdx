@@ -54,13 +54,13 @@ Turn the current conversation and codebase understanding into a PRD. Do NOT inte
 
 1. **Explore the repo** to understand the codebase, if not already done. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and the relevant `.yoke/adr/`, use the glossary's vocabulary throughout the PRD, and flag any ADR the PRD contradicts.
 
-2. **Sketch the major modules** to build or modify. Look for deep modules to extract that can be tested in isolation. A deep module (as opposed to a shallow one) encapsulates substantial functionality behind a simple, testable interface that rarely changes. Briefly confirm the module breakdown with the user and which modules they want tested — a quick check, not a requirements interview.
+2. **Sketch the major modules** to build or modify. Look for deep modules to extract that can be tested in isolation. A deep module (as opposed to a shallow one) encapsulates substantial functionality behind a simple, testable interface that rarely changes. Decide the module breakdown and which modules are test-worthy yourself, and record both in the PRD's Implementation Decisions and Testing Decisions sections — do not stop to interview the user.
 
 3. **Write the PRD** using the template below.
 
 4. **Build the slug** — an English kebab-case description, prefixed with a ticket id only if one exists in context (e.g. `86-balance-on-accounts`, otherwise `dark-mode-settings`). Derive the PRD title from the slug's human-readable form and add it as a top-level `# <title>` heading at the top of the PRD body. Save a local copy to `.yoke/ai/<slug>/<slug>-prd.md` (`mkdir -p .yoke/ai/<slug>` first).
 
-5. **Publish to GitHub.** Follow `${CLAUDE_PLUGIN_ROOT}/skills/issues/reference/github-issues.md` for the `gh` conventions and triage labels. First check it is safe to publish: if `.yoke/ai/<slug>/<slug>-prd.md` already existed or an open issue carries the same title, ask the user whether to update the existing issue (`gh issue edit <n> --body-file ...`) or create a new one. Otherwise:
+5. **Publish to GitHub.** Follow `${CLAUDE_PLUGIN_ROOT}/skills/issues/reference/github-issues.md` for the `gh` conventions and triage labels. First check it is safe to publish: only when an open GitHub issue already carries the same title, ask the user whether to update it (`gh issue edit <n> --body-file ...`) or create a new one. A stale local `.yoke/ai/<slug>/<slug>-prd.md` with no matching open issue is not ambiguous — overwrite it and create the issue without asking. Otherwise:
 
    ```bash
    gh issue create --title "<PRD title>" --body-file .yoke/ai/<slug>/<slug>-prd.md

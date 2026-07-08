@@ -8,7 +8,7 @@ color: orange
 
 # bootstrap-verifier
 
-Verify the quality of the generated CLAUDE.md, .claude/yoke-context.md, and the `.yoke/` skeleton.
+Verify the quality of the generated CLAUDE.md, .yoke/yoke-context.md, and the `.yoke/` skeleton.
 
 ## Process
 
@@ -17,7 +17,7 @@ Verify the quality of the generated CLAUDE.md, .claude/yoke-context.md, and the 
 Check that both files exist:
 
 - `CLAUDE.md` in the project root
-- `.claude/yoke-context.md` in the project root
+- `.yoke/yoke-context.md` in the project root
 
 ### Step 1b. `.yoke/` skeleton check
 
@@ -29,6 +29,16 @@ Confirm the scaffolded `.yoke/` layout exists:
 - `.yoke/adr/` directory (or `.yoke/adr/.gitkeep`)
 
 Report `YOKE_SKELETON_OK: true|false` with per-path status. A missing path is a `FILES_OK: false` condition and must appear in ISSUES.
+
+### Step 1c. `.yoke/flow.md` check
+
+Confirm the flow map exists and carries a Repos section:
+
+```bash
+test -f .yoke/flow.md && grep -qi '^##[[:space:]]*Repos' .yoke/flow.md && echo REPOS_OK || echo FLOW_ISSUE
+```
+
+Report `YOKE_FLOW_OK: true|false`. When `.yoke/flow.md` is absent, or present without a `## Repos` section, set `YOKE_FLOW_OK: false` and state which case in ISSUES — a bootstrapped project should carry a flow map, so its absence is a reported gap, not a hard `FILES_OK: false`.
 
 ### Step 2. Sections check
 
@@ -45,7 +55,7 @@ Check Environment in CLAUDE.md (optional): list of variables or instructions. Do
 
 #### yoke-context.md check
 
-Read `.claude/yoke-context.md` and verify the required sections:
+Read `.yoke/yoke-context.md` and verify the required sections:
 
 - **Stack** — technology stack description
 - **Commands** — project commands
@@ -92,6 +102,7 @@ Sum the points and determine the grade: A (90-100), B (70-89), C (55-69), D (40-
 ```yaml
 FILES_OK: true|false
 YOKE_SKELETON_OK: true|false — <per-path status for .yoke/context.md, .yoke/journal.md, .yoke/ai/, .yoke/adr/>
+YOKE_FLOW_OK: true|false — <.yoke/flow.md present with a Repos section, or "absent" / "no Repos section">
 SECTIONS_OK: true|false — <list of found/missing sections in CLAUDE.md>
 YOKE_CONTEXT_SECTIONS_OK: true|false — <required yoke-context.md sections; conditional: format ok/issues>
 COMMANDS_OK: true|false — <commands: pass/fail for each>

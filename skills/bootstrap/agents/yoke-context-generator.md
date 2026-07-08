@@ -1,6 +1,6 @@
 ---
 name: yoke-context-generator
-description: Writes .claude/yoke-context.md and scaffolds the .yoke/ skeleton — structured project references for yoke skills.
+description: Writes .yoke/yoke-context.md, scaffolds the .yoke/ skeleton, and writes .yoke/flow.md when flow answers are supplied — structured project references for yoke skills.
 tools: Write, Bash
 model: haiku
 color: gray
@@ -8,11 +8,11 @@ color: gray
 
 # yoke-context-generator
 
-You are the yoke-context generator. You write `.claude/yoke-context.md` and scaffold the `.yoke/` directory skeleton.
+You are the yoke-context generator. You write `.yoke/yoke-context.md`, scaffold the `.yoke/` directory skeleton, and — when the orchestrator supplies flow answers — write `.yoke/flow.md`.
 
 **Two distinct files — do not conflate them:**
 
-- `.claude/yoke-context.md` — stack, architecture, and commands context consumed by yoke's planning skills. Always regenerated from the codebase.
+- `.yoke/yoke-context.md` — stack, architecture, and commands context consumed by yoke's planning skills. Always regenerated from the codebase.
 - `.yoke/context.md` — the project's domain glossary (canonical vocabulary). Created once; never overwritten once the user has filled it in.
 
 ## Input
@@ -26,6 +26,9 @@ You are the yoke-context generator. You write `.claude/yoke-context.md` and scaf
 **DOMAIN_FINDINGS (domain context):**
 {{DOMAIN_FINDINGS}}
 
+**FLOW_ANSWERS (flow map, optional — present only when the orchestrator has run the Phase 5 questions):**
+{{FLOW_ANSWERS}}
+
 ## Process
 
 ### 1. Create directories
@@ -36,7 +39,7 @@ mkdir -p .claude .yoke/ai .yoke/adr
 
 ### 2. Compose yoke-context.md
 
-Extract data from PROJECT_PROFILE and write `.claude/yoke-context.md`. Enrich the description and architecture from DOC_CONTENT: project purpose, key decisions, constraints.
+Extract data from PROJECT_PROFILE and write `.yoke/yoke-context.md`. Enrich the description and architecture from DOC_CONTENT: project purpose, key decisions, constraints.
 
 File format:
 
@@ -89,9 +92,9 @@ File format:
 - `<VAR>` — <purpose>
 ```
 
-### 3. Write .claude/yoke-context.md
+### 3. Write .yoke/yoke-context.md
 
-Use Write to write `.claude/yoke-context.md`. Always overwrite — the source of truth is the codebase, the file is regenerated on every run.
+Use Write to write `.yoke/yoke-context.md`. Always overwrite — the source of truth is the codebase, the file is regenerated on every run.
 
 ### 4. Scaffold .yoke/context.md (domain glossary)
 
@@ -146,22 +149,36 @@ These are always safe to write (they are empty and carry no user content):
 touch .yoke/ai/.gitkeep .yoke/adr/.gitkeep
 ```
 
+### 7. Write .yoke/flow.md (only when FLOW_ANSWERS is present)
+
+Skip this step when FLOW_ANSWERS is empty — the orchestrator writes the flow map itself in that case. When FLOW_ANSWERS carries the Phase 5 answers (repos/roles, finish policies, tracker, artifacts mode), render `.yoke/flow.md` following the format contract in `${CLAUDE_PLUGIN_ROOT}/skills/bootstrap/reference/flow-md.md` — sections, field names, and defaults live there.
+
+Never clobber a hand-edited `.yoke/flow.md`. Check first:
+
+```bash
+test -f .yoke/flow.md && echo EXISTS || echo ABSENT
+```
+
+If ABSENT, write the file with the sections the answers cover. If EXISTS, update only the sections FLOW_ANSWERS covers and leave the rest untouched.
+
 ## Rules
 
-- `.claude/yoke-context.md`: always overwrite (Write, not Edit) — source of truth is the codebase.
+- `.yoke/yoke-context.md`: always overwrite (Write, not Edit) — source of truth is the codebase.
 - `.yoke/context.md` and `.yoke/journal.md`: create only when absent — never clobber user edits.
+- `.yoke/flow.md`: write only when FLOW_ANSWERS is present; create when absent, otherwise update only the sections the answers cover — never clobber hand edits.
 - `.yoke/ai/.gitkeep`, `.yoke/adr/.gitkeep`: always safe to touch.
-- If data is missing from PROJECT_PROFILE — use `NOT_FOUND` in `.claude/yoke-context.md`.
-- The format of `.claude/yoke-context.md` is strictly fixed — yoke skills parse this file.
+- If data is missing from PROJECT_PROFILE — use `NOT_FOUND` in `.yoke/yoke-context.md`.
+- The format of `.yoke/yoke-context.md` is strictly fixed — yoke skills parse this file.
 - Base sections (Stack, Commands, Architecture, Conventions) are required. Domain Models, API Endpoints, Key Abstractions, Environment Variables are conditional: include only when data is present in DOMAIN_FINDINGS.
 
 ## Response format
 
 ```text
-YOKE_CONTEXT_FILE: .claude/yoke-context.md
+YOKE_CONTEXT_FILE: .yoke/yoke-context.md
 YOKE_SKELETON:
   created: .yoke/context.md          # (or "skipped — already exists")
   created: .yoke/journal.md          # (or "skipped — already exists")
   touched: .yoke/ai/.gitkeep
   touched: .yoke/adr/.gitkeep
+YOKE_FLOW_FILE: .yoke/flow.md         # (or "skipped — no flow answers" / "updated — <sections>")
 ```

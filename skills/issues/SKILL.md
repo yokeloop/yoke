@@ -10,7 +10,7 @@ description: >-
 
 # Issues
 
-Break a plan into independently-grabbable issues using vertical slices (tracer bullets).
+Break a plan into independently-grabbable issues using vertical slices (tracer bullets). Each slice cuts end-to-end through every layer, so a completed one is demoable or verifiable on its own.
 
 ## Process
 

@@ -9,9 +9,10 @@ You are the orchestrator. Team mode does not introduce a new execution engine �
 ```
 0. Detect    → read the PRD's sub_issues; empty → fall back to sub-agents mode
 1. Plan      → write an aggregate <slug>-plan.md mapping each sub-issue → slice
-2. Confirm   → AskUserQuestion: confirm / adjust / cancel  (the ONE pause)
+2. Confirm   → AskUserQuestion: confirm / adjust / cancel  (the ONE pause, cold start only)
 3. Dispatch  → per sub-issue, run the sub-agents pipeline (Execute→Validate→report)
 4. Aggregate → write a single <slug>-report.md across all sub-issues
+5. Finish    → drive to PR(s) per reference/finish.md (per-repo → ticket → notify)
 ```
 
 Track every phase in TodoWrite. **Report Mode is `team`.**
@@ -62,9 +63,9 @@ Auto-commit the plan artifact with the escape-hatch — check: is `.yoke/` in `.
 
 ## Phase 2 — Confirm (the safety pause)
 
-The single confirmation gate. Present the aggregate plan, then pause **before any code change** — the safety net against a misdetected shape or a wrong dependency order.
+The confirmation gate — **cold start only**. Present the aggregate plan, then pause **before any code change** — the safety net against a misdetected shape or a wrong dependency order. **When a grill preceded in this session, or an approved plan was handed in, skip the pause** and go straight to Phase 3: the plan is already agreed. Same conditionality as sub-agents mode.
 
-Summarize for the user:
+On a cold start, summarize for the user:
 
 - PRD title and SLUG.
 - The ordered sub-issue list with each one's mapped slice (task count, recommended mode) and its `Depends on`.
@@ -77,9 +78,9 @@ Ask via **AskUserQuestion**:
 2. **Adjust** — capture the user's changes (sub-issue order, scope, answers to open questions), update `.yoke/ai/<SLUG>/<SLUG>-plan.md`, re-commit the artifact, and re-present.
 3. **Cancel** — stop. Leave the plan file in place; make no code changes.
 
-**Do not skip this pause.** It is the only stop in the pipeline.
+**Do not skip this pause on a cold start.** It is the only stop in the pipeline.
 
-**Transition:** user confirms → Phase 3.
+**Transition:** plan confirmed (or the pause was skipped on a warm start) → when on the repo's default branch, enter a worktree per `reference/finish.md` §2 **after** the plan settles, so an abandoned pause leaves no stray worktree → Phase 3.
 
 ---
 
@@ -125,7 +126,7 @@ Keep the run going: a single blocked sub-issue stops only the branch that depend
 
 ## Phase 4 — Aggregate report
 
-Write **one** report at `.yoke/ai/<SLUG>/<SLUG>-report.md` via the Write tool, summarizing every sub-issue's outcome. Use the **Report template** (the appendix in `skills/do/SKILL.md`) with **Report Mode `team`**.
+Write **one** report at `.yoke/ai/<SLUG>/<SLUG>-report.md` via the Write tool, summarizing every sub-issue's outcome. Use the **Report template** (`reference/report-format.md`) with **Report Mode `team`**.
 
 Fill it from data the orchestrator already holds across all sub-issue runs:
 
@@ -135,16 +136,29 @@ Fill it from data the orchestrator already holds across all sub-issue runs:
 
 **Auto-commit the report with the escape-hatch:** Check: is `.yoke/` in `.gitignore`? If yes — tell the user and skip the commit. Otherwise `git add .yoke/ai/<SLUG>/<SLUG>-report.md` and commit `TICKET docs(SLUG): add execution report` (NO colon after the ticket).
 
-Send the STAGE_COMPLETE notification:
-`bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill do --title "<SLUG> done (X/Y sub-issues)" --body ".yoke/ai/$SLUG/$SLUG-report.md"`
+**No notify here.** The run's single STAGE_COMPLETE notification fires once in Phase 5 (`reference/finish.md` §7), carrying the PR URL(s) — do not send an earlier one, or the developer gets a double ping.
 
-Report the path to the aggregate report file.
+**Transition:** aggregate report written and committed → Phase 5.
+
+---
+
+## Phase 5 — Finish (drive to PR)
+
+Hand the run off to `reference/finish.md`, which drives it to the pull request(s) — the deliverable. Run **§3–§7**:
+
+- **§3 Per-repo finish** — finish each repo by its `finish` policy: push each branch and create/update its PR (`pr`), or push the default branch and publish (`direct-push`). Draw the PR body from the aggregate report just written.
+- **§4 Multi-repo** — each sub-issue carries its own repo; the finish loops the touched repos (libraries before apps) and aggregates every PR URL and published version.
+- **§5 Ticket comment** — when a tracker is configured, post one short comment (summary + PR URLs) to the PRD ticket.
+- **§7 Report + notify** — append the per-repo finish block (`repo | branch | PR URL / published version`) to the aggregate report, then send **one** run-level STAGE_COMPLETE notify carrying the PR URL(s). This is the whole run's single completion ping; it supersedes the notify Phase 4 no longer sends.
+
+Report the PR URL(s) and the path to the aggregate report file.
 
 ---
 
 ## Rules
 
-- **One pause only.** Phase 2 confirmation. Every other phase runs without stops.
+- **One pause, cold start only.** Phase 2 confirmation fires only when no grill preceded and no approved plan was handed in. Every other phase runs without stops.
+- **Finish at PR.** Phase 5 hands off to `reference/finish.md`: per-repo finish, ticket comment, and the single run-level notify carrying the PR URL(s). One STAGE_COMPLETE notify per run — never merges except the straight-to-main signal (`reference/finish.md` §6).
 - **Reuse, don't duplicate.** Per-sub-issue Execute/Validate/Document come from `reference/mode-sub-agents.md`; statuses and the review loop from `reference/status-protocol.md`.
 - **Fallback now, TeamCreate later.** Phase 3 dispatches sub-issues sequentially and independently via sub-agents. The marked extension point is where real `TeamCreate` lands once `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is available.
 - **Commits by sub-issue.** Each sub-issue's commits carry its own ticket ID, per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.

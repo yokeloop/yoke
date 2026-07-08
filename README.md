@@ -2,15 +2,15 @@
 
 ```mermaid
 flowchart TD
-  bootstrap["/yoke:bootstrap — prepare project (once)"] --> entry["/yoke:grill or /yoke:grill-docs — discuss"]
-  entry -->|quick: inline| do["/yoke:do — plan and execute"]
-  entry -->|spec| prd["/yoke:prd — epic issue"]
-  prd --> issues["/yoke:issues — sub-tasks"]
-  issues -->|epic / sub-task URLs| do
-  do --> review["/yoke:review"]
-  review --> gca["/yoke:gca"]
-  gca --> gp["/yoke:gp"]
-  gp --> pr["/yoke:pr"]
+  bootstrap["/yoke:bootstrap — detect stack, write .yoke/flow.md + context (once)"]
+  grill["/yoke:grill or /yoke:grill-docs — discuss the plan"]
+  do["/yoke:do — plan, execute, open the PR"]
+  pr(["PR on GitHub — you review, comment, approve"])
+  merge["/yoke:merge — merge, cascade, deploy, transition, clean up"]
+
+  bootstrap --> grill --> do --> pr -->|approved| merge
+  bootstrap -. flow.md + context .-> do
+  bootstrap -. flow.md .-> merge
 ```
 
 A marketplace of skills and commands for Claude Code, inspired by:
@@ -32,22 +32,18 @@ claude --plugin-dir ./yoke
 
 ## How to use
 
-Run `/yoke:bootstrap` once to prepare the project, then pick a path — discuss the work, then either hand it straight to `/yoke:do`, or spec it out through `/yoke:prd` + `/yoke:issues` first:
+Run `/yoke:bootstrap` once to prepare the project — it detects the stack and writes `.yoke/flow.md`, the map every other skill reads. Then the everyday loop is three steps: **grill → do → PR on GitHub → merge**.
 
 ```
-/yoke:bootstrap                  # one-time: detect stack, scaffold .yoke/, write CLAUDE.md
+/yoke:bootstrap                  # one-time: detect stack, scaffold .yoke/, write flow.md + CLAUDE.md
 
-# Quick path — discuss, then do it:
 /yoke:grill <idea>               # interview yourself into a shared plan
-/yoke:do                         # execute what was just discussed (inline)
-
-# Spec path — for larger, trackable work:
-/yoke:prd                        # turn the discussion into an epic GitHub issue
-/yoke:issues                     # break the epic into sub-task issues
-/yoke:do <epic or sub-task URL>  # execute via sub-agents / team
+/yoke:do                         # execute end to end — worktree, commits, push, and open the PR
+#  → review the PR on GitHub, comment, approve
+/yoke:merge                      # run the post-PR tail from flow.md: merge, cascade, deploy, clean up
 ```
 
-`/yoke:grill-docs` is `/yoke:grill` plus a maintained glossary and ADRs. See **Full cycle** below for the complete pipeline.
+`/yoke:do` drives every run to a ready pull request and stops there — the merge decision stays yours, made on GitHub. `/yoke:grill-docs` is `/yoke:grill` plus a maintained glossary and ADRs. For larger, trackable work, spec it first with `/yoke:prd` + `/yoke:issues`, then hand the epic or sub-task URL to `/yoke:do`. See **Full cycle** below for the complete pipeline.
 
 ## Skills
 
@@ -109,16 +105,16 @@ Validates every `SKILL.md` changed in the current branch against elements-of-sty
 
 When working on multiple projects in parallel (tmux + worktree), skills send contextual notifications to Telegram: when questions need an answer, when a task is complete, when something is blocked. [Details →](docs/notify.md)
 
-Skills call `lib/notify.sh` inline; it POSTs directly to the Telegram Bot API via `curl` — no stop hook, no queue. Notification points across skills: `/bootstrap`, `/do`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
+Skills call `lib/notify.sh` inline; it POSTs directly to the Telegram Bot API via `curl` — no stop hook, no queue. Notification points across skills: `/bootstrap`, `/do`, `/merge`, `/pr`, `/review`, `/sync-docs`. Three types: ACTION_REQUIRED, STAGE_COMPLETE, ALERT. Opt-in via env vars `CC_TELEGRAM_BOT_TOKEN` and `CC_TELEGRAM_CHAT_ID`.
 
 ## Full cycle
 
-yoke is a pipeline: enter at discovery, branch by size, converge on `/yoke:do`, then deliver. Every step is optional — start wherever the work sits.
+yoke is a short loop: discuss, hand it to `/yoke:do`, review the PR, then `/yoke:merge`. `do` drives every run to a pull request and stops — the merge decision stays yours, made on GitHub. Every step is optional; start wherever the work sits.
 
 **1. Prepare** (once per project):
 
 ```
-/yoke:bootstrap                      # detect stack, scaffold .yoke/, generate CLAUDE.md
+/yoke:bootstrap                      # detect stack, scaffold .yoke/, write flow.md + CLAUDE.md
 ```
 
 **2. Discuss** — stress-test the idea one question at a time:
@@ -128,34 +124,25 @@ yoke is a pipeline: enter at discovery, branch by size, converge on `/yoke:do`, 
 /yoke:grill-docs <plan>              # …and capture terms (.yoke/context.md) + ADRs (.yoke/adr/)
 ```
 
-**3a. Quick path** — small, self-contained work. Hand the discussion straight to `do`:
+**3. Execute to a PR** — `/yoke:do` runs end to end and stops at the pull request:
 
 ```
-/yoke:do                             # no args → inline: plan briefly, execute in this session
+/yoke:do                             # no args → inline: plan, execute, open the PR in this session
+/yoke:do <sub-task URL>              # sub-agents: plan → (pause on cold start) → implement one issue → PR
+/yoke:do <epic URL>                  # team: parallel agents across all sub-issues → PR(s)
 ```
 
-**3b. Spec path** — larger work worth tracking. Turn the discussion into issues, then execute them:
+For larger work worth tracking, spec it first: `/yoke:prd` → an epic GitHub issue, `/yoke:issues` → tracer-bullet sub-task issues in dependency order, then hand a URL to `do`. Every mode finishes the same way: enter a worktree on the default branch, commit each task, push, open or update the PR, comment the PR link on the ticket, and notify. `do` never merges — the one exception is an explicit "straight to main" up front.
+
+**4. Merge** — after you review and approve the PR on GitHub:
 
 ```
-/yoke:prd                            # → an epic GitHub issue (PRD)
-/yoke:issues                         # → tracer-bullet sub-task issues, in dependency order
-/yoke:do <sub-task URL>              # → sub-agents: plan → confirm → implement one issue
-/yoke:do <epic URL>                  # → team: parallel agents across all sub-issues
+/yoke:merge                          # merge PR(s), cascade, deploy/release, move the ticket, clean up worktrees
 ```
 
-`/yoke:do` auto-detects its mode from the input: a description or nothing → **inline**; a single issue URL → **sub-agents** (plans, pauses for confirmation, executes); an epic/PRD with sub-issues → **team** (parallel agents per issue).
+`/yoke:merge` reads `.yoke/flow.md` and runs only the steps it declares. It is the user-triggered finisher and never runs on its own.
 
-**4. Deliver** — after `do`:
-
-```
-/yoke:review <slug>                  # prepare the review report
-/yoke:gca                            # commit changes (smart grouping)
-/yoke:gp                             # push to remote
-/yoke:pr                             # open or update the pull request
-/yoke:journal                        # save session memory (manual, end of session)
-```
-
-`/yoke:handoff` compacts the conversation for a fresh agent at any point.
+**Manual utilities.** `/yoke:review`, `/yoke:gca`, `/yoke:gp`, and `/yoke:pr` are standalone tools that `do` now folds into its finish. Reach for them only outside a `do` run — reviewing existing changes, committing or pushing by hand, or opening a PR on its own. `/yoke:journal` saves session memory (manual, end of session); `/yoke:handoff` compacts the conversation for a fresh agent at any point.
 
 ## Structure
 
@@ -176,10 +163,10 @@ yoke/
 │   │   ├── SKILL.md
 │   │   ├── agents/          # stack-detector, architecture-mapper, convention-scanner, etc.
 │   │   └── reference/
-│   ├── do/                  # universal execution (inline / sub-agents / team)
+│   ├── do/                  # universal execution (inline / sub-agents / team), finishing at the PR
 │   │   ├── SKILL.md
 │   │   ├── agents/          # task-executor, task-reviewer, validator, formatter, doc-updater, plan-architect, task-investigator
-│   │   └── reference/       # status-protocol, report-format
+│   │   └── reference/       # finish, mode-inline / mode-sub-agents / mode-team, status-protocol, report-format
 │   ├── review/              # code review preparation
 │   │   ├── SKILL.md
 │   │   ├── agents/          # code-reviewer, single-fix-agent
@@ -193,6 +180,9 @@ yoke/
 │   │   ├── SKILL.md
 │   │   ├── agents/          # pr-body-generator
 │   │   └── reference/       # pr-body-format
+│   ├── merge/               # user-triggered finisher: merge, cascade, deploy, transition, clean up
+│   │   ├── SKILL.md
+│   │   └── reference/       # merge-procedure
 │   ├── grill/               # interactive plan grilling
 │   │   └── SKILL.md
 │   ├── grill-docs/          # grilling + .yoke/context.md glossary + ADRs
@@ -207,6 +197,7 @@ yoke/
 │       └── SKILL.md
 ├── lib/
 │   ├── notify.sh            # write library: skills call it to enqueue messages
+│   ├── flow-read.sh         # read .yoke/flow.md → structured flow map (read-only)
 │   ├── gp-precheck.sh       # gp: read-only pre-push state
 │   ├── gp-push.sh           # gp: runs git push, collects report
 │   └── pr-collect.sh        # pr: read-only data collection (paths, not contents)
@@ -217,6 +208,8 @@ yoke/
 
 Skills write their artifacts under `.yoke/` in the target project:
 
+- `.yoke/flow.md` — the flow map: repos + finish policies, branch cascade, deploy commands, tracker, artifacts. Written by `/bootstrap`, read by every skill via `lib/flow-read.sh` (`/do` and `/merge` consume it).
+- `.yoke/yoke-context.md` — generated project profile: stack, architecture, conventions
 - `.yoke/context.md` — domain glossary
 - `.yoke/adr/` — architecture decision records
 - `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
@@ -226,7 +219,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 ## Planned skills
 
-`/polish` `/qa` `/memorize` `/merge`
+`/polish` `/qa` `/memorize`
 
 ## Development
 

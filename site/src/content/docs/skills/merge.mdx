@@ -119,12 +119,8 @@ silently when the flow map does not declare it**:
 
 ## Notify
 
-On finish, send the terminal notification with what was merged and deployed:
-
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill merge \
-  --title "<slug>: merged" --body "<merged PR(s) + deploy/release summary>"
-```
+On finish, send the terminal STAGE_COMPLETE notification with what was merged
+and deployed — the exact call lives in `reference/merge-procedure.md` §7.
 ````
 
 </details>

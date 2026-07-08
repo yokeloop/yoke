@@ -161,6 +161,6 @@ Commits for yoke flow artifacts (format `TICKET docs(SLUG): description`):
 - Avoid `wip`, `temp`, `misc`.
 - Staging/exclusion policy lives in `staging-strategy.md`: gca excludes only untracked secrets, keys, and >1MB binaries, and always commits tracked files, git-crypt included. Never exclude a file by authorship.
 - Git initiative, message language, trailers, and committer identity follow "Git initiative and defaults".
-- Commit message: concise, specific, imperative mood, in English.
+- Commit message: concise, specific, imperative mood.
 - Task with implementation and tests — type `feat` (tests ship together with the feature).
 - Task with tests only — type `test`.

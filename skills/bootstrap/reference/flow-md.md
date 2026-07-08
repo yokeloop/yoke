@@ -60,6 +60,13 @@ The local-only choice for `.yoke/` itself: `committed` (default) or
 respects it without re-asking. Either way, no skill writes artifacts outside
 `.yoke/`.
 
+### Conventions
+
+Optional overrides of the shared conventions — currently one field:
+
+- **commit language** — the commit-message language; default English (see the
+  gca commit convention).
+
 ## Graceful absence
 
 Skills must **never fail or nag** when `.yoke/flow.md`, or any field in it, is
@@ -77,18 +84,19 @@ missing. A missing file or field degrades to its default:
 
 ## Fields
 
-| Field                | Values                              | Default          | Consumed by           |
-| -------------------- | ----------------------------------- | ---------------- | --------------------- |
-| repo role            | `app` \| `library`                  | `app`            | `do`                  |
-| repo path            | checkout path                       | current checkout | `do`, `merge`         |
-| finish policy        | `pr` \| `direct-push`               | `pr`             | `do`                  |
-| publish (library)    | shell command                       | —                | `do`                  |
-| consumers (library)  | repo names                          | —                | `do`                  |
-| branch cascade       | ordered branch chain + step command | none             | `merge`               |
-| deploy / release     | shell commands                      | none             | `merge`               |
-| tracker              | `github` \| `youtrack` \| `none`    | `none`           | `do`, `merge`         |
-| tracker target state | state name                          | —                | `merge`               |
-| artifacts            | `committed` \| `local-only`         | `committed`      | bootstrap, all skills |
+| Field                   | Values                              | Default          | Consumed by           |
+| ----------------------- | ----------------------------------- | ---------------- | --------------------- |
+| repo role               | `app` \| `library`                  | `app`            | `do`                  |
+| repo path               | checkout path                       | current checkout | `do`, `merge`         |
+| finish policy           | `pr` \| `direct-push`               | `pr`             | `do`                  |
+| publish (direct-push)   | shell command                       | —                | `do`                  |
+| consumers (direct-push) | repo names                          | —                | `do`                  |
+| branch cascade          | ordered branch chain + step command | none             | `merge`, `pr`         |
+| deploy / release        | shell commands                      | none             | `merge`               |
+| tracker                 | `github` \| `youtrack` \| `none`    | `none`           | `do`, `merge`         |
+| tracker target state    | state name                          | —                | `merge`               |
+| commit language         | language name                       | English          | `gca`, `do`           |
+| artifacts               | `committed` \| `local-only`         | `committed`      | bootstrap, all skills |
 
 ## Examples
 
@@ -132,7 +140,7 @@ master → staging
 
 - Advance staging after merge to master: `git switch staging && git merge --ff-only master && git push`
 
-## Deploy / release
+## Deploy / release commands
 
 - Deploy app: `ssh deploy@app 'cd /srv/app && git pull && pnpm i && pm2 restart app'`
 

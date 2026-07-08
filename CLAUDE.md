@@ -73,7 +73,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 <!-- yoke:skills:start -->
 
-- `/bootstrap` — Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md and yoke-context.md.
+- `/bootstrap` — Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md, `.yoke/yoke-context.md`, and `.yoke/flow.md`.
 - `/do` — Executes a task per plan.
 - `/gca` — Git staging and commit with smart file grouping.
 - `/gp` — Git push with checks and report.
@@ -83,6 +83,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `/help` — Explains how to use yoke and lists the available skills; also greets new users.
 - `/issues` — Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.
 - `/journal` — Appends a concise, newest-first entry to `.yoke/journal.md` summarizing the session's real work and linking the relevant `.yoke/ai/<slug>/` artifacts — the first layer of yoke's connected memory.
+- `/merge` — The user-triggered finisher that executes the post-PR tail per `.yoke/flow.md`: merges the task's PR(s), runs cascade merges, runs deploy/release commands, moves the ticket to its target state, cleans up worktrees, and returns to the default branch.
 - `/pr` — Creates or updates a GitHub Pull Request.
 - `/prd` — Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in .yoke/ai.
 - `/review` — Finds problems in code, fixes them and produces a report.

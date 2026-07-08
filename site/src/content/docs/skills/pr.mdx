@@ -41,7 +41,7 @@ Activates when the user writes:
 ````markdown
 ---
 name: pr
-description: Creates or updates a GitHub Pull Request. Activated on "pr", "pull request", "create pr", "update pr", "open pr", or after /gp.
+description: Creates or updates a GitHub Pull Request. Activated on "pr", "pull request", "create pr", "update pr", "open pr".
 ---
 
 # Creating and updating Pull Requests
@@ -64,6 +64,8 @@ bash ${CLAUDE_PLUGIN_ROOT}/lib/pr-collect.sh
 
 Parse the structured block. Single-value fields are `KEY: value`; list fields (`COMMITS`, `AVAILABLE_LABELS`) span from the line after `KEY:` to the next top-level `KEY:`.
 
+Also read the flow map for the base branch: `bash ${CLAUDE_PLUGIN_ROOT}/lib/flow-read.sh` — key `BRANCH_CASCADE` (a branch chain or `none`).
+
 ---
 
 ## Step 2 — Decide
@@ -80,7 +82,7 @@ Decisions:
 - **MODE** — `PR_EXISTS = true` → `UPDATE`; otherwise `CREATE`.
 - **DATA_SOURCE** — `REVIEW_FILE` ≠ `NOT_FOUND` → `yoke_full`; `REVIEW_FILE` = `NOT_FOUND` and `REPORT_FILE` ≠ `NOT_FOUND` → `yoke_partial`; neither → `fallback`.
 - **IS_DRAFT** (CREATE only) — `true` if `$ARGUMENTS` contains `--draft`, else `false`. Do not ask.
-- **BASE_BRANCH** — `--base <branch>` from `$ARGUMENTS`, else `DEFAULT_BRANCH`.
+- **BASE_BRANCH** — `--base <branch>` from `$ARGUMENTS` wins; else, when `BRANCH_CASCADE` ≠ `none`, the cascade's first branch (where PRs land); else `DEFAULT_BRANCH`.
 
 ---
 

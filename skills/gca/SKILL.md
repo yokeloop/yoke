@@ -1,6 +1,6 @@
 ---
 name: gca
-description: Git staging and commit with smart file grouping. Activated when the user writes "commit", "gca", "make a commit", "commit changes", or after /task, /plan, /do, /review.
+description: Git staging and commit with smart file grouping. Activated when the user writes "commit", "gca", "make a commit", "commit changes".
 ---
 
 # Git Commit with smart grouping
@@ -94,6 +94,7 @@ For each planned commit, in one turn:
 
 ## Rules
 
+- Commit-message language defaults to English per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md` ("Git initiative and defaults"); a `commit language` override may come from the project's `.yoke/flow.md` (Conventions section).
 - English commits, no exceptions.
 - One commit — one logical change.
 - Ticket first when present; never a colon after it.

@@ -190,7 +190,7 @@ Without parallel groups, dispatch sequentially.
 
 Save the list of changed and created files for Phases 4–6.
 
-**When zero files changed** (all tasks BLOCKED/SKIPPED): skip Phase 5 (Document); run Phase 4 only if changes exist; then Finalize with status failed → Complete.
+**When zero files changed** (all tasks BLOCKED/SKIPPED): skip Phase 5 (Document); run Phase 4 only if changes exist; then Finalize with status failed → Finish (skip the push/PR when nothing changed).
 
 **Transition:** tasks done (or BLOCKED) → Phase 4.
 

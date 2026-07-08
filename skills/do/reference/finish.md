@@ -106,7 +106,8 @@ merge — finish at the PR.
 
 ## 7. Report + notify
 
-Every mode appends this finish block to its report — a per-repo table:
+Every mode that writes a report file appends this finish block to it (inline
+mode writes no report — it only prints the table in chat) — a per-repo table:
 
 | repo | branch | PR URL / published version |
 | ---- | ------ | -------------------------- |

@@ -96,4 +96,4 @@ These hold for every mode run:
 
 ## Report
 
-Each mode writes `.yoke/ai/<slug>/<slug>-report.md` and appends the finish block from `reference/finish.md` §7. Full template: `reference/report-format.md`.
+Sub-agents and team modes write `.yoke/ai/<slug>/<slug>-report.md` and append the finish block from `reference/finish.md` §7; inline prints its summary in chat. Full template: `reference/report-format.md`.

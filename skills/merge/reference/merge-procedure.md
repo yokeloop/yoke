@@ -106,6 +106,9 @@ git switch <default-branch>
 git pull
 ```
 
+If §2's `--delete-branch` could not delete the local branch (it was checked out
+in the worktree just removed), delete it now: `git branch -d <branch>`.
+
 Multi-repo → repeat per repo, taking each checkout `path` from `REPOS`.
 
 ---

@@ -228,7 +228,7 @@ After completion, commit per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-
 
 ## Phase 6 — Finalize the report
 
-Write `.yoke/ai/<SLUG>/<SLUG>-report.md` directly via the Write tool using the **Report template** (see the appendix in `skills/do/SKILL.md`).
+Write `.yoke/ai/<SLUG>/<SLUG>-report.md` directly via the Write tool using the **Report template** from `reference/report-format.md`.
 
 Fill it from data the orchestrator already holds: task statuses (DONE / DONE_WITH_CONCERNS / BLOCKED / SKIPPED), commit hashes, concerns text, blocked reasons, post-implementation statuses, validation command results, FILES_CHANGED. Run `git log origin/main..HEAD --oneline` to collect commits.
 

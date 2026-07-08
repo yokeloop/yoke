@@ -459,11 +459,11 @@ After implementing the changes, validate using:
 
 **Shipping policy:** all six phases land in **one PR** on a single branch. Phases
 define **execution order and commit boundaries** inside that PR — not separate PRs.
-Each phase ends with one or more commits; the final commit opens the PR. Versioning
-in `plugin.json` and `marketplace.json` is **not bumped** during this work; the user
+Each phase ends with one or more commits; the final commit opens the PR. This work does
+**not bump** the version in `plugin.json` and `marketplace.json`; the user
 will release manually via `/yoke-release` after the PR merges.
 
-The order is chosen so each phase is reviewable as a discrete commit group, earlier
+The plan orders phases so each is reviewable as a discrete commit group, earlier
 phases lower the risk surface for the later ones, and a baseline measurement after
 each phase shows incremental impact. If a phase regresses, revert that phase's
 commits without losing the rest.
@@ -840,7 +840,7 @@ them). Never push without confirmation.
 ## §4. Baseline measurement — synthetic ticket
 
 **Before any change in Phase 1, measure baseline.** Without baseline numbers,
-the optimization claim ("≈60% faster") cannot be verified.
+no one can verify the "≈60% faster" optimization claim.
 
 ### 4.1 Create the baseline ticket
 

@@ -20,7 +20,7 @@ A summary of the conversation for a new agent, including a **Suggested skills** 
 
 ## Output
 
-A markdown file in the OS temp directory (`${TMPDIR:-/tmp}`). The absolute path is printed so you can hand it to the next agent.
+A markdown file in the OS temp directory (`${TMPDIR:-/tmp}`). The skill prints the absolute path so you can hand it to the next agent.
 
 ## Connections
 

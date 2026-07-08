@@ -32,8 +32,8 @@ the former `/task` and `/plan` skills (now in `deprecated/`).
 | **sub-agents** | a single issue / slug / task / plan | Write `.yoke/ai/<slug>/<slug>-plan.md`, pause on cold start only, then run the sub-agent pipeline.              |
 | **team**       | a PRD ticket with sub-issues        | Write the plan, pause on cold start, then dispatch the sub-agents pipeline per sub-issue (TeamCreate deferred). |
 
-A wrong mode guess is caught at the cold-start confirmation pause in sub-agents/team
-modes, so auto-detection never triggers an unreviewed costly run.
+The cold-start confirmation pause in sub-agents/team modes catches a wrong mode
+guess, so auto-detection never triggers an unreviewed costly run.
 
 ## Pipeline (sub-agents / team)
 
@@ -101,8 +101,8 @@ Sub-agents return a status after running a task (see `reference/status-protocol.
 /grill · /prd · /issues → /yoke:do → PR → /yoke:merge
 ```
 
-`/do` plans, executes, and drives the run to a ready PR — push, create/update PR, and
-notify are folded into its Finish, so no separate `/gp` or `/pr` step is needed. After the
+`/do` plans, executes, and drives the run to a ready PR — it folds push, PR
+create/update, and notify into its Finish, so it needs no separate `/gp` or `/pr` step. After the
 user approves on GitHub, `/yoke:merge` runs the post-PR tail (merge, cascade, deploy,
 transition, cleanup). `/review` optionally audits the diff before the PR. Upstream, `/grill`,
 `/grill-docs`, `/prd`, and `/issues` formalise _what_ to build before `/do`.

@@ -46,7 +46,7 @@ Updated README.md and CLAUDE.md with an entry for the new skill.
 
 ## Sub-agents
 
-Agents are created inline (prompts in SKILL.md) and launched via the Agent tool with `subagent_type: general-purpose`.
+The skill defines agents inline (prompts in SKILL.md) and launches them via the Agent tool with `subagent_type: general-purpose`.
 
 | Agent              | Model  | Role                                                            |
 | ------------------ | ------ | --------------------------------------------------------------- |

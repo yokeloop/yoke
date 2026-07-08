@@ -13,13 +13,13 @@ Interrogates you about a plan or design, one interactive question at a time, unt
 
 ## How it works
 
-Each question is posed through AskUserQuestion:
+The skill poses each question through AskUserQuestion:
 
 - a short header naming the decision;
 - 2–4 answer options, the **recommended one first** (`(Recommended)`) with a one-line rationale;
 - "Other" is always available for a free-form answer.
 
-One question at a time. The agent waits for your answer, folds it in, then asks the next question down that branch. Contradictions are surfaced immediately. When the tree is resolved, it summarises the decisions.
+One question at a time. The agent waits for your answer, folds it in, then asks the next question down that branch. The agent surfaces contradictions immediately. When the tree is resolved, it summarises the decisions.
 
 If a question is answerable from the codebase, the agent explores instead of asking.
 

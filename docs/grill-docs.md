@@ -21,7 +21,7 @@ Interactive, one question at a time (recommended answer first, "Other" for free-
 - **Updates `.yoke/context.md` inline** — captures resolved terms as they happen (glossary only, no implementation detail).
 - **Offers ADRs sparingly** — only when a decision is hard to reverse, surprising without context, and the result of a real trade-off.
 
-Files are created lazily — only when there is something to write.
+The skill creates files lazily — only when there is something to write.
 
 ## Output
 

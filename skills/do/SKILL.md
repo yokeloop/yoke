@@ -71,10 +71,12 @@ Every mode ends by driving the run to its pull request(s) per
 
 These hold for every mode run:
 
-- **Finish at PR.** Once the tasks are done, hand off to `reference/finish.md`:
-  enter a worktree when started on the default branch, finish each repo by its
-  finish policy from the flow map, comment on the ticket, and send the notify
-  carrying the PR link(s).
+- **Worktree on default branch.** Before touching code (after the cold-start
+  pause, if any), enter a worktree per `reference/finish.md` §2 when the run
+  starts on the default branch.
+- **Finish at PR.** Once the tasks are done, hand off to `reference/finish.md`
+  §3-§7: finish each repo by its finish policy from the flow map, comment on
+  the ticket, and send the notify carrying the PR link(s).
 - **Pause only on cold start.** The plan-confirmation pause fires only when no
   grill preceded in the session and no approved plan was handed in. A plan
   already agreed in grill runs straight through.

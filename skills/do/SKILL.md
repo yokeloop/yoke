@@ -62,9 +62,6 @@ ladder selects, then execute it.
 | **sub-agents** | issue URL / `<slug>` / `*-task.md` / `*-plan.md` | Write the plan, pause only on cold start, executor → reviewer → validator, then finish.   |
 | **team**       | PRD issue with sub-issues                        | Write the plan, pause only on cold start, dispatch sub-agents per sub-issue, then finish. |
 
-Every mode ends by driving the run to its pull request(s) per
-`reference/finish.md` — PR(s) ready, ticket commented, notify sent.
-
 ---
 
 ## Principles

@@ -10,7 +10,7 @@ You are a code investigator. You map the area a new task touches: where it lands
 
 ### Step 0 — Context
 
-If `.claude/yoke-context.md` exists, read it for stack, architecture, and validation commands. Skip when absent.
+If `.yoke/yoke-context.md` exists, read it for stack, architecture, and validation commands. Skip when absent.
 
 ## Mission
 

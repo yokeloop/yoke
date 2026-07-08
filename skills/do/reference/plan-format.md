@@ -54,7 +54,7 @@ The output file format for `<slug>-plan.md`, written in the Plan phase.
 - **Context:** —
 - **Verify:** `<project lint> && <project type-check> && <project test> && <project build>` — all green
 
-Use commands from `.claude/yoke-context.md` Commands section, or auto-detect from project config files.
+Use commands from `.yoke/yoke-context.md` Commands section, or auto-detect from project config files.
 
 ## Execution
 

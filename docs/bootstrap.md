@@ -1,7 +1,7 @@
 # Skill /bootstrap
 
 Prepares a project for yoke flow. Detects the stack, analyzes the architecture, scans conventions,
-scaffolds the `.yoke/` layout, and generates CLAUDE.md and `.claude/yoke-context.md`.
+scaffolds the `.yoke/` layout, and generates CLAUDE.md and `.yoke/yoke-context.md`.
 
 ## Input
 
@@ -15,7 +15,7 @@ Fires on prompts like: "bootstrap", "configure yoke", "prepare the project", "in
 ## Output
 
 - `CLAUDE.md` — instructions for Claude Code, generated from the project's stack and conventions, wired to the `.yoke/` conventions
-- `.claude/yoke-context.md` — stack/architecture/commands context for the yoke flow
+- `.yoke/yoke-context.md` — stack/architecture/commands context for the yoke flow
 - `.yoke/` skeleton — `context.md` (domain glossary seed), `journal.md`, `ai/`, `adr/`
 
 ## Phases
@@ -26,7 +26,7 @@ Fires on prompts like: "bootstrap", "configure yoke", "prepare the project", "in
 4. **Existing rules detection** — linters, CI, configs
 5. **Validation** — check collected data
 6. **CLAUDE.md generation** — build the instructions, wired to the `.yoke/` conventions
-7. **Context + `.yoke/` scaffold** — write `.claude/yoke-context.md` and scaffold `.yoke/` (`context.md`, `journal.md`, `ai/`, `adr/`)
+7. **Context + `.yoke/` scaffold** — write `.yoke/yoke-context.md` and scaffold `.yoke/` (`context.md`, `journal.md`, `ai/`, `adr/`)
 8. **Automation recommendations** — suggestions for hooks and scripts
 9. **Verification** — final check of CLAUDE.md, context, and the `.yoke/` skeleton
 

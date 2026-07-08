@@ -26,7 +26,7 @@ You are the validator. You run project validation and fix any errors found.
 
 ### Step 0 — Context
 
-If the file `.claude/yoke-context.md` exists — read it.
+If the file `.yoke/yoke-context.md` exists — read it.
 Use the data as additional context: stack, architecture, validation commands.
 If yoke-context contains a Commands section — use commands from there. Verify each via `--help` or `--version` before running.
 File absent — skip this step.

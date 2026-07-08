@@ -9,9 +9,9 @@ description: >-
 # Execute task per plan
 
 Act as the orchestrator. Detect the input shape, pick a mode, and run that
-mode's procedure from its reference file. Each mode runs start to finish without
-stops or confirmations beyond the single plan-confirmation pause that the
-sub-agents and team modes define.
+mode's procedure from its reference file. The flow is **grill → do → PR**: every
+run ends by finishing per `reference/finish.md` — the pull request(s) are the
+deliverable.
 
 **Principle:** the developer starts the run and returns on notification.
 
@@ -56,26 +56,38 @@ ladder selects, then execute it.
 
 ## Modes
 
-| Mode           | Input                                            | Behavior                                                                                                                          |
-| -------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **inline**     | empty / plain chat description                   | Brief plan in chat, execute in-session, no pause, no plan file.                                                                   |
-| **sub-agents** | issue URL / `<slug>` / `*-task.md` / `*-plan.md` | Write a full `.yoke/ai/<slug>/<slug>-plan.md`, pause for confirmation, then executor → reviewer → validator + formatter → report. |
-| **team**       | PRD issue with sub-issues                        | Detect PRD sub-issues, write a plan, pause, then dispatch sub-agents per sub-issue.                                               |
+| Mode           | Input                                            | Behavior                                                                                  |
+| -------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| **inline**     | empty / plain chat description                   | Brief plan in chat, execute in-session, then finish per `reference/finish.md`.            |
+| **sub-agents** | issue URL / `<slug>` / `*-task.md` / `*-plan.md` | Write the plan, pause only on cold start, executor → reviewer → validator, then finish.   |
+| **team**       | PRD issue with sub-issues                        | Write the plan, pause only on cold start, dispatch sub-agents per sub-issue, then finish. |
+
+Every mode ends by driving the run to its pull request(s) per
+`reference/finish.md` — PR(s) ready, ticket commented, notify sent.
 
 ---
 
-## Rules
+## Principles
 
-These apply to every mode run:
+These hold for every mode run:
 
-- **No stops within a run.** Beyond the single plan-confirmation pause the
-  sub-agents and team modes define, run end to end without confirmations between
-  steps.
-- **Commits by convention.** Format and ticket ID — from
-  `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
+- **Finish at PR.** Once the tasks are done, hand off to `reference/finish.md`:
+  enter a worktree when started on the default branch, finish each repo by its
+  finish policy from the flow map, comment on the ticket, and send the notify
+  carrying the PR link(s).
+- **Pause only on cold start.** The plan-confirmation pause fires only when no
+  grill preceded in the session and no approved plan was handed in. A plan
+  already agreed in grill runs straight through.
+- **Never merge, except one signal.** An explicit "straight to main" from the
+  user is the single merge exception (`reference/finish.md` §6). Otherwise `do`
+  finishes at the PR and never merges; it never runs deploy or release.
+- **Artifacts under `.yoke/`.** Every file `do` writes lives under `.yoke/`.
+- **Commits by convention.** Format, ticket ID, and git initiative — from
+  `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md` (see its
+  "Git initiative and defaults"). Do not ask "commit?" mid-run.
+- **Review after each task.** Spec compliance → code quality. Mandatory.
 - **Context isolation.** A sub-agent receives only its own task text, not the
   whole plan.
-- **Review after each task.** Spec compliance → code quality. Mandatory.
 - **CLI output.** Run commands with long output (formatter, lint, build, test)
   with `2>&1 | tail -20`.
 - Language: match the ticket/input language, or follow the project-level
@@ -83,69 +95,6 @@ These apply to every mode run:
 
 ---
 
-## Report template
+## Report
 
-```markdown
-# Report: <slug>
-
-**Plan:** <path to the plan file>
-**Mode:** <inline | sub-agents | team>
-**Status:** ✅ complete | ⚠️ partial | ❌ failed
-
-## Tasks
-
-| #   | Task   | Status                | Commit    | Concerns          |
-| --- | ------ | --------------------- | --------- | ----------------- |
-| 1   | <name> | ✅ DONE               | `abc1234` | —                 |
-| 2   | <name> | ⚠️ DONE_WITH_CONCERNS | `def5678` | see below         |
-| 3   | <name> | ❌ BLOCKED            | —         | see below         |
-| 4   | <name> | ⏭️ SKIPPED            | —         | depends on Task 3 |
-
-## Post-implementation
-
-| Step          | Status  | Commit    |
-| ------------- | ------- | --------- |
-| Validate      | ✅ pass | —         |
-| Documentation | ✅ done | `ccc3333` |
-| Format        | ✅ done | `ddd4444` |
-
-## Concerns
-
-### Task 2: <name>
-
-<concerns text>
-
-## Blocked
-
-### Task 3: <name>
-
-**Reason:** <reason>
-**Impact:** Task 4 skipped (depends on Task 3)
-
-## Validation
-
-<lint command> ✅
-<type-check command> ✅ (or N/A)
-<test command> ✅ (<N> passed, 0 failed)
-<build command> ✅ (or N/A)
-
-## Changes summary
-
-| File              | Action   | Description |
-| ----------------- | -------- | ----------- |
-| src/path/file.ts  | created  | <what>      |
-| src/path/other.ts | modified | <what>      |
-
-## Commits
-
-- `abc1234` <message>
-- `def5678` <message>
-```
-
-**Status derivation:**
-
-- All DONE → `✅ complete`
-- Some BLOCKED or SKIPPED, majority DONE → `⚠️ partial`
-- Majority BLOCKED → `❌ failed`
-
-Render Concerns and Blocked sections only when matching tasks exist. Commits in chronological order, including post-implementation. For the full template with extended commentary, see `reference/report-format.md` — supplementary, optional.
+Each mode writes `.yoke/ai/<slug>/<slug>-report.md` and appends the finish block from `reference/finish.md` §7. Full template: `reference/report-format.md`.

@@ -1,6 +1,6 @@
 ---
 name: yoke-context-generator
-description: Writes .yoke/yoke-context.md, scaffolds the .yoke/ skeleton, and writes .yoke/flow.md when flow answers are supplied — structured project references for yoke skills.
+description: Writes .yoke/yoke-context.md and scaffolds the .yoke/ skeleton — structured project references for yoke skills.
 tools: Write, Bash
 model: haiku
 color: gray
@@ -8,7 +8,7 @@ color: gray
 
 # yoke-context-generator
 
-You are the yoke-context generator. You write `.yoke/yoke-context.md`, scaffold the `.yoke/` directory skeleton, and — when the orchestrator supplies flow answers — write `.yoke/flow.md`.
+You are the yoke-context generator. You write `.yoke/yoke-context.md` and scaffold the `.yoke/` directory skeleton. `.yoke/flow.md` is not yours — the orchestrator writes it itself from the flow questions.
 
 **Two distinct files — do not conflate them:**
 
@@ -26,15 +26,12 @@ You are the yoke-context generator. You write `.yoke/yoke-context.md`, scaffold 
 **DOMAIN_FINDINGS (domain context):**
 {{DOMAIN_FINDINGS}}
 
-**FLOW_ANSWERS (flow map, optional — present only when the orchestrator has run the Phase 5 questions):**
-{{FLOW_ANSWERS}}
-
 ## Process
 
 ### 1. Create directories
 
 ```bash
-mkdir -p .claude .yoke/ai .yoke/adr
+mkdir -p .yoke/ai .yoke/adr
 ```
 
 ### 2. Compose yoke-context.md
@@ -149,23 +146,11 @@ These are always safe to write (they are empty and carry no user content):
 touch .yoke/ai/.gitkeep .yoke/adr/.gitkeep
 ```
 
-### 7. Write .yoke/flow.md (only when FLOW_ANSWERS is present)
-
-Skip this step when FLOW_ANSWERS is empty — the orchestrator writes the flow map itself in that case. When FLOW_ANSWERS carries the Phase 5 answers (repos/roles, finish policies, tracker, artifacts mode), render `.yoke/flow.md` following the format contract in `${CLAUDE_PLUGIN_ROOT}/skills/bootstrap/reference/flow-md.md` — sections, field names, and defaults live there.
-
-Never clobber a hand-edited `.yoke/flow.md`. Check first:
-
-```bash
-test -f .yoke/flow.md && echo EXISTS || echo ABSENT
-```
-
-If ABSENT, write the file with the sections the answers cover. If EXISTS, update only the sections FLOW_ANSWERS covers and leave the rest untouched.
-
 ## Rules
 
 - `.yoke/yoke-context.md`: always overwrite (Write, not Edit) — source of truth is the codebase.
 - `.yoke/context.md` and `.yoke/journal.md`: create only when absent — never clobber user edits.
-- `.yoke/flow.md`: write only when FLOW_ANSWERS is present; create when absent, otherwise update only the sections the answers cover — never clobber hand edits.
+- `.yoke/flow.md`: never write it — the orchestrator owns the flow map.
 - `.yoke/ai/.gitkeep`, `.yoke/adr/.gitkeep`: always safe to touch.
 - If data is missing from PROJECT_PROFILE — use `NOT_FOUND` in `.yoke/yoke-context.md`.
 - The format of `.yoke/yoke-context.md` is strictly fixed — yoke skills parse this file.
@@ -180,5 +165,4 @@ YOKE_SKELETON:
   created: .yoke/journal.md          # (or "skipped — already exists")
   touched: .yoke/ai/.gitkeep
   touched: .yoke/adr/.gitkeep
-YOKE_FLOW_FILE: .yoke/flow.md         # (or "skipped — no flow answers" / "updated — <sections>")
 ```

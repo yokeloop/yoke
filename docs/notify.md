@@ -76,17 +76,23 @@ Any type not in the list is silently suppressed.
 
 ## Notification point map
 
-| Skill     | Phase    | Type            | Description                     |
-| --------- | -------- | --------------- | ------------------------------- |
-| bootstrap | Confirm  | ACTION_REQUIRED | Bootstrap ready — confirm phase |
-| bootstrap | Complete | STAGE_COMPLETE  | Bootstrap complete              |
-| do        | Execute  | ALERT           | Task blocked                    |
-| do        | Complete | STAGE_COMPLETE  | Implementation complete         |
-| pr        | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready)    |
-| pr        | Complete | STAGE_COMPLETE  | PR created or updated           |
-| review    | Scope    | ACTION_REQUIRED | Found N issues — select scope   |
-| review    | Complete | STAGE_COMPLETE  | Review complete                 |
-| sync-docs | Complete | STAGE_COMPLETE  | Skill catalog regenerated       |
+| Skill     | Phase    | Type            | Description                                                       |
+| --------- | -------- | --------------- | ----------------------------------------------------------------- |
+| bootstrap | Confirm  | ACTION_REQUIRED | Bootstrap ready — confirm phase                                   |
+| bootstrap | Complete | STAGE_COMPLETE  | Bootstrap complete                                                |
+| do        | Execute  | ALERT           | Task blocked                                                      |
+| do        | Finish   | STAGE_COMPLETE  | `<slug>: PR ready` — PR URL(s) as the payload                     |
+| merge     | Finish   | STAGE_COMPLETE  | `<slug>: merged` — merged / cascade / deploy / transition summary |
+| pr        | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready)                                      |
+| pr        | Complete | STAGE_COMPLETE  | PR created or updated                                             |
+| review    | Scope    | ACTION_REQUIRED | Found N issues — select scope                                     |
+| review    | Complete | STAGE_COMPLETE  | Review complete                                                   |
+| sync-docs | Complete | STAGE_COMPLETE  | Skill catalog regenerated                                         |
+
+`do` fires its completion notify from the finish contract (`skills/do/reference/finish.md` §7),
+not from the Finalize phase — the PR link(s) are the payload the developer returns on. `/merge`
+fires its own STAGE_COMPLETE from the merge procedure (`skills/merge/reference/merge-procedure.md` §7)
+once the post-PR tail is done.
 
 ---
 
@@ -96,8 +102,8 @@ Any type not in the list is silently suppressed.
 bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh \
   --type STAGE_COMPLETE \
   --skill do \
-  --title "Implementation complete" \
-  --body "All changes committed. Ready for review."
+  --title "112-password-reset: PR ready" \
+  --body "https://github.com/org/repo/pull/42"
 ```
 
 ---

@@ -1,6 +1,8 @@
 # Report Format
 
-Format of the output file `<slug>-report.md`. Written in Phase 6.
+The single home of the `/do` report template. Format of the output file
+`<slug>-report.md`, written at finish (Phase 6). Every mode renders this same
+template, then appends the Finish block from `finish.md` §7.
 
 ---
 
@@ -45,22 +47,19 @@ Format of the output file `<slug>-report.md`. Written in Phase 6.
 **Impact:** Task 4 skipped (depends on Task 3)
 
 ## Validation
-```
 
 <lint command> ✅
 <type-check command> ✅ (or N/A if not applicable)
 <test command> ✅ (<N> passed, 0 failed)
 <build command> ✅ (or N/A if not applicable)
 
-```
-
 ## Changes summary
 
-| File | Action | Description |
-|---|---|---|
-| src/auth/forgot-password.ts | created | POST /auth/forgot-password handler |
-| src/auth/reset-password.ts | created | POST /auth/reset-password handler |
-| src/routes/auth.ts | modified | Added new routes |
+| File                        | Action   | Description                        |
+| --------------------------- | -------- | ---------------------------------- |
+| src/auth/forgot-password.ts | created  | POST /auth/forgot-password handler |
+| src/auth/reset-password.ts  | created  | POST /auth/reset-password handler  |
+| src/routes/auth.ts          | modified | Added new routes                   |
 
 ## Commits
 
@@ -70,16 +69,29 @@ Format of the output file `<slug>-report.md`. Written in Phase 6.
 - `jkl3456` chore(112-password-reset): validation
 - `ccc3333` docs(112-password-reset): update documentation
 - `ddd4444` chore(112-password-reset): format
+
+## Finish
+
+| repo | branch | PR URL / published version |
+| ---- | ------ | -------------------------- |
 ```
 
 ---
 
+## Status derivation
+
+Status is derived from the tasks:
+
+- All DONE → `✅ complete`
+- Some BLOCKED or SKIPPED, but the majority DONE → `⚠️ partial`
+- Majority BLOCKED → `❌ failed`
+
 ## Rules
 
-- **Status** is derived from tasks:
-  - All DONE → `✅ complete`
-  - Some BLOCKED or SKIPPED, but the majority DONE → `⚠️ partial`
-  - Majority BLOCKED → `❌ failed`
-- **Concerns** and **Blocked** sections — only when there are matching tasks.
-- **Changes summary** — collect from FILES_CHANGED of all sub-agents.
-- **Commits** — chronological order, including post-implementation.
+- Render the **Concerns** and **Blocked** sections only when there are matching tasks.
+- **Changes summary** — collect from the FILES_CHANGED of all sub-agents.
+- Commits in chronological order, including post-implementation.
+- **Finish** — one row per touched repo (`finish.md` §7). Aggregate every PR URL and
+  every published version across all touched repos into the table. The run-level notify
+  carries the PR link(s) as its payload — the developer returns on that notification, so
+  do not also fire the pr skill's own notify.

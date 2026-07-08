@@ -2,8 +2,7 @@
 name: gp
 description: >-
   Git push with checks and report. Used when the user writes
-  "push", "gp", "git push", or after running /do and /review
-  to send changes.
+  "push", "gp", "git push".
 ---
 
 # Git push with checks and report

@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   plugin.json          # plugin manifest (name, version, author)
   marketplace.json     # marketplace registry (name, owner, plugins[])
 skills/                # skills — auto-discovered by SKILL.md in subdirectories
-lib/                   # shared scripts called from skills (notify.sh, gp-precheck.sh, gp-push.sh, pr-collect.sh)
+lib/                   # shared scripts called from skills (notify.sh, flow-read.sh, gp-precheck.sh, gp-push.sh, pr-collect.sh)
 docs/                  # reference documentation for the plugin system
 ```
 
@@ -58,6 +58,8 @@ claude --plugin-dir .
 
 Skills write their artifacts under `.yoke/` in the target project:
 
+- `.yoke/flow.md` — flow map: repos + finish policies, branch cascade, deploy commands, tracker, artifacts (written by `/bootstrap`, read via `lib/flow-read.sh`; `/do` and `/merge` consume it)
+- `.yoke/yoke-context.md` — generated project profile (stack, architecture, conventions)
 - `.yoke/context.md` — domain glossary
 - `.yoke/adr/` — architecture decision records
 - `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
@@ -67,11 +69,11 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 ## Implemented skills
 
-`/do` is the universal execution tool: no args → inline execution; an issue URL → sub-agents (plan then pause for confirmation); a PRD with sub-issues → team of parallel agents. `/task` and `/plan` are deprecated and have moved to `deprecated/`.
+`/do` is the universal execution tool and now finishes at the PR. It auto-detects mode — no args → inline; an issue URL → sub-agents (plan, pausing only on a cold start); a PRD with sub-issues → team of parallel agents — then drives the run to a ready pull request (worktree, per-task commits, push, PR, ticket comment, notify) and stops. It never merges, except an explicit up-front "straight to main". `/merge` is the user-triggered finisher: once the user approves the PR on GitHub, it runs the post-PR tail per `.yoke/flow.md` (merge, cascade, deploy/release, ticket transition, worktree cleanup). `/task` and `/plan` are deprecated and have moved to `deprecated/`.
 
 <!-- yoke:skills:start -->
 
-- `/bootstrap` — Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md and yoke-context.md.
+- `/bootstrap` — Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md, `.yoke/yoke-context.md`, and `.yoke/flow.md`.
 - `/do` — Executes a task per plan.
 - `/gca` — Git staging and commit with smart file grouping.
 - `/gp` — Git push with checks and report.
@@ -81,6 +83,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `/help` — Explains how to use yoke and lists the available skills; also greets new users.
 - `/issues` — Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.
 - `/journal` — Appends a concise, newest-first entry to `.yoke/journal.md` summarizing the session's real work and linking the relevant `.yoke/ai/<slug>/` artifacts — the first layer of yoke's connected memory.
+- `/merge` — The user-triggered finisher that executes the post-PR tail per `.yoke/flow.md`: merges the task's PR(s), runs cascade merges, runs deploy/release commands, moves the ticket to its target state, cleans up worktrees, and returns to the default branch.
 - `/pr` — Creates or updates a GitHub Pull Request.
 - `/prd` — Turns the current conversation and codebase understanding into a PRD, publishes it as a GitHub issue, and saves a local copy in .yoke/ai.
 - `/review` — Finds problems in code, fixes them and produces a report.
@@ -96,7 +99,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 ## Planned skills
 
-`/polish` `/qa` `/memorize` `/merge`
+`/polish` `/qa` `/memorize`
 
 ## Reference docs
 

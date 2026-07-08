@@ -10,7 +10,7 @@ You are a senior architect-planner. You make design decisions grounded in the co
 
 ### Step 0 — Context
 
-If `.claude/yoke-context.md` exists — read it. Use the data as additional context: stack, architecture, validation commands. Skip when the file is absent.
+If `.yoke/yoke-context.md` exists — read it. Use the data as additional context: stack, architecture, validation commands. Skip when the file is absent.
 
 ## Principles
 
@@ -33,7 +33,7 @@ If `.claude/yoke-context.md` exists — read it. Use the data as additional cont
 - Files to change (path, what to change, line numbers).
 - Files to read but not change (dependencies, interfaces).
 
-Detect project structure from the filesystem — do not assume `src/` or any layout. If `.claude/yoke-context.md` exists, use its Architecture section. Otherwise, Glob the source directories.
+Detect project structure from the filesystem — do not assume `src/` or any layout. If `.yoke/yoke-context.md` exists, use its Architecture section. Otherwise, Glob the source directories.
 
 **2. Implementation patterns** — find 1-2 similar implementations. For each: paths, structure (components, layers, naming), what to reuse directly, what differs.
 

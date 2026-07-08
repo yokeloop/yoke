@@ -4,6 +4,18 @@ Commit format for yoke skills and standalone invocations.
 
 ---
 
+## Git initiative and defaults
+
+Plugin-wide contract for when the agent may run git and how commits are shaped.
+
+- **Authorization.** A skill invocation (`/do`, `/merge`, `/gca`, `/gp`, `/pr`) authorizes the git operations that skill performs — commit, push, PR — with no mid-run "commit?" questions.
+- **Initiative.** Outside skill runs the agent never commits or pushes on its own initiative — only on an explicit user command.
+- **Language.** Commit messages default to English; a project may override via `.yoke/flow.md` or its `CLAUDE.md`.
+- **Trailers.** Never add trailer lines (`Co-Authored-By`, `Signed-off-by`, etc.).
+- **Identity.** Never fabricate committer identity (no `git -c user.email=...`); when identity is missing, ask the user.
+
+---
+
 ## Format
 
 ```
@@ -12,7 +24,7 @@ TICKET type(SLUG): description
 
 Example: `#86 feat(86-black-jack-page): add game page`
 
-- **Language**: ALWAYS English. No exceptions.
+- **Language**: English by default (see "Git initiative and defaults").
 - **TICKET**: first in the message, separated by a space (NO colon after the ticket). Determined by cascade (see the Ticket ID section). If no ticket — omit it together with the space.
 - **type**: determined by the nature of the changes (see the type table).
 - **SLUG**: in parentheses after type. Determined by context (see the Slug section). If no slug — omit the parentheses: `type: description`.
@@ -61,7 +73,7 @@ The user passes a ticket ID or URL.
 
 ### From yoke flow
 
-Within yoke flow (`/do` -> `/review`) the ticket ID is extracted from the slug:
+Within yoke flow (`/do` → PR, `/merge`) the ticket ID is extracted from the slug:
 
 | Slug pattern                               | Ticket ID | Example |
 | ------------------------------------------ | --------- | ------- |
@@ -148,7 +160,7 @@ Commits for yoke flow artifacts (format `TICKET docs(SLUG): description`):
 - Ticket ID first in the message (if present).
 - Avoid `wip`, `temp`, `misc`.
 - Staging/exclusion policy lives in `staging-strategy.md`: gca excludes only untracked secrets, keys, and >1MB binaries, and always commits tracked files, git-crypt included. Never exclude a file by authorship.
-- Exclude `Co-Authored-By`, `Signed-off-by` and any trailer lines.
-- Commit message: concise, specific, imperative mood, in English.
+- Git initiative, message language, trailers, and committer identity follow "Git initiative and defaults".
+- Commit message: concise, specific, imperative mood.
 - Task with implementation and tests — type `feat` (tests ship together with the feature).
 - Task with tests only — type `test`.

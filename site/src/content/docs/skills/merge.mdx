@@ -1,0 +1,136 @@
+---
+title: /yoke:merge
+description: "The user-triggered finisher that executes the post-PR tail per `.yoke/flow.md`: merges the task's PR(s), runs cascade merges, runs deploy/release commands, moves the ticket to its target state, cleans up worktrees, and returns to the default branch."
+---
+
+The user-triggered finisher that executes the post-PR tail per `.yoke/flow.md`: merges the task's PR(s), runs cascade merges, runs deploy/release commands, moves the ticket to its target state, cleans up worktrees, and returns to the default branch.
+
+## Triggers
+
+Activates when the user writes:
+
+- `merge`
+- `merge it`
+- `/merge`
+- `finish the task`
+- `ship it`
+- `cascade and deploy`
+
+## Use it
+
+```
+/yoke:merge
+/yoke:merge <slug>
+/yoke:merge https://github.com/org/repo/pull/42
+```
+
+## Inputs and outputs
+
+**Input:** `$ARGUMENTS` (optional) — PR URL(s) or a `<slug>`. Empty means the current branch/worktree's
+task: the skill resolves its open PR(s) via `gh` (`gh pr view`, `gh pr list --head <branch>`).
+
+```
+/yoke:merge
+/yoke:merge <slug>
+/yoke:merge https://github.com/org/repo/pull/42
+```
+
+Before acting the skill reports what will be merged. More than one PR — or any ambiguity
+(unclear branch, several open PRs, an unclear target) — is one AskUserQuestion with a
+recommended "Merge all listed" option first. A single unambiguous PR needs no question.
+
+**Output:** merged PR(s), cascade merges, deploy/release runs, ticket transition, cleaned worktrees
+
+<details>
+<summary>Full instructions</summary>
+
+````markdown
+---
+name: merge
+description: >-
+  The user-triggered finisher that executes the post-PR tail per `.yoke/flow.md`:
+  merges the task's PR(s), runs cascade merges, runs deploy/release commands,
+  moves the ticket to its target state, cleans up worktrees, and returns to the
+  default branch. Activates when the user writes "merge", "merge it", "/merge",
+  "finish the task", "ship it", "cascade and deploy", or after the user approves
+  a PR on GitHub. Never runs on its own — the merge decision stays the user's.
+---
+
+# Finish the task: merge, cascade, deploy, transition, clean up
+
+The flow ends at PR (ADR-0006): `do` drives every run to a ready pull request and
+stops there. The merge decision is the user's, made on GitHub. `/merge` turns that
+one decision into one command — it executes the whole post-PR tail per the flow
+map instead of the user dictating the same paragraph every session.
+
+**Principle:** merging is the user's call; `/merge` runs only on the explicit word.
+
+---
+
+## Input
+
+`$ARGUMENTS` — optional PR URL(s) or a `<slug>`. Empty means the current
+branch/worktree's task: resolve its open PR(s) via `gh` (e.g. `gh pr view`,
+`gh pr list --head <branch>`).
+
+---
+
+## Procedure
+
+Read the flow map once at the project root:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/flow-read.sh
+```
+
+Then read and follow `reference/merge-procedure.md` — the one reference this skill
+routes to for the full mechanics. It runs this step sequence, each step **skipped
+silently when the flow map does not declare it**:
+
+1. **Merge PR(s)** — merge the task's pull request(s) on GitHub.
+2. **Cascade** — advance the branch cascade (e.g. master → staging → develop) by
+   each declared step command.
+3. **Deploy / release** — run the `DEPLOY_COMMANDS` the flow map declares, nothing
+   inferred.
+4. **Ticket transition** — move the task's ticket to its target state.
+5. **Worktree cleanup** — remove the task's worktree(s) and delete merged branches.
+6. **Return to the default branch** — sync and land on the repo's default branch.
+
+---
+
+## Rules
+
+- **Never auto-runs.** `/merge` fires only on an explicit user command — no
+  automatic trigger after `do`, ever. The merge decision stays the user's.
+- **Skip undeclared steps silently.** A step whose section is absent from the flow
+  map is skipped without nagging — omission means "apply the default", never "fail".
+- **Multi-repo.** Merge every one of the task's PRs; libraries were already
+  direct-pushed by `do`, so there is nothing to merge for them.
+- **Git authorization** comes from the skill invocation itself — see "Git initiative
+  and defaults" in `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
+  Do not restate it; do not ask "merge?" mid-run.
+- **Artifacts only under `.yoke/`.**
+- **Any fork** — an ambiguous PR set, a merge conflict, an unclear target — is one
+  AskUserQuestion with a recommended option listed first.
+- **Language:** match the ticket/input language, or follow the project-level
+  definition in CLAUDE.md / AGENTS.md.
+
+---
+
+## Notify
+
+On finish, send the terminal notification with what was merged and deployed:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/lib/notify.sh --type STAGE_COMPLETE --skill merge \
+  --title "<slug>: merged" --body "<merged PR(s) + deploy/release summary>"
+```
+````
+
+</details>
+
+{/* Footer */}
+
+## Source
+
+[View `SKILL.md` on GitHub →](https://github.com/yokeloop/yoke/blob/main/skills/merge/SKILL.md)

@@ -31,7 +31,9 @@ Parse the emitted `KEY: value` block. Keys: `FLOW_FILE`, `REPO_COUNT`, `REPOS`
 
 ## 2. Worktree entry (run start)
 
-The modes reference this at the start of a run, before touching code.
+The modes reference this at the start of a run, before touching code. In modes
+with a cold-start plan-confirmation pause, enter the worktree **after** the plan
+is confirmed — an abandoned pause must not leave a stray worktree behind.
 
 - **On the repo's default branch** → isolate first:
   - prefer the harness-native worktree (Claude Code `EnterWorktree`) when available;
@@ -48,15 +50,17 @@ The modes reference this at the start of a run, before touching code.
 
 After implementation and per-task commits, finish each repo by its `finish` policy:
 
-- **`pr`** — push the branch, then create or update the PR:
+- **`pr`** — commit any remaining run artifacts (report, journal entries — the
+  files the PR body draws on), push the branch, then create or update the PR:
 
   ```bash
   git push -u origin <branch>
   ```
 
   Create/update the PR through the pr skill's mechanics —
-  `${CLAUDE_PLUGIN_ROOT}/skills/pr/SKILL.md`. Do not restate its body generation
-  here; invoke its steps.
+  `${CLAUDE_PLUGIN_ROOT}/skills/pr/SKILL.md`: its collect → body → create/update
+  steps only. The pr skill's own terminal notify and print are superseded by the
+  run-level notify in §7 — do not fire them here.
 
 - **`direct-push`** — commit to the repo's default branch, push, run the declared
   `publish` command, then bump the published version in each repo named in

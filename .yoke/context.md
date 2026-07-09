@@ -28,6 +28,7 @@ implementation details (those live in `.yoke/adr/` and the PRDs under
   - `.yoke/adr/` — architecture decision records.
   - `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, plan, report, …).
   - `.yoke/journal.md` — session journal.
+  - `.yoke/handoff/` — the handoff chain (see Memory).
 - **Slug** — kebab-case task identifier, optionally prefixed with a ticket id
   (e.g. `16-direct-telegram-notifications`). Names the `.yoke/ai/<slug>/` folder.
 
@@ -39,6 +40,18 @@ implementation details (those live in `.yoke/adr/` and the PRDs under
   - **Artifacts** (`.yoke/ai/`) — the full detail behind each journal entry.
   - **Git layer** (future, issue #2) — commit trailers / GitHub comments that
     tie commits and issues back to the artifacts. Deferred to a later release.
+- **Handoff** — a snapshot of a conversation's live state, written so a fresh
+  session resumes where the last one stopped. It records what exists only in the
+  chat — open tasks, the user's verbatim requirements, rejected alternatives,
+  the git state — and links the artifacts rather than restating them. Distinct
+  from the journal: the journal narrates finished work for the project, a
+  handoff carries unfinished work to the next agent.
+  Each run writes one file under `.yoke/handoff/`, named
+  `<YYYYMMDD-HHMMSS>-<slug>.md`, always in the root checkout, never inside a
+  worktree. Handoffs accumulate and nothing prunes them; a second handoff of the
+  same conversation links its predecessor instead of restating it.
+- **Warmup** (planned) — the counterpart of handoff: a skill that takes a
+  handoff file and restores the session from it.
 
 ## Flow map
 

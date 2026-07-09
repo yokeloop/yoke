@@ -74,6 +74,30 @@ implementation details (those live in `.yoke/adr/` and the PRDs under
   deploy/release, ticket transition, worktree cleanup, return to the default
   branch. Never runs on its own — merging stays the user's decision.
 
+## Cross-repo awareness (decided 2026-07-09)
+
+- **Sibling** — a neighboring repo checkout reachable through
+  `additionalDirectories` in the project's `.claude/settings.local.json` and
+  carrying its own `.yoke/` artifacts. The only discovery signal for cross-repo
+  reuse: when the setting names an org directory or specific checkouts, that IS
+  the declaration that the repos belong together. No dedicated org-level
+  artifact exists; without the setting, bootstrap behaves as before.
+- **Hypothesis profile** — an existing `yoke-context.md` handed to the detect
+  agents as a starting claim to verify against the code, reporting only
+  differences instead of deriving everything from scratch. Two sources, one
+  mechanism: a stack-matching sibling's profile (first bootstrap) or the repo's
+  own previous profile (re-bootstrap). Never inherited silently — a hypothesis
+  a detect agent did not confirm does not enter the artifacts.
+- **Repos index** — the Repos section of `.yoke/flow.md` read as a pointer map:
+  for each linked repo a role, checkout path, one-line description, and a
+  pointer to its `.yoke/`. Links, not copies — enough to orient in a sibling,
+  never a mirror of its content.
+- **Fact owner** — the single repo where a shared fact lives; every other repo
+  links to the owner instead of restating the fact. A library's publish
+  procedure and consumers list live in the library's own `flow.md`; `/merge`
+  in a consumer follows the link. Ends the drift where the same publish
+  command was recorded three different ways across one org.
+
 ## do modes
 
 `do` is the universal execution tool; it auto-detects its mode from the input:

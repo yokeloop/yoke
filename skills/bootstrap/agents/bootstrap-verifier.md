@@ -38,7 +38,7 @@ Confirm the flow map exists and carries a Repos section:
 test -f .yoke/flow.md && grep -qi '^##[[:space:]]*Repos' .yoke/flow.md && echo REPOS_OK || echo FLOW_ISSUE
 ```
 
-Report `YOKE_FLOW_OK: true|false`. When `.yoke/flow.md` is absent, or present without a `## Repos` section, set `YOKE_FLOW_OK: false` and state which case in ISSUES — a bootstrapped project should carry a flow map, so its absence is a reported gap, not a hard `FILES_OK: false`.
+Report `YOKE_FLOW_OK: true|false`. When `.yoke/flow.md` is absent, or present without a `## Repos` section, set `YOKE_FLOW_OK: false` with the note "(expected — written in the flow-map phase)" — the pipeline writes flow.md **after** this verification, so its absence is normal, never an ISSUES entry, and never a penalty. For the same reason a reference to `.yoke/flow.md` from CLAUDE.md is a valid forward reference, not a dangling link.
 
 ### Step 2. Sections check
 
@@ -75,10 +75,15 @@ If a conditional section is present but the list format is incorrect — mark it
 
 Extract commands from Commands and verify each one with one of:
 
-- Run `<cmd> --help 2>&1 | head -5` and confirm it's not "command not found"
 - Check presence in `package.json` scripts (for npm/pnpm/yarn commands)
 - Check presence in `Makefile` targets (for make commands)
 - Check presence in `pyproject.toml` scripts (for Python)
+- Run `<cmd> --help 2>&1 | head -5` and confirm it's not "command not found"
+
+**Presence checks only.** Never execute the project's build, lint, test, or dev
+commands themselves — validation-scanner already ran them earlier in the
+pipeline; re-running a full build here burns minutes without changing the
+verdict.
 
 ### Step 4. Paths check
 
@@ -118,3 +123,6 @@ ISSUES: <list of problems, if any>
 - Check each criterion objectively, with concrete examples.
 - When checking commands use `2>&1` to capture errors.
 - If a file does not exist — assign 0 for all criteria and QUALITY_GRADE: F.
+- **ISSUES is independent of the grade.** List every real factual problem even
+  when the score lands at A — the orchestrator gates on ISSUES, not the grade,
+  and an empty ISSUES at Grade A is what lets it proceed.

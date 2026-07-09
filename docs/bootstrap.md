@@ -20,15 +20,16 @@ Fires on prompts like: "bootstrap", "configure yoke", "prepare the project", "in
 
 ## Phases
 
-1. **Stack detection** — identify languages, frameworks, build tools
-2. **Architecture analysis** — map directories, layers, dependencies
-3. **Convention scanning** — code style, naming, patterns
-4. **Existing rules detection** — linters, CI, configs
-5. **Validation** — check collected data
-6. **CLAUDE.md generation** — build the instructions, wired to the `.yoke/` conventions
-7. **Context + `.yoke/` scaffold** — write `.yoke/yoke-context.md` and scaffold `.yoke/` (`context.md`, `journal.md`, `ai/`, `adr/`)
-8. **Automation recommendations** — suggestions for hooks and scripts
-9. **Verification** — final check of CLAUDE.md, context, and the `.yoke/` skeleton
+1. **Sibling discovery** — find already-bootstrapped neighbors via `additionalDirectories`, pick a hypothesis profile (ADR-0010)
+2. **Stack detection** — identify languages, frameworks, build tools
+3. **Architecture analysis** — map directories, layers, dependencies
+4. **Convention scanning** — code style, naming, patterns
+5. **Existing rules detection** — linters, CI, configs
+6. **Validation** — check collected data
+7. **CLAUDE.md generation** — build the instructions, wired to the `.yoke/` conventions
+8. **Context + `.yoke/` scaffold** — write `.yoke/yoke-context.md` and scaffold `.yoke/` (`context.md`, `journal.md`, `ai/`, `adr/`)
+9. **Automation recommendations** — suggestions for hooks and scripts
+10. **Verification** — final check of CLAUDE.md, context, and the `.yoke/` skeleton
 
 (Simplified overview; the actual pipeline is 7 phases including Preflight, Confirm, and Commit.)
 
@@ -37,6 +38,10 @@ Fires on prompts like: "bootstrap", "configure yoke", "prepare the project", "in
 - Orchestrator with 10 sub-agents
 - Interactive: asks clarifying questions via AskUserQuestion
 - Entry point for a new project in yoke
+- Sibling-aware: a stack-matching neighbor's `yoke-context.md` (or the repo's own
+  on a re-run) is verified as a hypothesis instead of re-deriving everything;
+  the neighbor's flow map pre-fills the flow interview. Shared facts are linked
+  to their owner repo, never copied (ADR-0010)
 
 ## Connections
 

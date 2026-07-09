@@ -27,6 +27,12 @@ List every linked repo as a bullet with three fields:
 - **path** — checkout path (repository root, or `.` for the current repo).
 - **finish policy** — `pr` or `direct-push`.
 
+An optional fourth field makes the section double as an index of the org's
+neighbors (ADR-0010):
+
+- **description** — one line saying what the repo is, so an agent landing here
+  orients without opening the neighbor.
+
 `pr` finishes by branch → push → pull request (the default). `direct-push`
 finishes by committing to the repo's default branch, then **publishing the
 package and bumping its version in the consumer repos**. A `direct-push` repo
@@ -34,6 +40,16 @@ therefore adds two fields:
 
 - **publish** — the shell command that publishes the package (e.g. `npm publish`).
 - **consumers** — the repos whose dependency version `do` bumps after publish.
+
+**Fact ownership (ADR-0010).** A linked repo's operational details — its publish
+command, consumers list, its own cascade — live in **that repo's own flow.md**,
+the fact owner, not in every flow.md that mentions it. A consumer's entry for a
+library carries role, path, and description; skills resolve publish/consumers by
+reading the flow map at the library's `path`
+(`bash lib/flow-read.sh <path>`). Inline `publish:`/`consumers:` fields on a
+consumer's entry stay valid as an override for a linked checkout that carries no
+flow.md of its own. Duplicating an owner's facts is how three versions of one
+publish command end up across an org — link, don't copy.
 
 ### Branch cascade
 
@@ -72,31 +88,33 @@ Optional overrides of the shared conventions — currently one field:
 Skills must **never fail or nag** when `.yoke/flow.md`, or any field in it, is
 missing. A missing file or field degrades to its default:
 
-| Missing          | Behaves as                                                                                                |
-| ---------------- | --------------------------------------------------------------------------------------------------------- |
-| The whole file   | Single repo (current checkout), `pr` finish, no cascade, no deploy, no tracker steps, committed artifacts |
-| Repos section    | Single repo — the current checkout, role `app`, finish `pr`                                               |
-| Finish policy    | `pr`                                                                                                      |
-| Branch cascade   | No cascade — finish on the single default branch                                                          |
-| Deploy / release | No commands run                                                                                           |
-| Tracker          | No ticket comment, no ticket transition                                                                   |
-| Artifacts        | `committed`                                                                                               |
+| Missing                                          | Behaves as                                                                                                |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| The whole file                                   | Single repo (current checkout), `pr` finish, no cascade, no deploy, no tracker steps, committed artifacts |
+| Repos section                                    | Single repo — the current checkout, role `app`, finish `pr`                                               |
+| Finish policy                                    | `pr`                                                                                                      |
+| publish/consumers on a linked `direct-push` repo | Resolve from the flow map at that repo's `path` (the fact owner); nothing there either → no publish step  |
+| Branch cascade                                   | No cascade — finish on the single default branch                                                          |
+| Deploy / release                                 | No commands run                                                                                           |
+| Tracker                                          | No ticket comment, no ticket transition                                                                   |
+| Artifacts                                        | `committed`                                                                                               |
 
 ## Fields
 
-| Field                   | Values                              | Default          | Consumed by           |
-| ----------------------- | ----------------------------------- | ---------------- | --------------------- |
-| repo role               | `app` \| `library`                  | `app`            | `do`                  |
-| repo path               | checkout path                       | current checkout | `do`, `merge`         |
-| finish policy           | `pr` \| `direct-push`               | `pr`             | `do`                  |
-| publish (direct-push)   | shell command                       | —                | `do`                  |
-| consumers (direct-push) | repo names                          | —                | `do`                  |
-| branch cascade          | ordered branch chain + step command | none             | `merge`, `pr`         |
-| deploy / release        | shell commands                      | none             | `merge`               |
-| tracker                 | `github` \| `youtrack` \| `none`    | `none`           | `do`, `merge`         |
-| tracker target state    | state name                          | —                | `merge`               |
-| commit language         | language name                       | English          | `gca`, `do`           |
-| artifacts               | `committed` \| `local-only`         | `committed`      | bootstrap, all skills |
+| Field                   | Values                                 | Default          | Consumed by           |
+| ----------------------- | -------------------------------------- | ---------------- | --------------------- |
+| repo role               | `app` \| `library`                     | `app`            | `do`                  |
+| repo path               | checkout path                          | current checkout | `do`, `merge`         |
+| repo description        | one line                               | —                | agents (orientation)  |
+| finish policy           | `pr` \| `direct-push`                  | `pr`             | `do`                  |
+| publish (direct-push)   | shell command — in the owner's flow.md | —                | `do`                  |
+| consumers (direct-push) | repo names — in the owner's flow.md    | —                | `do`                  |
+| branch cascade          | ordered branch chain + step command    | none             | `merge`, `pr`         |
+| deploy / release        | shell commands                         | none             | `merge`               |
+| tracker                 | `github` \| `youtrack` \| `none`       | `none`           | `do`, `merge`         |
+| tracker target state    | state name                             | —                | `merge`               |
+| commit language         | language name                          | English          | `gca`, `do`           |
+| artifacts               | `committed` \| `local-only`            | `committed`      | bootstrap, all skills |
 
 ## Examples
 
@@ -120,19 +138,22 @@ committed
 
 ### Multi-repo: app + npm library
 
-App finishes via PR; the ui-kit library finishes via direct push to `master`,
-`npm publish`, and a version bump in the app. YouTrack tracker, `master → staging`
-cascade.
+App finishes via PR; the ui-kit library finishes via direct push, publish, and a
+version bump in its consumers. YouTrack tracker, `master → staging` cascade.
+The app's flow.md indexes the library and points at its fact owner; the publish
+command and consumers live only in the library's own flow.md.
+
+The app's `.yoke/flow.md`:
 
 ```md
 # Flow
 
 ## Repos
 
-- **app** — role: app, path: ~/organization/velvetnet/app, finish: pr
+- **app** — role: app, path: ., finish: pr
+  The org's customer-facing subscription app.
 - **ui-kit** — role: library, path: ~/organization/velvetnet/ui-kit, finish: direct-push
-  - publish: `npm publish`
-  - consumers: app
+  The org's shared UI kit; publish procedure and consumers — see its own `.yoke/flow.md`.
 
 ## Branch cascade
 
@@ -143,6 +164,27 @@ master → staging
 ## Deploy / release commands
 
 - Deploy app: `ssh deploy@app 'cd /srv/app && git pull && pnpm i && pm2 restart app'`
+
+## Tracker
+
+youtrack, target state: Done
+
+## Artifacts
+
+committed
+```
+
+The ui-kit's own `.yoke/flow.md` (the fact owner):
+
+```md
+# Flow
+
+## Repos
+
+- **ui-kit** — role: library, path: ., finish: direct-push
+  The org's shared UI kit, published to GitHub Packages.
+  - publish: `npm publish`
+  - consumers: app
 
 ## Tracker
 

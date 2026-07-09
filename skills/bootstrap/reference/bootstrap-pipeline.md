@@ -33,14 +33,14 @@ data, not template variables. Run commands with long output through
 8 phases.
 
 ```text
-0. Preflight  → verify git-repo, not a yoke-repo
-1. Detect     → 6 parallel agents investigate the project
+0. Preflight  → verify git-repo, not a yoke-repo; discover siblings & hypothesis
+1. Detect     → 6 parallel agents investigate the project (hypothesis-aware)
 2. Synthesize → aggregate PROJECT_PROFILE
 3. Generate   → CLAUDE.md + .yoke/yoke-context.md + .yoke/ skeleton + recommendations
-4. Verify     → check files and quality
-5. Flow map   → ask repos/finish/tracker + committed-vs-local-only, write .yoke/flow.md
+4. Verify     → check files and quality; gate on ISSUES
+5. Flow map   → pre-fill from a sibling or ask repos/finish/tracker + committed-vs-local-only, write .yoke/flow.md
 6. Confirm    → show the result, AskUserQuestion
-7. Commit     → commit the artifacts (respecting local-only)
+7. Commit     → branch check, commit the artifacts (respecting local-only), optional push
 ```
 
 ---
@@ -64,6 +64,26 @@ test -f .claude-plugin/plugin.json && echo "YOKE_REPO" || echo "OK"
 ```
 
 YOKE_REPO → tell the user: "/bootstrap runs in target projects, not for yoke plugins." Exit.
+
+### 0c. Siblings & hypothesis
+
+Cross-repo awareness (ADR-0010). Read-only; look only at paths the user already
+declared.
+
+1. Read `.claude/settings.local.json` → `permissions.additionalDirectories`.
+   Absent or empty → `SIBLINGS: none`, `HYPOTHESIS_PROFILE: none`; skip to Phase 1 —
+   bootstrap behaves exactly as before.
+2. Under each declared directory, list checkouts carrying `.yoke/yoke-context.md`
+   (a directory that is itself a repo counts). These are the SIBLINGS; record
+   for each: name, path, whether it has `.yoke/flow.md`.
+3. Pick HYPOTHESIS_PROFILE:
+   - This repo's own `.yoke/yoke-context.md` exists (re-run) → it is the
+     hypothesis.
+   - Else the newest `yoke-context.md` among **stack-matching** siblings — same
+     lockfile kind and same primary framework, checked with a cheap grep of
+     `package.json`/config files, not an agent.
+   - No stack match → `HYPOTHESIS_PROFILE: none`; keep SIBLINGS for Phase 5 —
+     org facts (tracker, linked repos) transfer even when the stack does not.
 
 Both conditions passed → transition to Phase 1. Mark in TodoWrite: `[x] Preflight`.
 
@@ -115,6 +135,23 @@ Dispatch 6 agents **in parallel** via the Agent tool (6 calls at once):
    ```text
    DOMAIN_MODELS, API_ENDPOINTS, KEY_ABSTRACTIONS, ENV_VARS, CODE_WORKAROUNDS
    ```
+
+**Hypothesis mode (ADR-0010).** When HYPOTHESIS_PROFILE is set, append to each
+agent's prompt the matching section of that profile plus its hypothesis
+instructions (each agent file carries a "Hypothesis" section describing the
+verify-don't-derive behavior):
+
+| Agent                   | Hypothesis section passed                                          |
+| ----------------------- | ------------------------------------------------------------------ |
+| stack-detector          | Stack                                                              |
+| architecture-mapper     | Architecture                                                       |
+| convention-scanner      | Conventions                                                        |
+| validation-scanner      | Commands                                                           |
+| domain-analyzer         | Environment Variables only — domains rarely transfer between repos |
+| existing-rules-detector | none — rules are strictly per-repo                                 |
+
+A hypothesis claim enters PROJECT_PROFILE only when the agent confirmed it
+against this codebase; an unverified claim never reaches the artifacts.
 
 Wait for all 6. If an agent returns an error or empty result — record the issue
 in VERIFY_NOTES and use empty values for that section.
@@ -231,15 +268,19 @@ ISSUES: <list of problems>
 
 ### Handling the result
 
+The gate is **ISSUES, not the grade** — a Grade A with a non-empty ISSUES list
+still carries real errors (observed: correct grade, wrong env-variable
+documentation).
+
 - **YOKE_SKELETON_OK = false** → re-dispatch yoke-context-generator to re-scaffold
   the missing `.yoke/` paths (max 1 retry), then re-verify.
-- **QUALITY_GRADE = A and YOKE_SKELETON_OK = true** → transition to Phase 5.
-- **QUALITY_GRADE < A and ISSUES is non-empty** → re-dispatch claude-md-generator
-  with ISSUES (max 1 retry):
-  1. Pass ISSUES to the claude-md-generator agent.
+- **ISSUES is empty and YOKE_SKELETON_OK = true** → transition to Phase 5.
+- **ISSUES is non-empty** (at any grade) → fix, max 1 retry:
+  1. One-line factual fixes → apply directly with Edit; anything larger →
+     re-dispatch claude-md-generator with ISSUES.
   2. Wait for completion.
   3. Re-dispatch bootstrap-verifier.
-  4. If after retry Grade < A → continue with a warning, record VERIFY_NOTES.
+  4. If ISSUES remain after the retry → continue with a warning, record VERIFY_NOTES.
 
 Mark in TodoWrite: `[x] Verify`. Transition → Phase 5.
 
@@ -252,24 +293,48 @@ of re-asking the user. Format contract: `reference/flow-md.md`. The orchestrator
 gathers the answers through AskUserQuestion (recommended answer first) and writes
 the file itself. **Skip any question the repo already answers** — infer the
 tracker from the git remote, and the single-repo case from the absence of sibling
-checkouts.
+checkouts. **Before asking, check the repo's actual state** — never offer an
+answer the repo already contradicts (e.g. local-only when `.yoke/` files are
+already tracked in git).
+
+**Pre-fill from a sibling (ADR-0010).** When Phase 0c found siblings with
+`.yoke/flow.md`, read the closest one (the hypothesis sibling first) and turn
+the interview into **one confirmation**: show the inherited answers compactly —
+linked repos and roles, tracker + target state, cascade, artifacts mode — as the
+recommended option, with "answer each question instead" as the alternative. Fall
+back to the per-question interview below only for what the user rejects or the
+sibling does not answer. When siblings contradict each other, offer the variants
+as options and recommend the one this repo's own evidence supports (CI files,
+tracker schema) — never silently inherit either side.
 
 Ask, in order:
 
 1. **Repos & finish policy.** Recommended and offered first: single repo — the
    current checkout, role `app`, finish `pr`. Alternative: add linked repos, each
    with a role (`app` | `library`) and finish policy (`pr` | `direct-push`); a
-   `direct-push` library also names its publish command and consumer repos. For an
+   `direct-push` library also names its publish command and consumer repos —
+   **in its own flow.md**: see "Repos as an index" below. For an
    obvious single-repo project, state the single-repo default and move on without
    forcing the question.
 2. **Tracker.** `github` | `youtrack` | `none`, plus the target state `merge`
    moves the ticket to on finish. Recommend and offer first `github` when the
-   remote is GitHub; otherwise `none`.
+   remote is GitHub; otherwise `none`. **Offer real states as options**: take the
+   state list from the sibling flow map or from the tracker itself (YouTrack —
+   `get_issue_fields_schema` of the project's state field; GitHub — open/closed)
+   before asking. Never offer invented generic states (Done/Fixed/Closed) when
+   the real pipeline is one schema call away.
 3. **Committed vs local-only** (this extends the old `.gitignore` fork, not a
    separate step). Ask once whether `.yoke/` is **committed** (Recommended — the
    team shares one flow map) or **local-only** (private to this machine). Record
    the answer in flow.md's Artifacts section. On **local-only**, append a
    `.yoke/` line to `.gitignore`.
+
+**Repos as an index (ADR-0010).** Write each linked repo's entry with its role,
+checkout path, and a one-line description — enough for an agent to orient
+without opening the neighbor. Never copy a linked repo's own operational facts:
+a library's publish command and consumers list live in the library's own
+flow.md (the fact owner), and this repo's entry points at it. Only when the
+linked checkout carries no flow.md do publish/consumers stay inline here.
 
 Write `.yoke/flow.md` with the resolved Repos, Tracker, and Artifacts sections
 (omit any section the project does not need — omission means "apply the
@@ -302,15 +367,16 @@ Show the user:
 
 ### User choice
 
-AskUserQuestion with 3 options:
+AskUserQuestion with 4 options:
 
-1. **Commit (Recommended)** — commit the artifacts and finish.
-2. **Review and edit** — the user edits files manually, then re-verify → return to Confirm.
-3. **Cancel** — do not commit, exit.
+1. **Commit and push (Recommended)** — commit the artifacts, push, and finish.
+2. **Commit only** — commit, leave the push to the user.
+3. **Review and edit** — the user edits files manually, then re-verify → return to Confirm.
+4. **Cancel** — do not commit, exit.
 
 **Handling:**
 
-- **Commit** → transition to Phase 7.
+- **Commit and push / Commit only** → transition to Phase 7, remembering the push choice.
 - **Review and edit** → wait for the user's signal, re-dispatch bootstrap-verifier, return to Confirm.
 - **Cancel** → tell the user "Bootstrap cancelled. CLAUDE.md, `.yoke/yoke-context.md`, and `.yoke/flow.md` remain on disk." Exit.
 
@@ -319,6 +385,17 @@ Mark in TodoWrite: `[x] Confirm`. Transition → Phase 7.
 ---
 
 ## Phase 7 — Commit
+
+### Branch check (before staging)
+
+Compare the current branch with the repo's default
+(`git symbolic-ref --short refs/remotes/origin/HEAD`). When they differ — or the
+flow map declares a cascade whose entry branch is not the current one — one
+AskUserQuestion: commit here (Recommended when the current branch is the
+cascade's entry point) or switch to the right branch first. Never land the
+artifacts on a branch the repo's flow will not pick up (observed: a commit to
+`master` in a `develop → staging → master` repo cost a separate back-merge
+tail).
 
 ### Stage and commit
 
@@ -339,6 +416,16 @@ git commit -m "chore: bootstrap yoke flow (local-only .yoke/)"
 
 On `index.lock` contention, wait 1–2s and retry.
 
+### Push
+
+When the user chose **Commit and push** in Phase 6:
+
+```bash
+git push -u origin "$(git branch --show-current)"
+```
+
+On **Commit only**, skip — but say in the summary that the commit is not pushed.
+
 ### Notification
 
 ```bash
@@ -351,7 +438,7 @@ Show:
 
 - Commit hash (from `git log -1 --format=%h`).
 - Paths to files: `CLAUDE.md`, `.yoke/yoke-context.md`, `.yoke/flow.md`, `.yoke/` (context.md, journal.md, ai/, adr/).
-- Artifacts mode: committed or local-only.
+- Artifacts mode: committed or local-only. Push state: pushed or left local.
 - Next step: "The project is ready to work with yoke. Try `/yoke:do` to start the first change."
 
 Mark in TodoWrite: `[x] Commit`.

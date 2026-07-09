@@ -101,7 +101,20 @@ Only create this file when it does not already exist. Check with Bash:
 test -f .yoke/context.md && echo EXISTS || echo ABSENT
 ```
 
-If ABSENT, compose and write it. Seed term stubs from DOMAIN_FINDINGS (DOMAIN_MODELS and KEY_ABSTRACTIONS). Each detected term becomes a stub entry with a placeholder definition.
+If ABSENT, compose and write it. Seed only terms that carry **project-specific
+meaning**: a term qualifies when DOMAIN_FINDINGS gives it a definition beyond
+its generic technology sense. Write each entry with that real definition — the
+glossary is domain vocabulary, not a to-do list and not an encyclopedia.
+
+Never seed:
+
+- placeholder stubs (`_fill in definition_`) — an unfilled scaffold is noise
+  the user has to clean up;
+- generic technology entries ("Supabase — a BaaS", "IPC — Electron bridge",
+  "Dexie — IndexedDB wrapper") — zero project information.
+
+Fewer real entries beat coverage. Nothing qualifies → write the title, the
+one-line note, and an empty `## Terms` heading only.
 
 File format:
 
@@ -113,10 +126,8 @@ Implementation details, architectural decisions, and PRDs live in `.yoke/adr/` a
 
 ## Terms
 
-- **<Term>** — _fill in definition_
+- **<Term>** — <project-specific definition from DOMAIN_FINDINGS (source: <path>)>
 ```
-
-If DOMAIN_FINDINGS contains no recognisable domain models or key abstractions, write the title, the one-line note, and an empty `## Terms` heading only.
 
 If the file already EXISTS, skip this step entirely — do not overwrite user edits.
 

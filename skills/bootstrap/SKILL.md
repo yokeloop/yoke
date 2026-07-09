@@ -32,8 +32,15 @@ CLAUDE.md + `.yoke/yoke-context.md` + `.yoke/` skeleton → verify → build
 every agent dispatch, the PROJECT_PROFILE shape, the flow.md questions, and the
 commit steps.
 
-Two 3.0 duties the pipeline now carries:
+Three duties the pipeline now carries:
 
+- **Sibling awareness (ADR-0010).** When `.claude/settings.local.json` declares
+  `additionalDirectories`, discover sibling checkouts with `.yoke/` there and
+  reuse them: a stack-matching sibling's `yoke-context.md` (or the repo's own on
+  a re-run) becomes a **hypothesis** the detect agents verify against the code,
+  and the sibling's flow map pre-fills the flow interview down to one
+  confirmation. Nothing is inherited unverified; shared facts stay with their
+  owner repo and are linked, not copied. No siblings → identical to before.
 - **Flow map.** Ask about linked repos, each repo's finish policy, and the
   tracker — one AskUserQuestion each, recommended answer first, skipping whatever
   the repo already answers — then write `.yoke/flow.md` per the format contract

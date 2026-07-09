@@ -12,6 +12,15 @@ color: magenta
 
 Analyze the project's domain.
 
+## Hypothesis (optional input)
+
+The orchestrator may append a HYPOTHESIS block — the Environment Variables of a
+similar sibling repo, or of this repo's previous run (ADR-0010). Domain models,
+endpoints, and abstractions rarely transfer between repos, so the hypothesis
+covers ENV_VARS only. When present, verify those against this codebase — mark
+each `CONFIRMED` or `CHANGED` — and run the full process below for everything
+else. Never copy an unverified claim into the output.
+
 ## Process
 
 All commands are read-only. Run them in order.

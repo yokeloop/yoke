@@ -12,6 +12,16 @@ color: cyan
 
 Detect the project's technology stack.
 
+## Hypothesis (optional input)
+
+The orchestrator may append a HYPOTHESIS block — the Stack findings of a
+similar sibling repo, or of this repo's previous run (ADR-0010). When present,
+verify instead of deriving: check each claim against this codebase, spend the
+effort on differences, and mark every output field `CONFIRMED` (matches the
+hypothesis) or `CHANGED` (differs — return the verified value). Never copy an
+unverified claim into the output. No HYPOTHESIS block → run the full process
+below.
+
 ## Process
 
 All commands are read-only. Run them in order.

@@ -67,6 +67,16 @@ After implementation and per-task commits, finish each repo by its `finish` poli
   `consumers` — as part of that consumer's own change set (i.e. inside the
   consumer's branch and PR, not a stray commit).
 
+  When the flow map's entry for the repo carries no `publish`/`consumers` (the
+  entry only links to the repo as its fact owner, ADR-0010), resolve them from
+  the repo's own flow map:
+
+  ```bash
+  bash ${CLAUDE_PLUGIN_ROOT}/lib/flow-read.sh <repo-path>
+  ```
+
+  Nothing declared there either → push only, no publish step.
+
 ---
 
 ## 4. Multi-repo orchestration

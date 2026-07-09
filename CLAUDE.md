@@ -64,6 +64,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `.yoke/adr/` — architecture decision records
 - `.yoke/ai/<slug>/` — per-task pipeline artifacts (PRD, task, plan, report, exploration, issues index)
 - `.yoke/journal.md` — session journal
+- `.yoke/handoff/` — conversation handoffs, `<YYYYMMDD-HHMMSS>-<slug>.md`, always written to the root checkout (`/handoff`; see `.yoke/adr/0009-handoff-under-yoke-root-checkout.md`)
 
 `.yoke/` is committed to git by default. Only `.yoke/sync-docs-tmp/` is gitignored. Skills always write under `.yoke/` and commit unless `.yoke/` is ignored.
 
@@ -79,7 +80,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 - `/gp` — Git push with checks and report.
 - `/grill` — Interviews the user one interactive question at a time about a plan or design, walking each branch of the decision tree to a shared understanding; every question offers a recommended answer.
 - `/grill-docs` — Docs-aware grilling: interrogates the user's plan one question at a time AND maintains the domain glossary (.yoke/context.md) and architecture decision records (.yoke/adr/) inline as decisions crystallise.
-- `/handoff` — Compacts the current conversation into a handoff document so a fresh agent can continue the work, referencing existing artifacts instead of duplicating them.
+- `/handoff` — Saves the live state of the current conversation to `.yoke/handoff/` so a fresh session resumes where this one stopped, referencing existing artifacts instead of duplicating them.
 - `/help` — Explains how to use yoke and lists the available skills; also greets new users.
 - `/issues` — Breaks a plan, spec, or PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets), publishes them in dependency order, and saves a local index in .yoke/ai.
 - `/journal` — Appends a concise, newest-first entry to `.yoke/journal.md` summarizing the session's real work and linking the relevant `.yoke/ai/<slug>/` artifacts — the first layer of yoke's connected memory.

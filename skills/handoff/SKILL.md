@@ -1,32 +1,85 @@
 ---
 name: handoff
 description: >-
-  Compacts the current conversation into a handoff document so a fresh agent can
-  continue the work, referencing existing artifacts instead of duplicating them.
-  Saves to the OS temp directory. Activates when the user writes "handoff",
-  "hand off", "compact the conversation", "summarize for the next session",
-  "prepare a handoff doc", "pass this to another agent".
+  Saves the live state of the current conversation to `.yoke/handoff/` so a
+  fresh session resumes where this one stopped, referencing existing artifacts
+  instead of duplicating them. Activates when the user writes "handoff", "hand
+  off", "save the context", "dump the conversation", "compact the
+  conversation", "summarize for the next session", "prepare a handoff doc",
+  "pass this to another agent".
 ---
 
 # Handoff
 
-Write a handoff document summarizing the current conversation so a fresh agent can continue the work. Resolve the OS temp directory with a shell call (`echo "${TMPDIR:-/tmp}"`) and save there — not in the current workspace — under a collision-proof name like `handoff-<slug>-<YYYYMMDD-HHMMSS>.md`.
+Compact this conversation into a document that carries everything the next
+session needs to continue it. Judge the result by one question: reading only
+this file and the artifacts it links, could a fresh agent pick the work up
+without asking what was already agreed?
 
-Cover concisely: the goal, the current state (what is done), what is left and the next steps, key decisions, gotchas or blockers, and paths or URLs to the relevant artifacts.
+Capture what lives **only in the chat** — the open tasks, the user's exact
+requirements, the alternatives already rejected, the state of the working tree.
+Everything already written down elsewhere gets a link, never a retelling.
 
-Include a "Suggested skills" section recommending which yoke skills the next agent should invoke, based on where the work sits in the flow (e.g. unstarted → `/yoke:do`; implemented but unreviewed → `/yoke:review`).
+## Where to save
 
-Do not duplicate content already captured in other artifacts (PRDs, plans, ADRs, issues, commits, diffs). Reference them by path or URL instead. Yoke artifacts live under `.yoke/` in the workspace (e.g. `.yoke/ai/<slug>/`, `.yoke/adr/`, `.yoke/context.md`).
+Write one file to `.yoke/handoff/<YYYYMMDD-HHMMSS>-<slug>.md`.
 
-Redact any sensitive information — API keys, passwords, PII — by replacing it with `[REDACTED]` (the file lands in shared `/tmp`).
+Resolve the path against the **root checkout**, never the current worktree —
+`/do` works inside a worktree and `/merge` deletes it, taking any uncommitted
+file with it:
 
-If the user passed `$ARGUMENTS`, treat it as a description of what the next session will focus on and tailor the doc accordingly.
+```bash
+dirname "$(git rev-parse --path-format=absolute --git-common-dir)"
+```
 
-Print the absolute path to the saved file so the user can hand it to the next agent.
+Outside a git repository the root is the working directory; say so in the final
+message. Take the timestamp from `date '+%Y%m%d-%H%M%S'` — never invent it.
+
+Derive `<slug>` from the first source that answers: the active `.yoke/ai/<slug>/`
+task, the current branch name, or a kebab-case summary of the conversation.
+
+Create `.yoke/handoff/` when it is missing. When `.yoke/` itself was missing,
+suggest `/yoke:bootstrap` once the file is written.
+
+## What to write
+
+Open with the goal — what this conversation set out to do — then cover:
+
+- **Tasks** — every task raised, each marked done, in progress, or pending.
+- **Requirements** — the user's constraints and prohibitions, quoted verbatim.
+  A paraphrase loses exactly the wording the next agent then violates.
+- **State** — what is done, what is left, and the next step.
+- **Decisions** — what was settled and why.
+- **Rejected** — the alternatives considered and the reason each was dropped,
+  so nobody relitigates them.
+- **Git** — branch, worktree, uncommitted files, open PR.
+- **Gotchas** — blockers, traps, and anything that cost time to learn.
+- **Artifacts** — paths and URLs. Yoke artifacts live under `.yoke/`:
+  `.yoke/ai/<slug>/`, `.yoke/adr/`, `.yoke/context.md`, `.yoke/journal.md`.
+- **Suggested skills** — which yoke skills the next agent should invoke, given
+  where the work sits in the flow (unstarted → `/yoke:do`; implemented but
+  unreviewed → `/yoke:review`; PR approved → `/yoke:merge`).
+
+When `.yoke/handoff/` already holds a handoff of this same conversation, link it
+as a prior handoff instead of restating it.
+
+Never duplicate a PRD, plan, ADR, issue, commit, or diff — link it.
+
+Redact secrets and PII — API keys, passwords, tokens — as `[REDACTED]`. The file
+is committed with the rest of `.yoke/` unless the project ignores it, so a leaked
+secret lands in git history.
+
+Treat `$ARGUMENTS` as the focus of the next session and tailor the document to it.
+
+Finish by printing the absolute path, so the user can hand it to the next agent.
 
 ## Rules
 
-- Save to the OS temp directory, not the workspace.
-- Reference existing artifacts by path or URL; don't duplicate their content.
+- Save under `.yoke/handoff/` in the root checkout — never in a worktree, never
+  outside `.yoke/`.
+- Be exhaustive about what exists only in the conversation; link everything else.
+- Quote the user's requirements verbatim.
 - Redact secrets and PII.
-- Language: match the conversation language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
+- Delete nothing: handoffs accumulate.
+- Language: match the conversation language, or follow the project-level
+  definition in CLAUDE.md / AGENTS.md.

@@ -9,8 +9,8 @@ flowchart TD
   merge["/yoke:merge — merge, cascade, deploy, transition, clean up"]
 
   bootstrap --> grill --> do --> pr -->|approved| merge
-  bootstrap -. flow.md + context .-> do
-  bootstrap -. flow.md .-> merge
+  bootstrap -.->|flow.md + context| do
+  bootstrap -.->|flow.md| merge
 ```
 
 A marketplace of skills and commands for Claude Code, inspired by:

@@ -31,4 +31,4 @@ For a version that also records terminology in `.yoke/context.md` and decisions 
 
 ## Connections
 
-Discovery front-end. Run before `/yoke:prd` or `/yoke:task` to harden an idea before formalising it.
+Discovery front-end. Run before `/yoke:prd` or `/yoke:do` to harden an idea before formalising it.

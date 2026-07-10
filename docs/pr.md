@@ -64,6 +64,6 @@ Result: a PR on GitHub with a structured description from review and report.
 
 ## Connections
 
-Typical flow: `/task` → `/plan` → `/do` → `/review` → `/gca` → `/gp` → `/pr`.
+Called inside `/do`'s Finish to open or update the PR that ends the run.
 Works standalone: creates a PR from commits without yoke artifacts.
 Uses `reference/pr-body-format.md` for body format and section mapping.

@@ -11,7 +11,7 @@ A skill lives at `skills/<name>/SKILL.md`. It is markdown with YAML frontmatter 
 
 Skills are model-invoked. The user does not type the skill name; the model picks it. yoke skills tend to be long-running orchestrators with phases, sub-agents, and artifacts they write to disk.
 
-Example: `/yoke:plan` activates on "build a plan", "plan", "make a plan", or a path to a task file.
+Example: `/yoke:do` activates on "do", "execute", "run the plan", or a path to a plan file.
 
 ## Commands
 
@@ -23,12 +23,12 @@ yoke commands today are thin wrappers that invoke a skill with a specific argume
 
 An agent lives at `skills/<name>/agents/<agent>.md`. It is also markdown with YAML frontmatter, but it is dispatched **by** a skill, not by the user. Skills orchestrate; agents do focused work in isolated context windows.
 
-Example: `/yoke:plan` dispatches `plan-explorer` (sonnet) to gather codebase facts and `plan-designer` (sonnet) to produce the decomposition. The orchestrator stitches their outputs together.
+Example: `/yoke:do` dispatches `plan-architect` to decompose the work and `task-executor` to implement each task. The orchestrator stitches their outputs together.
 
 ## How yoke uses them
 
 - **Skills** are the user-facing surface. One skill per workflow step.
 - **Agents** are internal. They keep the orchestrator's context small and let specialized roles use different models.
-- **Commands** are rare. yoke ships no plugin commands today — the `commands/` directory is empty. A local-only `/journal` command lives at `.claude/commands/journal.md` for repo-internal use and is not part of the published plugin.
+- **Commands** are rare. yoke ships no plugin commands today — every user-facing component is a skill, so there is no `commands/` directory.
 
-The plugin manifest at `.claude-plugin/plugin.json` declares the plugin; everything else is auto-discovered from `skills/`, `commands/`, and `hooks/`.
+The plugin manifest at `.claude-plugin/plugin.json` declares the plugin; every skill is auto-discovered from `skills/`.

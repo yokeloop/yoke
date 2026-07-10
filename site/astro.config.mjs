@@ -23,13 +23,20 @@ export default defineConfig({
         { label: 'Install', link: '/install/' },
         { label: 'Concepts', link: '/concepts/' },
         {
-          label: 'Dev loop',
+          label: 'Flow',
           items: [
-            { label: '/yoke:task', slug: 'skills/task' },
-            { label: '/yoke:plan', slug: 'skills/plan' },
+            { label: '/yoke:bootstrap', slug: 'skills/bootstrap' },
+            { label: '/yoke:grill', slug: 'skills/grill' },
+            { label: '/yoke:grill-docs', slug: 'skills/grill-docs' },
             { label: '/yoke:do', slug: 'skills/do' },
-            { label: '/yoke:fix', slug: 'skills/fix' },
-            { label: '/yoke:review', slug: 'skills/review' },
+            { label: '/yoke:merge', slug: 'skills/merge' },
+          ],
+        },
+        {
+          label: 'Spec',
+          items: [
+            { label: '/yoke:prd', slug: 'skills/prd' },
+            { label: '/yoke:issues', slug: 'skills/issues' },
           ],
         },
         {
@@ -38,30 +45,16 @@ export default defineConfig({
             { label: '/yoke:gca', slug: 'skills/gca' },
             { label: '/yoke:gp', slug: 'skills/gp' },
             { label: '/yoke:pr', slug: 'skills/pr' },
-            { label: '/yoke:gst', slug: 'skills/gst' },
           ],
         },
         {
-          label: 'Analysis',
+          label: 'Utilities',
           items: [
-            { label: '/yoke:explore', slug: 'skills/explore' },
-            { label: '/yoke:grill', slug: 'skills/grill' },
-            { label: '/yoke:grill-docs', slug: 'skills/grill-docs' },
-          ],
-        },
-        {
-          label: 'Meta',
-          items: [
-            { label: '/yoke:prd', slug: 'skills/prd' },
-            { label: '/yoke:issues', slug: 'skills/issues' },
+            { label: '/yoke:review', slug: 'skills/review' },
+            { label: '/yoke:journal', slug: 'skills/journal' },
             { label: '/yoke:handoff', slug: 'skills/handoff' },
-            { label: '/yoke:bootstrap', slug: 'skills/bootstrap' },
             { label: '/yoke:help', slug: 'skills/help' },
           ],
-        },
-        {
-          label: 'Plugin dev',
-          items: [{ label: '/yoke:sync-docs', slug: 'skills/sync-docs' }],
         },
       ],
     }),

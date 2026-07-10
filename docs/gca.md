@@ -19,7 +19,7 @@ Works in two modes: yoke flow (commit an artifact) and standalone (group files).
 | Phase | Name                | What happens                                                                      |
 | ----- | ------------------- | --------------------------------------------------------------------------------- |
 | 1     | **Collect context** | Single call: branch, git status (porcelain), diff --stat                          |
-| 2     | **Mode**            | Detect yoke flow (task/plan/do/review artifact) or standalone                     |
+| 2     | **Mode**            | Detect yoke flow (do/review artifact) or standalone                               |
 | 3     | **Ticket ID**       | Cascade: arguments → slug (yoke) → branch (standalone) → no ticket                |
 | 4     | **Staging**         | yoke flow: artifact only. Standalone: classify into 6 groups, plan atomic commits |
 | 5     | **Commit message**  | Format: `TICKET type(SCOPE): description` — English, imperative mood              |
@@ -40,10 +40,10 @@ Examples: `#86 feat(pages): add blackjack page`, `R2-50 fix: save user ID to dat
 
 ## Modes
 
-| Mode           | When                                 | Behavior                                                  |
-| -------------- | ------------------------------------ | --------------------------------------------------------- |
-| **yoke flow**  | Invoked from `/task`, `/plan`, `/do` | Commit only the current stage artifact, no classification |
-| **Standalone** | Direct user invocation               | Classify into 6 groups, commit atomically — no prompts    |
+| Mode           | When                                     | Behavior                                                  |
+| -------------- | ---------------------------------------- | --------------------------------------------------------- |
+| **yoke flow**  | Invoked from `/do` (Finish) or `/review` | Commit only the current stage artifact, no classification |
+| **Standalone** | Direct user invocation                   | Classify into 6 groups, commit atomically — no prompts    |
 
 ## File groups (standalone)
 
@@ -66,5 +66,5 @@ Result: one or more atomic commits bound to ticket #86.
 
 ## Connections
 
-Used at the end of each skill: `/task` → `/gca`, `/plan` → `/gca`, `/do` → `/gca`, `/review` → `/gca`.
-Standalone — for regular commits outside yoke flow.
+Called inside `/do`'s Finish to commit the run's artifacts, and by `/review` to commit its fixes.
+Standalone — for regular commits outside a do run.

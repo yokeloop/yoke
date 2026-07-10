@@ -18,7 +18,7 @@ A structured overview:
 
 - **Project description** — what yoke is, inspiration
 - **Skills catalog** — short description of each skill with example commands
-- **Full cycle** — recommended sequence: task → plan → do → fix → review
+- **Full cycle** — recommended sequence: bootstrap → grill / grill-docs → do → PR review → merge
 - **Planned skills** — list of upcoming components
 - **Installation** — command to install the plugin
 
@@ -37,4 +37,4 @@ Result: an overview of the yoke marketplace and available skills.
 
 ## Connections
 
-Entry point into the yoke system. Recommends the full cycle: `/task` → `/plan` → `/do` → `/fix` → `/review`.
+Entry point into the yoke system. Recommends the full cycle: `/bootstrap` → `/grill` (or `/grill-docs`) → `/do` → PR review → `/merge`.

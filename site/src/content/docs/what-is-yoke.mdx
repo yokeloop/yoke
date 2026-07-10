@@ -7,19 +7,19 @@ description: yoke is a Claude Code plugin that ships a full development workflow
 
 ## The shape of the loop
 
-Each skill owns one concrete step. The default loop is:
+Each skill owns one concrete step. The default loop is short:
 
-1. **`/yoke:task`** — draft a task file from a ticket URL or a free-form description.
-2. **`/yoke:plan`** — read the task file, explore the codebase, decompose into atomic tasks with dependencies.
-3. **`/yoke:do`** — execute the plan, one task at a time, with self-review and verification.
-4. **`/yoke:review`** — produce a code-review report.
-5. **`/yoke:fix`** — apply small follow-up fixes.
+1. **`/yoke:bootstrap`** — once per project: detect the stack, scaffold `.yoke/`, write `flow.md` and CLAUDE.md.
+2. **`/yoke:grill`** (or **`/yoke:grill-docs`**) — stress-test the plan one question at a time into a shared understanding.
+3. **`/yoke:do`** — plan, execute, and drive the run to a ready pull request. It stops there.
+4. **Review the PR on GitHub** — you comment and approve; the merge decision stays yours.
+5. **`/yoke:merge`** — run the post-PR tail from `flow.md`: merge, cascade, deploy/release, move the ticket, clean up worktrees.
 
 Side-quests around the loop:
 
-- **Git**: `/yoke:gca`, `/yoke:gp`, `/yoke:pr`, `/yoke:gst`.
-- **Analysis**: `/yoke:explore`, `/yoke:grill`, `/yoke:grill-docs`.
-- **Meta**: `/yoke:prd`, `/yoke:issues`, `/yoke:handoff`, `/yoke:bootstrap`, `/yoke:help`.
+- **Spec** (for larger, trackable work): `/yoke:prd` → `/yoke:issues`, then hand a URL to `/yoke:do`.
+- **Git** (standalone; `/yoke:do` folds these into its finish): `/yoke:gca`, `/yoke:gp`, `/yoke:pr`.
+- **Utilities**: `/yoke:review`, `/yoke:journal`, `/yoke:handoff`, `/yoke:help`.
 
 ## Why a plugin
 
@@ -27,7 +27,7 @@ A Claude Code plugin is installable from a marketplace. Skills auto-activate by 
 
 ## Why a workflow
 
-Each skill produces an artifact the next skill consumes. `/yoke:task` writes a task file, `/yoke:plan` reads it and writes a plan file, `/yoke:do` reads that and writes a report. The artifacts live in `.yoke/ai/<slug>/` — version-controlled, reviewable, replayable.
+Each skill produces an artifact the next skill consumes. `/yoke:prd` writes a PRD, `/yoke:issues` breaks it into sub-tasks, `/yoke:do` reads a task and writes a plan plus a report. The artifacts live in `.yoke/ai/<slug>/` — version-controlled, reviewable, replayable. The map every skill reads, `.yoke/flow.md`, is written once by `/yoke:bootstrap`.
 
 ## Distribution
 

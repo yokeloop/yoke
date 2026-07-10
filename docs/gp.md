@@ -67,5 +67,5 @@ Result: pushes the current branch to origin and prints a report with commits and
 
 ## Connections
 
-Typical flow: `/task` → `/plan` → `/do` → `/review` → `/gca` → `/gp` → `/pr`.
-Also works standalone — for any push outside yoke flow.
+Called inside `/do`'s Finish to push the branch before its PR is opened.
+Also works standalone — for any push outside a do run.

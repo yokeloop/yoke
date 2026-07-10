@@ -87,7 +87,6 @@ Sub-agents return a status after running a task (see `reference/status-protocol.
 | `validator`         | haiku  | Lint, type-check, tests, build + auto-fix                                                 |
 | `formatter`         | haiku  | Detects the formatter and runs it on changed files                                        |
 | `doc-updater`       | sonnet | Updates README, CHANGELOG, JSDoc/TSDoc (Document phase — opt-in)                          |
-| `code-polisher`     | opus   | Simplifies code: over-engineering, duplication (used by `/fix`)                           |
 
 ## Example
 

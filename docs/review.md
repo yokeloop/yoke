@@ -69,7 +69,7 @@ Result: `.yoke/ai/86-black-jack-page/86-black-jack-page-review.md`
 ## Connections
 
 ```
-/yoke:task → /yoke:plan → /yoke:do → /yoke:review
+/yoke:do → /yoke:review
 ```
 
-`/review` closes the development cycle by analyzing the `/task`, `/plan`, and `/do` artifacts together with the code changes.
+`/review` is a standalone code-analysis tool: it audits the `/do` report and the code changes on demand. In the main flow the user reviews the PR itself on GitHub.

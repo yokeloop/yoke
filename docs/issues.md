@@ -34,4 +34,4 @@ Does not close or modify any parent issue.
 
 ## Connections
 
-Spec → tracker. Run after `/yoke:prd` or `/yoke:plan` to turn a spec into grabbable tickets; pick one up with `/yoke:task`.
+Spec → tracker. Run after `/yoke:prd` to turn a spec into grabbable tickets; hand one to `/yoke:do` to build it.

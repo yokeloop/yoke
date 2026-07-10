@@ -10,7 +10,7 @@ description: Add yoke to Claude Code through the marketplace, or run it locally 
 /plugin install yoke@yokeloop-yoke
 ```
 
-Once installed, every skill becomes available as `/yoke:<name>` — `/yoke:task`, `/yoke:plan`, `/yoke:do`, and so on.
+Once installed, every skill becomes available as `/yoke:<name>` — `/yoke:bootstrap`, `/yoke:grill`, `/yoke:do`, `/yoke:merge`, and so on.
 
 ## Locally for development
 
@@ -30,7 +30,6 @@ The plugin itself has no runtime dependencies beyond Claude Code. The docs site 
 
 A few skills suggest optional plugins:
 
-- **revdiff** — interactive review of generated artifacts. Suggested by `/yoke:task`, `/yoke:plan`, and `/yoke:do`.
 - **elements-of-style** and **plugin-dev** — prose and structure linters used by the local development skill `/yoke-validate`.
 
 Each skill prints the install command when it needs an optional dep.

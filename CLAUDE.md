@@ -72,6 +72,8 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 `/do` is the universal execution tool and now finishes at the PR. It auto-detects mode — no args → inline; an issue URL → sub-agents (plan, pausing only on a cold start); a PRD with sub-issues → team of parallel agents — then drives the run to a ready pull request (worktree, per-task commits, push, PR, ticket comment, notify) and stops. It never merges, except an explicit up-front "straight to main". `/merge` is the user-triggered finisher: once the user approves the PR on GitHub, it runs the post-PR tail per `.yoke/flow.md` (merge, cascade, deploy/release, ticket transition, worktree cleanup). `/task` and `/plan` are deprecated and have moved to `deprecated/`.
 
+`/draft` is the optional marking step between grill and do: a do-shaped run that projects the agreed plan onto the code as Markup (`TODO(yoke):` Markers plus a compilable skeleton) and opens a GitHub Draft PR for remote review, instead of implementing. `/do <draft-PR-URL>` (or the drafted `<slug>`) later implements the reviewed Draft per comments > markers > plan and flips the same PR to ready.
+
 <!-- yoke:skills:start -->
 
 - `/bootstrap` — Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md, `.yoke/yoke-context.md`, and `.yoke/flow.md`.

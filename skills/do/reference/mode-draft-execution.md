@@ -47,7 +47,9 @@ If `isDraft` is already `false`, warn the user and continue as a plain update ru
 Collect the three inputs that define the work:
 
 - **(a) The plan artifact** — `.yoke/ai/<slug>/<slug>-plan.md`: design decisions, task decomposition, Verify criteria.
-- **(b) The Markers in code** — `grep -rn "TODO(yoke):"` over the repo source. Scope per markup-format.md: exclude `.yoke/` and documentation that mentions the literal.
+- **(b) The Markers in code** — `grep -rn "TODO(yoke):"` over the repo source. Scope per
+  `${CLAUDE_PLUGIN_ROOT}/skills/draft/reference/markup-format.md`: exclude `.yoke/` and documentation that mentions
+  the literal.
 - **(c) The PR review comments** — inline threads: `gh api repos/{owner}/{repo}/pulls/{pr}/comments`; top-level: `gh pr view <n> --comments`.
 
 **Priority of voices: PR comments > Markers > plan artifact.** A comment is the user's latest will and wins silently over a Marker or a plan step — do not ask, do not reconcile in chat.
@@ -71,7 +73,10 @@ Read `reference/status-protocol.md` — statuses, the review loop via `agents/ta
 Each Marker — adjusted by any overriding comment — is one checklist item. For each, build a task and dispatch `agents/task-executor.md` verbatim:
 
 - **What** = the Marker text + the relevant plan step + the overriding comment, when one exists.
+- **How** = the plan step's How, adjusted by the overriding comment.
 - **Files** = the Marker's file and its skeleton counterparts.
+- **Context** = the Marker's file plus the plan step's Context — only this task's files, never the whole plan.
+- **Constraints** = from the plan.
 - **Verify** = from the plan.
 - **COMMIT_MESSAGE** per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md` — one commit per task.
 

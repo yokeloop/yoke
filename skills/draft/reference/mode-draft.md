@@ -107,7 +107,7 @@ A re-run against an existing Draft: the input is a Draft PR URL, or a `<slug>` w
 3. **Redraw the Markup in the same branch.** Comments outrank the existing Markers and the plan — the user's latest word wins. Move, rewrite, add, or delete Markers and skeleton per each comment; keep the build green per `reference/markup-format.md`.
 4. **Update the plan artifact** when a comment changes the decomposition — `<slug>-plan.md` and the Markup stay one whole. Re-commit it.
 5. **Commit and push to the same branch.** The Draft PR updates in place; the pr skill's update path preserves the draft state — never open a second PR.
-6. **Reply in every addressed thread** with what changed and where:
+6. **Reply in every inline review thread** with what changed and where:
 
    ```bash
    gh api --method POST repos/{owner}/{repo}/pulls/{pr}/comments \

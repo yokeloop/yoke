@@ -82,7 +82,7 @@ Any type not in the list is silently suppressed.
 | bootstrap | Complete | STAGE_COMPLETE  | Bootstrap complete                                                |
 | do        | Execute  | ALERT           | Task blocked                                                      |
 | do        | Finish   | STAGE_COMPLETE  | `<slug>: PR ready` — PR URL(s) as the payload                     |
-| draft     | Finish   | STAGE_COMPLETE  | `<slug>: Draft PR ready` — the Draft PR URL as payload            |
+| draft     | Finish   | STAGE_COMPLETE  | `<slug>: Draft PR ready` — Draft PR URL(s) as the payload         |
 | merge     | Finish   | STAGE_COMPLETE  | `<slug>: merged` — merged / cascade / deploy / transition summary |
 | pr        | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready)                                      |
 | pr        | Complete | STAGE_COMPLETE  | PR created or updated                                             |

@@ -116,7 +116,7 @@ Same grilling, plus it maintains the glossary `.yoke/context.md` and ADRs in `.y
 
 A do-shaped run that marks instead of implementing: it projects the agreed plan onto the code as Markup (`TODO(yoke):` Markers plus a compilable skeleton) and opens a GitHub Draft PR for remote review. Never pauses — the Draft PR is the pause. Comment on the Draft PR and re-run `/yoke:draft` to re-mark, or run `/yoke:do <draft-PR-URL>` to implement the Markers and flip the PR to ready.
 
-**Input:** ticket URL, description, or nothing — fresh marking; a Draft PR URL or `<slug>` — iteration → **Output:** a GitHub Draft PR carrying the Markup + `.yoke/ai/<slug>/<slug>-draft.md`
+**Input:** ticket URL, description, or nothing — fresh marking; a Draft PR URL or a drafted `<slug>` — iteration → **Output:** a GitHub Draft PR carrying the Markup + `.yoke/ai/<slug>/<slug>-draft.md`
 
 ```
 /yoke:draft https://github.com/owner/repo/issues/86

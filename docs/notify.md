@@ -82,6 +82,7 @@ Any type not in the list is silently suppressed.
 | bootstrap | Complete | STAGE_COMPLETE  | Bootstrap complete                                                |
 | do        | Execute  | ALERT           | Task blocked                                                      |
 | do        | Finish   | STAGE_COMPLETE  | `<slug>: PR ready` — PR URL(s) as the payload                     |
+| draft     | Finish   | STAGE_COMPLETE  | `<slug>: Draft PR ready` — the Draft PR URL as payload            |
 | merge     | Finish   | STAGE_COMPLETE  | `<slug>: merged` — merged / cascade / deploy / transition summary |
 | pr        | Decide   | ACTION_REQUIRED | Choose PR type (draft/ready)                                      |
 | pr        | Complete | STAGE_COMPLETE  | PR created or updated                                             |
@@ -93,6 +94,12 @@ Any type not in the list is silently suppressed.
 not from the Finalize phase — the PR link(s) are the payload the developer returns on. `/merge`
 fires its own STAGE_COMPLETE from the merge procedure (`skills/merge/reference/merge-procedure.md` §7)
 once the post-PR tail is done.
+
+`/draft` fires its STAGE_COMPLETE from `skills/draft/reference/mode-draft.md` Phase 4 §7 once the
+Draft PR exists; a `/draft` iteration re-fires the same STAGE_COMPLETE after pushing the redrawn
+Markup (mode-draft.md Iteration §7). A `/do` draft execution uses the existing
+`do | Finish | STAGE_COMPLETE` point when it flips the PR to ready — no separate notify point for
+that transition.
 
 ---
 

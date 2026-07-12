@@ -1,6 +1,6 @@
 # Mode: draft
 
-`/draft` is a do-shaped run — the same inputs as `/do`, the same finish machinery — that marks instead of implementing (ADR-0011, `.yoke/adr/0011-draft-optional-marking-step.md`). It projects the plan onto the code as Markup — `TODO(yoke):` Markers in existing files plus a compilable skeleton for new structure — and opens a GitHub Draft PR for remote review. **`/draft` NEVER pauses: the Draft PR is the pause.** No cold-start confirmation, no AskUserQuestion, no mid-run question — the run always drives to the Draft PR and the notify.
+`/draft` is a do-shaped run — the same inputs as `/do`, the same finish machinery — that marks instead of implementing (ADR-0011). It projects the plan onto the code as Markup — `TODO(yoke):` Markers in existing files plus a compilable skeleton for new structure — and opens a GitHub Draft PR for remote review. **`/draft` NEVER pauses: the Draft PR is the pause.** No cold-start confirmation, no AskUserQuestion, no mid-run question — the run always drives to the Draft PR and the notify.
 
 **Flow:**
 

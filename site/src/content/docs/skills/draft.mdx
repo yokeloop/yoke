@@ -54,8 +54,7 @@ description: >-
 
 # Mark the code per plan
 
-The optional marking step between grill and do (ADR-0011,
-`.yoke/adr/0011-draft-optional-marking-step.md`). A do-shaped run — the same
+The optional marking step between grill and do (ADR-0011). A do-shaped run — the same
 inputs and the same finish machinery as `/do` — that marks instead of
 implementing: it projects the plan onto the code as Markup and opens a GitHub
 Draft PR for remote review. `/draft` NEVER pauses — the Draft PR is the pause.
@@ -118,9 +117,9 @@ These hold for every run:
 
 ## After the run
 
-Review the Draft PR on GitHub and comment on it. Re-run `/draft` to re-mark
-per the comments, or run `/do <draft-PR-URL>` (or `/do <slug>`) to implement
-the Markers and flip the PR to ready.
+The user reviews the Draft PR on GitHub and comments on it. A re-run of
+`/draft` re-marks per the comments; `/do <draft-PR-URL>` (or `/do <slug>`)
+implements the Markers and flips the PR to ready.
 ```
 
 </details>

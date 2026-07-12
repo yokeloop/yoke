@@ -78,6 +78,7 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 - `/bootstrap` — Prepares a project for the yoke flow — stack detection, scaffolding the `.yoke/` layout, and generation of CLAUDE.md, `.yoke/yoke-context.md`, and `.yoke/flow.md`.
 - `/do` — Executes a task per plan.
+- `/draft` — Projects the agreed plan onto the code as Markup — TODO markers plus a compilable skeleton — and opens a Draft PR for review, instead of implementing.
 - `/gca` — Git staging and commit with smart file grouping.
 - `/gp` — Git push with checks and report.
 - `/grill` — Interviews the user one interactive question at a time about a plan or design, walking each branch of the decision tree to a shared understanding; every question offers a recommended answer.

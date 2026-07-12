@@ -1,0 +1,130 @@
+---
+title: /yoke:draft
+description: "Projects the agreed plan onto the code as Markup — TODO markers plus a compilable skeleton — and opens a Draft PR for review, instead of implementing."
+---
+
+Projects the agreed plan onto the code as Markup — TODO markers plus a compilable skeleton — and opens a Draft PR for review, instead of implementing.
+
+## Triggers
+
+Activates when the user writes:
+
+- `draft`
+- `mark the code`
+- `mark up the plan`
+- `make a draft`
+- `draft pr`
+
+## Use it
+
+```
+/yoke:draft https://github.com/org/repo/issues/42    # fresh marking from an issue
+/yoke:draft https://github.com/org/repo/pull/57      # iteration against the Draft PR
+```
+
+## Inputs and outputs
+
+**Input:** `$ARGUMENTS` — the same contract as `/do`, plus the iteration shapes:
+
+| Input shape                                                          | Run               |
+| -------------------------------------------------------------------- | ----------------- |
+| nothing / a plain task description                                   | **fresh marking** |
+| a single issue URL, a bare `<slug>`, or a `*-task.md` path           | **fresh marking** |
+| a Draft PR URL, or a `<slug>` with `.yoke/ai/<slug>/<slug>-draft.md` | **iteration**     |
+
+```
+/yoke:draft https://github.com/org/repo/issues/42    # fresh marking from an issue
+/yoke:draft https://github.com/org/repo/pull/57      # iteration against the Draft PR
+```
+
+**Output:** Draft PR link(s), Draft artifact at `.yoke/ai/<slug>/<slug>-draft.md`, plan at `.yoke/ai/<slug>/<slug>-plan.md`, ticket comment, STAGE_COMPLETE notify
+
+<details>
+<summary>Full instructions</summary>
+
+```markdown
+---
+name: draft
+description: >-
+  Projects the agreed plan onto the code as Markup — TODO markers plus a
+  compilable skeleton — and opens a Draft PR for review, instead of
+  implementing. Triggered when the user writes "draft", "mark the code",
+  "mark up the plan", "make a draft", "draft pr".
+---
+
+# Mark the code per plan
+
+The optional marking step between grill and do (ADR-0011,
+`.yoke/adr/0011-draft-optional-marking-step.md`). A do-shaped run — the same
+inputs and the same finish machinery as `/do` — that marks instead of
+implementing: it projects the plan onto the code as Markup and opens a GitHub
+Draft PR for remote review. `/draft` NEVER pauses — the Draft PR is the pause.
+The flow becomes **grill → draft → PR review → do**; grill → do stays the
+default.
+
+---
+
+## Input
+
+`$ARGUMENTS` — one of:
+
+- **empty** — no input; work from the current conversation
+- **a plain task description** — chat text, no ticket
+- **a single issue URL**, a bare `<slug>`, or a `*-task.md` path
+
+All of the above → fresh marking. Plus the iteration shapes:
+
+- **a Draft PR URL**, or **a bare `<slug>`** whose
+  `.yoke/ai/<slug>/<slug>-draft.md` exists → iteration against the existing
+  Draft
+
+---
+
+## Router
+
+Detect the run from `$ARGUMENTS`. First match wins:
+
+1. **Input is a Draft PR URL, or a `<slug>` with an existing
+   `.yoke/ai/<slug>/<slug>-draft.md`** → **iteration**. Read and follow
+   `reference/mode-draft.md` § Iteration.
+2. **Anything else** → **fresh marking**. Read and follow
+   `reference/mode-draft.md` from Phase 0.
+
+The full procedure lives in `reference/mode-draft.md`. Read it, then execute.
+
+---
+
+## Principles
+
+These hold for every run:
+
+- **Never pauses.** No cold-start gate, no confirmation, no mid-run question —
+  the Draft PR is the pause.
+- **Marks, never implements.** The Markup contract is
+  `reference/markup-format.md`: `TODO(yoke):` Markers plus a compilable
+  skeleton. The build stays green; tests may be red.
+- **Ends at the Draft PR.** Never flips it to ready, never merges — `/do`
+  executes the Draft; `/merge` finishes after approval.
+- **Worktree on default branch + finish machinery** per
+  `${CLAUDE_PLUGIN_ROOT}/skills/do/reference/finish.md`.
+- **Artifacts under `.yoke/`.** `<slug>-plan.md` and `<slug>-draft.md` live in
+  `.yoke/ai/<slug>/`.
+- **Commits by convention** per
+  `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
+- Language: match the ticket/input language, or follow the project-level
+  definition in CLAUDE.md / AGENTS.md.
+
+---
+
+## After the run
+
+Review the Draft PR on GitHub and comment on it. Re-run `/draft` to re-mark
+per the comments, or run `/do <draft-PR-URL>` (or `/do <slug>`) to implement
+the Markers and flip the PR to ready.
+```
+
+</details>
+
+## Source
+
+[View `SKILL.md` on GitHub →](https://github.com/yokeloop/yoke/blob/main/skills/draft/SKILL.md)

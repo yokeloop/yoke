@@ -152,6 +152,17 @@ Same grilling, plus it maintains the glossary `.yoke/context.md` and ADRs in `.y
 /yoke:grill-docs design the order cancellation flow
 ```
 
+### /draft — optional marking step between grill and do
+
+A do-shaped run that marks instead of implementing: it projects the agreed plan onto the code as Markup (`TODO(yoke):` Markers plus a compilable skeleton) and opens a GitHub Draft PR for remote review. Never pauses — the Draft PR is the pause. Comment on the Draft PR and re-run `/yoke:draft` to re-mark, or run `/yoke:do <draft-PR-URL>` to implement the Markers and flip the PR to ready.
+
+**Input:** ticket URL, description, or nothing — fresh marking; a Draft PR URL or a drafted `<slug>` — iteration → **Output:** a GitHub Draft PR carrying the Markup + `.yoke/ai/<slug>/<slug>-draft.md`
+
+```
+/yoke:draft https://github.com/owner/repo/issues/86
+/yoke:draft https://github.com/owner/repo/pull/90
+```
+
 ### /prd — PRD from context
 
 Synthesizes the current conversation into a PRD, publishes it as a GitHub issue (`ready-for-agent`), and saves a local copy. No interview.
@@ -200,6 +211,7 @@ The everyday loop is short: **grill → do → PR on GitHub → merge**. `do` ca
 ```
 /yoke:bootstrap                      # prepare the project (first run) — writes .yoke/flow.md
 /yoke:grill <plan>                   # stress-test the idea (grill-docs also captures terms + ADRs)
+/yoke:draft <ticket | description>   # optional: mark the code, open a Draft PR to review before implementing
 /yoke:do <ticket | description>      # execute end to end → a ready pull request
 #  → review the PR on GitHub, comment, approve
 /yoke:merge                          # merge, cascade, deploy/release, transition the ticket, clean up

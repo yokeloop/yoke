@@ -4,6 +4,7 @@
 flowchart TD
   bootstrap["/yoke:bootstrap — detect stack, write .yoke/flow.md + context (once)"]
   grill["/yoke:grill or /yoke:grill-docs — discuss the plan"]
+  draft["/yoke:draft — mark plan onto code, open Draft PR"]
   do["/yoke:do — plan, execute, open the PR"]
   pr(["PR on GitHub — you review, comment, approve"])
   merge["/yoke:merge — merge, cascade, deploy, transition, clean up"]
@@ -11,6 +12,7 @@ flowchart TD
   bootstrap --> grill --> do --> pr -->|approved| merge
   bootstrap -.->|flow.md + context| do
   bootstrap -.->|flow.md| merge
+  grill -.->|optional: mark + Draft PR| draft -.-> do
 ```
 
 A marketplace of skills and commands for Claude Code, inspired by:
@@ -43,7 +45,7 @@ Run `/yoke:bootstrap` once to prepare the project — it detects the stack and w
 /yoke:merge                      # run the post-PR tail from flow.md: merge, cascade, deploy, clean up
 ```
 
-`/yoke:do` drives every run to a ready pull request and stops there — the merge decision stays yours, made on GitHub. `/yoke:grill-docs` is `/yoke:grill` plus a maintained glossary and ADRs. For larger, trackable work, spec it first with `/yoke:prd` + `/yoke:issues`, then hand the epic or sub-task URL to `/yoke:do`. See **Full cycle** below for the complete pipeline.
+`/yoke:do` drives every run to a ready pull request and stops there — the merge decision stays yours, made on GitHub. `/yoke:draft` optionally projects the agreed plan onto the code as Markup and opens a Draft PR to review and comment before `/do` implements it. `/yoke:grill-docs` is `/yoke:grill` plus a maintained glossary and ADRs. For larger, trackable work, spec it first with `/yoke:prd` + `/yoke:issues`, then hand the epic or sub-task URL to `/yoke:do`. See **Full cycle** below for the complete pipeline.
 
 ## Skills
 

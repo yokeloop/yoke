@@ -77,6 +77,6 @@ The prefix `TODO(yoke):` is the checklist key.
 - One Marker = one unit of future work at that exact spot.
 - The Marker prefix is always the literal `TODO(yoke):` — the grep gate depends on it.
 - Skeleton files are real: correct paths, imports, exports, types.
-- Stub bodies only: `throw new Error('TODO')`, `raise NotImplementedError`, `panic("TODO")`, or the language's equivalent.
+- Stub bodies only: `throw new Error("TODO")`, `raise NotImplementedError`, `panic("TODO")`, or the language's equivalent.
 - The build stays green; tests may be red.
 - No implemented logic anywhere in Markup.

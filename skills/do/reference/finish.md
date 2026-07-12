@@ -62,6 +62,16 @@ After implementation and per-task commits, finish each repo by its `finish` poli
   steps only. The pr skill's own terminal notify and print are superseded by the
   run-level notify in §7 — do not fire them here.
 
+  Draft variants:
+  - A `/draft` run passes `--draft` to the pr skill's create call
+    (`IS_DRAFT: true`), so the PR opens as a GitHub **Draft PR**.
+  - A `/do` Draft execution run finds the Draft PR already open: the pr
+    mechanics UPDATE it (the update path keeps the draft state), then the run
+    flips it with `gh pr ready <number>`. Never create a second PR for the
+    same branch.
+  - ADR-0006 stands: flipping an existing Draft PR to ready still ends the run
+    at a PR — it is not a merge and does not violate `do`'s never-merge rule.
+
 - **`direct-push`** — commit to the repo's default branch, push, run the declared
   `publish` command, then bump the published version in each repo named in
   `consumers` — as part of that consumer's own change set (i.e. inside the

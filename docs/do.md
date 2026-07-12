@@ -12,6 +12,7 @@ the former `/task` and `/plan` skills (now in `deprecated/`).
 
 - nothing / a plain task description → **inline**
 - a single issue URL, a `<slug>`, or a `*-task.md` path → **sub-agents**
+- a Draft PR URL, or a `<slug>` whose draft artifacts exist → **draft execution**
 - a PRD issue that has GitHub sub-issues → **team**
 - an existing `*-plan.md` path → **sub-agents** (back-compat; executes it directly)
 
@@ -26,11 +27,12 @@ the former `/task` and `/plan` skills (now in `deprecated/`).
 `/do` reads its mode from the **input shape**, then reads the matching
 `reference/mode-*.md` body:
 
-| Mode           | When                                | Behavior                                                                                                        |
-| -------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **inline**     | empty / plain chat description      | Brief plan in chat, execute in-session, no pause, no plan file; still finishes at a PR.                         |
-| **sub-agents** | a single issue / slug / task / plan | Write `.yoke/ai/<slug>/<slug>-plan.md`, pause on cold start only, then run the sub-agent pipeline.              |
-| **team**       | a PRD ticket with sub-issues        | Write the plan, pause on cold start, then dispatch the sub-agents pipeline per sub-issue (TeamCreate deferred). |
+| Mode                | When                                | Behavior                                                                                                                  |
+| ------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **inline**          | empty / plain chat description      | Brief plan in chat, execute in-session, no pause, no plan file; still finishes at a PR.                                   |
+| **sub-agents**      | a single issue / slug / task / plan | Write `.yoke/ai/<slug>/<slug>-plan.md`, pause on cold start only, then run the sub-agent pipeline.                        |
+| **draft execution** | Draft PR URL / drafted `<slug>`     | Implement the Markup per the review (comments > markers > plan), reply in the threads, flip the PR to ready, then finish. |
+| **team**            | a PRD ticket with sub-issues        | Write the plan, pause on cold start, then dispatch the sub-agents pipeline per sub-issue (TeamCreate deferred).           |
 
 The cold-start confirmation pause in sub-agents/team modes catches a wrong mode
 guess, so auto-detection never triggers an unreviewed costly run.
@@ -105,3 +107,6 @@ create/update, and notify into its Finish, so it needs no separate `/gp` or `/pr
 user approves on GitHub, `/yoke:merge` runs the post-PR tail (merge, cascade, deploy,
 transition, cleanup). `/review` optionally audits the diff before the PR. Upstream, `/grill`,
 `/grill-docs`, `/prd`, and `/issues` formalise _what_ to build before `/do`.
+
+`/draft` feeds `/do` a reviewed Draft PR — `/do` implements it and flips it to ready (never a
+second PR).

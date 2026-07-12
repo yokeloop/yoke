@@ -33,7 +33,7 @@ The skill runs through 5 phases. No user interaction.
 | Phase | Name               | What happens                                                                                             |
 | ----- | ------------------ | -------------------------------------------------------------------------------------------------------- |
 | 1     | **Preflight**      | Verify the repo (`.claude-plugin/plugin.json` exists, `skills/` is a directory); parse `--check`         |
-| 2     | **Enumerate**      | List every directory under `skills/` (14 today); never include `.claude/skills/*` |
+| 2     | **Enumerate**      | List every directory under `skills/` (15 today); never include `.claude/skills/*` |
 | 3     | **Render**         | Write per-skill MDX, README block, CLAUDE.md block into `.yoke/sync-docs-tmp/`                           |
 | 4     | **Sentinel check** | Verify exactly one `start` and one `end` marker in each of `README.md` and `CLAUDE.md`; start < end      |
 | 5     | **Write or diff**  | Write mode → copy tmp tree over live; check mode → diff and exit non-green on drift                      |
@@ -68,8 +68,8 @@ include anything under `.claude/skills/` — `yoke-create`, `yoke-release`, and
 `yoke-validate` are local-only tools and must not appear in the public
 catalog.
 
-The shipped catalog today is 14 skills:
-`bootstrap, do, gca, gp, grill, grill-docs, handoff, help, issues,
+The shipped catalog today is 15 skills:
+`bootstrap, do, draft, gca, gp, grill, grill-docs, handoff, help, issues,
 journal, merge, pr, prd, review`.
 
 ## Phase 3 — Render
@@ -201,7 +201,7 @@ When the live tree matches the tmp tree byte-for-byte → exit zero.
 ## Rules
 
 - Catalog membership: every directory under `skills/` that contains a
-  `SKILL.md` (14 today). Never include
+  `SKILL.md` (15 today). Never include
   `.claude/skills/*` skills (`yoke-create`, `yoke-release`, `yoke-validate`).
 - Sentinels are required. Refuse to write when they are missing or
   unbalanced. Never auto-insert.
@@ -228,7 +228,7 @@ When the live tree matches the tmp tree byte-for-byte → exit zero.
 /sync-docs
 ```
 
-→ Writes `site/src/content/docs/skills/<name>.mdx` for all 14 skills,
+→ Writes `site/src/content/docs/skills/<name>.mdx` for all 15 skills,
 regenerates the README and CLAUDE.md catalog blocks.
 
 ```

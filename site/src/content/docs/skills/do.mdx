@@ -28,6 +28,7 @@ Activates when the user writes:
 
 - nothing / a plain task description → **inline**
 - a single issue URL, a `<slug>`, or a `*-task.md` path → **sub-agents**
+- a Draft PR URL, or a `<slug>` whose draft artifacts exist → **draft execution**
 - a PRD issue that has GitHub sub-issues → **team**
 - an existing `*-plan.md` path → **sub-agents** (back-compat; executes it directly)
 
@@ -71,6 +72,7 @@ deliverable.
 - **a single issue URL**, a bare `<slug>`, or a `*-task.md` path (sub-agents)
 - **a `*-plan.md` path** — a pre-built plan (sub-agents, back-compat)
 - **a PRD issue that has GitHub sub-issues** (team)
+- **a Draft PR URL**, or a bare `<slug>` whose `.yoke/ai/<slug>/<slug>-draft.md` exists (draft execution)
 
 Optional flag `--update-docs` enables the documentation step. Without it, /do
 skips docs unless the plan's frontmatter sets `update_docs: true`.
@@ -86,12 +88,17 @@ Detect the mode from `$ARGUMENTS`. First match wins:
    back-compat — an `agent-team` header maps to **team** mode instead. Then read
    and follow `reference/mode-sub-agents.md` (or `reference/mode-team.md` when
    the header says `agent-team`).
-2. **`$ARGUMENTS` is a single issue URL, a bare `<slug>`, or a `*-task.md`
+2. **`$ARGUMENTS` is a GitHub pull-request URL (path contains `/pull/`), or a
+   bare `<slug>` for which `.yoke/ai/<slug>/<slug>-draft.md` exists** →
+   **draft execution** mode: a `/draft` run marked the code and opened the
+   Draft PR; implement it per the review. Read and follow
+   `reference/mode-draft-execution.md`.
+3. **`$ARGUMENTS` is a single issue URL, a bare `<slug>`, or a `*-task.md`
    path** → **sub-agents** mode (investigate → plan → pause → execute). Read and
    follow `reference/mode-sub-agents.md`.
-3. **`$ARGUMENTS` points at a PRD issue that HAS sub-issues** (detect via
+4. **`$ARGUMENTS` points at a PRD issue that HAS sub-issues** (detect via
    `gh api`) → **team** mode. Read and follow `reference/mode-team.md`.
-4. **empty / a plain chat description / no ticket** → **inline** mode. Read and
+5. **empty / a plain chat description / no ticket** → **inline** mode. Read and
    follow `reference/mode-inline.md`.
 
 Each mode's full procedure lives in its reference file. Read only the one this
@@ -101,11 +108,12 @@ ladder selects, then execute it.
 
 ## Modes
 
-| Mode           | Input                                            | Behavior                                                                                  |
-| -------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| **inline**     | empty / plain chat description                   | Brief plan in chat, execute in-session, then finish per `reference/finish.md`.            |
-| **sub-agents** | issue URL / `<slug>` / `*-task.md` / `*-plan.md` | Write the plan, pause only on cold start, executor → reviewer → validator, then finish.   |
-| **team**       | PRD issue with sub-issues                        | Write the plan, pause only on cold start, dispatch sub-agents per sub-issue, then finish. |
+| Mode                | Input                                            | Behavior                                                                                                                  |
+| ------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| **inline**          | empty / plain chat description                   | Brief plan in chat, execute in-session, then finish per `reference/finish.md`.                                            |
+| **sub-agents**      | issue URL / `<slug>` / `*-task.md` / `*-plan.md` | Write the plan, pause only on cold start, executor → reviewer → validator, then finish.                                   |
+| **draft execution** | Draft PR URL / drafted `<slug>`                  | Implement the Markup per the review (comments > markers > plan), reply in the threads, flip the PR to ready, then finish. |
+| **team**            | PRD issue with sub-issues                        | Write the plan, pause only on cold start, dispatch sub-agents per sub-issue, then finish.                                 |
 
 ---
 

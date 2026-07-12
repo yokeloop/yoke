@@ -98,6 +98,26 @@ implementation details (those live in `.yoke/adr/` and the PRDs under
   in a consumer follows the link. Ends the drift where the same publish
   command was recorded three different ways across one org.
 
+## Draft (decided 2026-07-12)
+
+- **Draft (`/draft`)** — the optional marking step between grill and do: a
+  do-shaped run (same inputs, same finish machinery) that projects the plan
+  onto the code as markup instead of implementing it, and opens a draft PR for
+  review. Never pauses — the draft PR is the pause. Iterable: a re-run on the
+  same slug/PR reads the review comments and re-marks in the same branch.
+- **Markup** — the draft's product in code: markers in existing files plus a
+  skeleton (new files, signatures, types) with compilable stub bodies. A
+  temporary artifact living only between draft and do; none of it survives
+  into the ready PR.
+- **Marker** — a single markup comment (`TODO(yoke): …`) naming what will be
+  written at that spot. `do` implements markers as a checklist, deleting each
+  with its implementation; a leftover marker blocks the finish.
+- **Draft PR** — the GitHub draft pull request carrying the markup. The user
+  reviews it remotely; `do` implements in the same branch and PR and flips it
+  to ready. Priority of voices: PR comments > markers > plan artifact; `do`
+  replies in every comment thread with what it did; a comment that overturns
+  the architecture stops the run instead of silently rewriting the plan.
+
 ## do modes
 
 `do` is the universal execution tool; it auto-detects its mode from the input:
@@ -108,16 +128,23 @@ implementation details (those live in `.yoke/adr/` and the PRDs under
   pauses for confirmation, then executes via sub-agents.
 - **Team mode** — input is a PRD ticket with many sub-issues. Writes a full plan
   artifact, pauses for confirmation, then dispatches a team of agents.
+- **Draft execution** — input is a draft PR URL, or a slug whose artifacts
+  record a draft. Implements the markup per the draft priority (comments >
+  markers > plan), replies in the threads, flips the PR to ready.
 
 ## Flow
 
 The default path (3.0): **grill → do → PR**, then the user decides on GitHub;
-**merge** executes the tail on command.
+**merge** executes the tail on command. An optional **draft** step slots in
+between grill and do: grill → draft → PR review → do.
 
 - **grill / grill-docs** — interrogate the plan; formalise _what_ to do; maintain
   `.yoke/context.md` and `.yoke/adr/`.
 - **prd** — synthesise a PRD artifact and publish it as a GitHub issue.
 - **issues** — break a PRD into independently-grabbable sub-issues.
+- **draft** (optional) — mark the code up instead of implementing: markers +
+  skeleton, committed to a draft PR for remote review; `do` then executes the
+  reviewed draft.
 - **do** — work out _how/where_ to change the code (recorded as a plan artifact),
   then execute and finish every touched repo per its finish policy: enters a
   worktree when started on the default branch, commits, pushes, opens the PR(s)

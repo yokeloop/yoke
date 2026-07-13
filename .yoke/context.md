@@ -38,8 +38,18 @@ implementation details (those live in `.yoke/adr/` and the PRDs under
   - **Journal** (`.yoke/journal.md`) — short, chronological index of sessions;
     the entry point for "what was done and where to look".
   - **Artifacts** (`.yoke/ai/`) — the full detail behind each journal entry.
-  - **Git layer** (future, issue #2) — commit trailers / GitHub comments that
-    tie commits and issues back to the artifacts. Deferred to a later release.
+  - **Git memory** (the "git layer", issue #2) — the decision history carried
+    by commit messages themselves: a prose body explaining _why_ plus
+    decision trailers, written for coding agents as the primary readers.
+    Write side: `/gca` and every skill that commits. Read side: every skill
+    that touches or judges code reads the history of the affected files
+    before working. Distributed to target projects by bootstrap (a CLAUDE.md
+    section plus a `commit-msg` hook).
+- **Decision trailer** — a git trailer from the fixed vocabulary
+  `Constraint:`, `Rejected:`, `Directive:`, `Related:` carrying decision
+  content in a commit message. All optional — written only when there is
+  content; greppable via `git log`. Distinct from identity trailers
+  (`Co-Authored-By`, `Signed-off-by`), which stay banned.
 - **Handoff** — a snapshot of a conversation's live state, written so a fresh
   session resumes where the last one stopped. It records what exists only in the
   chat — open tasks, the user's verbatim requirements, rejected alternatives,

@@ -248,6 +248,12 @@ Dispatch 3 agents **in parallel** via the Agent tool:
 
    Result → RECOMMENDATIONS (list of automation recommendations).
 
+4. **Git memory hook** (orchestrator, no agent) — after the agents return,
+   scaffold the `commit-msg` hook per `reference/hooks-patterns.md` § Git
+   memory commit-msg hook: into `.husky/commit-msg` when the project uses
+   husky, else `.git/hooks/commit-msg` (`chmod +x`). A `commit-msg` hook
+   already exists → do not touch it; record the fact in VERIFY_NOTES.
+
 Wait for all 3. Mark in TodoWrite: `[x] Generate`. Transition → Phase 4.
 
 ---
@@ -405,6 +411,9 @@ tail).
 git add CLAUDE.md .yoke/
 git commit -m "chore: bootstrap yoke flow context and .yoke/ scaffold"
 ```
+
+When Phase 3 wrote `.husky/commit-msg`, stage it too — `.git/hooks/` stays
+local by nature and is never staged.
 
 **Local-only** — `.yoke/` is gitignored; commit only the repo-level artifacts.
 `.yoke/flow.md` and `.yoke/yoke-context.md` stay on disk, untracked:

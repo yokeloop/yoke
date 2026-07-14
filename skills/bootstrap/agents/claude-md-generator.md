@@ -56,7 +56,7 @@ You are the CLAUDE.md generator: create or extend the project's file.
    - Non-obvious decisions and gotchas (extract from DOC_CONTENT — workarounds, limitations; from `DOMAIN_FINDINGS.CODE_WORKAROUNDS` — code-level workarounds)
    - Workflows and processes (extract from DOC_CONTENT — CI/CD, deploy, release flow)
 4. If DOMAIN_FINDINGS and DOC_CONTENT overlap, prefer DOC_CONTENT (don't duplicate).
-5. Add an "Artifact root (`.yoke/`)" section (see below for required content).
+5. Add the "Artifact root (`.yoke/`)" and "Git memory (commit convention)" sections (see below for required content).
 6. Write CLAUDE.md to the project root
 
 ### 4. Enrich mode (CLAUDE_MD_EXISTS = true)
@@ -69,6 +69,7 @@ You are the CLAUDE.md generator: create or extend the project's file.
    - Non-obvious — are gotchas/workarounds captured?
    - Conventions — are project-specific conventions described?
    - Artifact root — is the `.yoke/` layout documented? (add if absent)
+   - Git memory — is the commit convention documented? (add if absent)
 3. For each missing section — add it via Edit, using DOC_CONTENT as the source:
    - Project description — from README.md and other documentation files
    - Non-obvious decisions and gotchas — from CONTRIBUTING.md, docs/
@@ -104,6 +105,32 @@ Yoke stores all AI-generated artifacts under `.yoke/` at the project root:
 
 If the section already exists with equivalent content, do not duplicate it.
 
+## Git memory (commit convention) section — required content
+
+Every generated or enriched CLAUDE.md must also contain this section (place it
+next to the Artifact root section). When the project already documents a
+commit format, merge — keep the project's ticket/type specifics and add the
+memory rules; do not leave two competing commit sections.
+
+```markdown
+## Git memory (commit convention)
+
+Commit messages are this project's long-term decision memory, written for
+coding agents as much as for people.
+
+- Subject: `TICKET type(SLUG): description` — ticket first when one exists.
+- A commit that carries a decision (chosen approach, rejected alternative,
+  non-obvious constraint) gets a prose body explaining **why**, then optional
+  decision trailers: `Constraint:`, `Rejected:`, `Directive:`, `Related:`.
+  Mechanical commits stay one-liners.
+- Never add identity trailers (`Co-Authored-By`, `Signed-off-by`).
+- Before modifying a file, read its memory: `git log -n 5 -- <path>`.
+  Respect `Constraint:`, heed `Directive:`, do not re-propose `Rejected:`
+  approaches without new evidence.
+- A `commit-msg` hook validates the subject shape and warns when a
+  feat/fix/refactor commit lacks a body.
+```
+
 ## Rules
 
 - Preserve user content — sections added manually stay on update
@@ -114,7 +141,7 @@ If the section already exists with equivalent content, do not duplicate it.
 - On create, use Write
 - Don't verify commands — the verifier does that
 - Reach Grade A against quality-criteria (90+ points)
-- The "Artifact root (`.yoke/`)" section is mandatory in every output (create and enrich)
+- The "Artifact root (`.yoke/`)" and "Git memory (commit convention)" sections are mandatory in every output (create and enrich)
 
 ## Response format
 

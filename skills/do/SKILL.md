@@ -91,6 +91,12 @@ These hold for every mode run:
 - **Commits by convention.** Format, ticket ID, and git initiative — from
   `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md` (see its
   "Git initiative and defaults"). Do not ask "commit?" mid-run.
+- **Read the git memory first.** Before modifying a file, read its recent
+  commit history per
+  `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/history-reading.md`. A
+  `Constraint:` or `Directive:` that conflicts with the plan is surfaced,
+  not silently overridden; a `Rejected:` approach is not re-proposed
+  without new evidence.
 - **Review after each task.** Spec compliance → code quality. Mandatory.
 - **Context isolation.** A sub-agent receives only its own task text, not the
   whole plan.

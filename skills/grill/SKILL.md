@@ -48,5 +48,6 @@ Stop when a full pass down the tree surfaces no new open decisions, or when the 
 - Always include the recommended answer, listed first.
 - Resolve dependencies in order — don't jump branches.
 - Prefer exploring the codebase over asking when the codebase holds the answer.
+- Exploring the codebase includes its git memory: read the affected files' commit history per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/history-reading.md` — a past `Rejected:` or `Constraint:` trailer is grill material, cite it when challenging the plan.
 - For deeper grilling that also captures terminology and decisions into `.yoke/context.md` and ADRs, use `/yoke:grill-docs`.
 - Language: match the user's language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

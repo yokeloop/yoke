@@ -20,7 +20,7 @@ Work from whatever is already in the conversation context. If the user passes an
 
 ### 2. Explore the codebase (skip if already explored this session)
 
-If the codebase has not been explored this session, explore it now to understand its current state. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and relevant `.yoke/adr/`, give issue titles and descriptions the glossary's vocabulary, and flag any ADR a slice contradicts.
+If the codebase has not been explored this session, explore it now to understand its current state. Follow the domain-doc consumer rules in `${CLAUDE_PLUGIN_ROOT}/skills/grill-docs/reference/domain-docs.md`: read `.yoke/context.md` and relevant `.yoke/adr/`, give issue titles and descriptions the glossary's vocabulary, and flag any ADR a slice contradicts. Also read the git memory of the areas the slices touch per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/history-reading.md` — a slice that re-proposes a `Rejected:` approach or crosses a `Constraint:` must say so.
 
 ### 3. Draft vertical slices
 

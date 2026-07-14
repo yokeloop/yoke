@@ -65,6 +65,10 @@ These hold for every run:
   `.yoke/ai/<slug>/`.
 - **Commits by convention** per
   `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/commit-convention.md`.
+- **Read the git memory first** per
+  `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/history-reading.md` — a Marker
+  must not re-propose what a `Rejected:` trailer already dismissed, and
+  Markup respects active `Constraint:` entries.
 - Language: match the ticket/input language, or follow the project-level
   definition in CLAUDE.md / AGENTS.md.
 

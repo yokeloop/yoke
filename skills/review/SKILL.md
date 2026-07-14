@@ -34,4 +34,5 @@ The full pipeline — scope resolution, the code-reviewer dispatch, finding clas
 - **Report location.** Write the report to `.yoke/ai/<slug>/<slug>-review.md`.
 - **Every fork is one question.** For any decision — fix scope, next action — ask a single AskUserQuestion with the recommended option listed first.
 - **Delegate the work.** File edits, bash, and analysis go to sub-agents; each receives only its own data.
+- **Read the git memory.** Pull decision context from the affected files' commit history per `${CLAUDE_PLUGIN_ROOT}/skills/gca/reference/history-reading.md` — a finding that contradicts a `Constraint:` or re-proposes a `Rejected:` approach must cite the commit it argues with.
 - Language: match the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.

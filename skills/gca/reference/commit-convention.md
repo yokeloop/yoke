@@ -1,6 +1,9 @@
 # Commit Convention
 
-Commit format for yoke skills and standalone invocations.
+Commit format for yoke skills and standalone invocations. This is the write
+side of the **git memory** (ADR-0012): commit messages carry the project's
+decision history, written for coding agents as the primary readers. The read
+side — how to recover that history — lives in `history-reading.md`.
 
 ---
 
@@ -11,7 +14,7 @@ Plugin-wide contract for when the agent may run git and how commits are shaped.
 - **Authorization.** A skill invocation (`/do`, `/merge`, `/gca`, `/gp`, `/pr`) authorizes the git operations that skill performs — commit, push, PR — with no mid-run "commit?" questions.
 - **Initiative.** Outside skill runs the agent never commits or pushes on its own initiative — only on an explicit user command.
 - **Language.** Commit messages default to English; a project may override via `.yoke/flow.md` or its `CLAUDE.md`.
-- **Trailers.** Never add trailer lines (`Co-Authored-By`, `Signed-off-by`, etc.).
+- **Trailers.** Never add identity trailers (`Co-Authored-By`, `Signed-off-by`, and the like). Decision trailers from the Body section are different — they carry memory, use them.
 - **Identity.** Never fabricate committer identity (no `git -c user.email=...`); when identity is missing, ask the user.
 
 ---
@@ -40,6 +43,69 @@ fix: restrict analytics [R2-220]         # ticket at the end
 
 # CORRECT:
 R2-220 fix(R2-220-fix-doubled-stats): restrict analytics
+```
+
+---
+
+## Body — the git memory
+
+The subject says what; the body says **why**. The body is the Decision
+Shadow — the context that lived in the author's head when the code was
+written and dies with the session unless it lands here. A future agent
+recovers it with `git log -- <path>` (see `history-reading.md`).
+
+### When a body is required
+
+By content, not by type. Write a body when the commit carries a decision — a
+chosen approach, a rejected alternative, a non-obvious constraint. The test:
+**will a reader six months out wonder "why"?** Mechanical commits (dependency
+bumps, formatting, generated files) stay one-liners.
+
+### Shape
+
+1. **Prose** — one or two short paragraphs of reasoning: why this approach,
+   what constraint drove it, what almost worked. Plain sentences, no headings,
+   no diff narration.
+2. **Decision trailers** — after the prose, from the fixed vocabulary:
+
+| Trailer       | Carries                                                         |
+| ------------- | --------------------------------------------------------------- |
+| `Constraint:` | An active rule the code must keep respecting                    |
+| `Rejected:`   | An approach considered or tried and dismissed — with the reason |
+| `Directive:`  | A warning to whoever touches this code next                     |
+| `Related:`    | A pointer: ticket, commit hash, or `.yoke/` artifact path       |
+
+Every trailer is optional — write one only when there is real content; repeat
+a key for multiple entries. Only these four keys: a fixed vocabulary is what
+keeps the history greppable (`git log --grep="^Rejected:"`).
+
+### Example
+
+```
+#86 feat(86-black-jack-page): add SSE endpoint
+
+Polling was dropped: the kiosk network kills idle HTTP/1.1
+connections after 30s, SSE with retry survives it. Score state
+lives server-side because the client is untrusted.
+
+Rejected: WebSocket — no proxy support on kiosks
+Constraint: client is untrusted, never move score calc there
+Related: #84
+```
+
+### Body anti-patterns
+
+```
+# WRONG — diff narration, not a decision:
+Added handleRetry() that retries the request and updated the tests.
+
+# WRONG — ritual trailers with no content:
+Constraint: none
+Confidence: high          # not in the vocabulary; self-assessment is noise
+
+# RIGHT — the decision and its reason:
+Retry lives in the client because the gateway strips Retry-After;
+see the rejected server-side attempt in a1b2c3d.
 ```
 
 ---
@@ -158,6 +224,8 @@ Commits for yoke flow artifacts (format `TICKET docs(SLUG): description`):
 
 - One commit — one logical change.
 - Ticket ID first in the message (if present).
+- A commit that carries a decision gets a prose body and, when there is
+  content, decision trailers — see "Body — the git memory".
 - Avoid `wip`, `temp`, `misc`.
 - Staging/exclusion policy lives in `staging-strategy.md`: gca excludes only untracked secrets, keys, and >1MB binaries, and always commits tracked files, git-crypt included. Never exclude a file by authorship.
 - Git initiative, message language, trailers, and committer identity follow "Git initiative and defaults".

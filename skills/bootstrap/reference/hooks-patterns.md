@@ -123,13 +123,13 @@ case "$subject" in
   Merge\ * | Revert\ * | fixup!* | squash!*) exit 0 ;;
 esac
 
-if ! printf '%s' "$subject" | grep -qE '^(([A-Z]+-[0-9]+|#[0-9]+) )?(feat|fix|refactor|docs|test|chore|style|perf)(\([^)]+\))?: .+'; then
+if ! printf '%s' "$subject" | grep -qE '^(([A-Z][A-Z0-9]*-[0-9]+|#[0-9]+) )?(feat|fix|refactor|docs|test|chore|style|perf)(\([^)]+\))?: .+'; then
   echo "commit-msg: bad subject '$subject'" >&2
   echo "commit-msg: expected 'TICKET type(SLUG): description' — see the Git memory section in CLAUDE.md" >&2
   exit 1
 fi
 
-type=$(printf '%s' "$subject" | sed -E 's/^(([A-Z]+-[0-9]+|#[0-9]+) )?([a-z]+).*/\3/')
+type=$(printf '%s' "$subject" | sed -E 's/^(([A-Z][A-Z0-9]*-[0-9]+|#[0-9]+) )?([a-z]+).*/\3/')
 case "$type" in
   feat | fix | refactor)
     if ! sed -n '2,$p' "$msg_file" | grep -v '^#' | grep -q '[^[:space:]]'; then

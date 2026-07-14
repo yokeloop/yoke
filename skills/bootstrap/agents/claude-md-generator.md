@@ -127,8 +127,6 @@ coding agents as much as for people.
 - Before modifying a file, read its memory: `git log -n 5 -- <path>`.
   Respect `Constraint:`, heed `Directive:`, do not re-propose `Rejected:`
   approaches without new evidence.
-- A `commit-msg` hook validates the subject shape and warns when a
-  feat/fix/refactor commit lacks a body.
 ```
 
 ## Rules

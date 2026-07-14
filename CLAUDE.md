@@ -48,7 +48,7 @@ claude --plugin-dir .
 ## Conventions
 
 - **Content language**: English by default. Skills adapt to the ticket/input language, or follow the project-level definition in CLAUDE.md / AGENTS.md.
-- **Commits**: `TICKET type(SLUG): description`; a commit that carries a decision gets a prose body plus decision trailers (`Constraint:`, `Rejected:`, `Directive:`, `Related:`) — the git memory, see `skills/gca/reference/commit-convention.md`. Before modifying a file, read its history per `skills/gca/reference/history-reading.md`. Subject shape is enforced by `.husky/commit-msg`.
+- **Commits**: `TICKET type(SLUG): description`; a commit that carries a decision gets a prose body plus decision trailers (`Constraint:`, `Rejected:`, `Directive:`, `Related:`) — the git memory, see `skills/gca/reference/commit-convention.md`. Before modifying a file, read its history per `skills/gca/reference/history-reading.md`.
 - **Files and directories**: kebab-case
 - **Versioning**: semver in `plugin.json` (source of truth for the version)
 - **marketplace.json**: required top-level fields — `name`, `owner` (object with `name`), `plugins[]`

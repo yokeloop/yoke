@@ -101,49 +101,6 @@ Claude Code supports hooks via `hooks.json` in a plugin or `settings.json` local
 }
 ```
 
-## Git memory commit-msg hook
-
-Enforces the commit convention from the "Git memory" section bootstrap adds to
-CLAUDE.md: a malformed subject **blocks** the commit; a feat/fix/refactor
-commit without a body gets a **warning** on stderr — an agent sees it and
-amends, a human may ignore it. The hook never judges content, only shape and
-presence.
-
-Location: `.husky/commit-msg` when the project uses husky (tracked, reaches
-the whole team), otherwise `.git/hooks/commit-msg` with `chmod +x` (local
-only — note that in the summary). Never overwrite an existing `commit-msg`
-hook — leave it and report instead.
-
-```sh
-#!/usr/bin/env sh
-msg_file="$1"
-subject=$(head -n 1 "$msg_file")
-
-case "$subject" in
-  Merge\ * | Revert\ * | fixup!* | squash!*) exit 0 ;;
-esac
-
-if ! printf '%s' "$subject" | grep -qE '^(([A-Z][A-Z0-9]*-[0-9]+|#[0-9]+) )?(feat|fix|refactor|docs|test|chore|style|perf)(\([^)]+\))?: .+'; then
-  echo "commit-msg: bad subject '$subject'" >&2
-  echo "commit-msg: expected 'TICKET type(SLUG): description' — see the Git memory section in CLAUDE.md" >&2
-  exit 1
-fi
-
-type=$(printf '%s' "$subject" | sed -E 's/^(([A-Z][A-Z0-9]*-[0-9]+|#[0-9]+) )?([a-z]+).*/\3/')
-case "$type" in
-  feat | fix | refactor)
-    if ! sed -n '2,$p' "$msg_file" | grep -v '^#' | grep -q '[^[:space:]]'; then
-      echo "commit-msg: warning — $type commit without a body; if it carries a decision, amend with the why (Git memory, CLAUDE.md)" >&2
-    fi
-    ;;
-esac
-
-exit 0
-```
-
-No extra CLAUDE.md note is needed — the Git memory section already mentions
-the hook.
-
 ## Git hooks by stack
 
 ### Node.js — Prettier + ESLint

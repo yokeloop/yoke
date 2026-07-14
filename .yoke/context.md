@@ -43,8 +43,9 @@ implementation details (those live in `.yoke/adr/` and the PRDs under
     decision trailers, written for coding agents as the primary readers.
     Write side: `/gca` and every skill that commits. Read side: every skill
     that touches or judges code reads the history of the affected files
-    before working. Distributed to target projects by bootstrap (a CLAUDE.md
-    section plus a `commit-msg` hook).
+    before working. Distributed to target projects by bootstrap as a CLAUDE.md
+    section; enforcement is behavioral (the committing agent follows the
+    convention), never a git hook.
 - **Decision trailer** — a git trailer from the fixed vocabulary
   `Constraint:`, `Rejected:`, `Directive:`, `Related:` carrying decision
   content in a commit message. All optional — written only when there is

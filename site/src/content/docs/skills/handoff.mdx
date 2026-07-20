@@ -73,7 +73,6 @@ file with it:
 ```bash
 dirname "$(git rev-parse --path-format=absolute --git-common-dir)"
 ```
-````
 
 Outside a git repository the root is the working directory; say so in the final
 message. Take the timestamp from `date '+%Y%m%d-%H%M%S'` — never invent it.
@@ -126,8 +125,7 @@ Finish by printing the absolute path, so the user can hand it to the next agent.
 - Delete nothing: handoffs accumulate.
 - Language: match the conversation language, or follow the project-level
   definition in CLAUDE.md / AGENTS.md.
-
-```
+````
 
 </details>
 
@@ -136,4 +134,3 @@ Finish by printing the absolute path, so the user can hand it to the next agent.
 ## Source
 
 [View `SKILL.md` on GitHub →](https://github.com/yokeloop/yoke/blob/main/skills/handoff/SKILL.md)
-```

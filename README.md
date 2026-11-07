@@ -225,6 +225,10 @@ Skills write their artifacts under `.yoke/` in the target project:
 
 `/polish` `/qa` `/memorize`
 
+## Contributing
+
+Open an issue or a pull request at [yokeloop/yoke](https://github.com/yokeloop/yoke). To add or change a skill, use the local `/yoke-create` and `/yoke-validate` skills described above; [CLAUDE.md](CLAUDE.md) lists the repository conventions.
+
 ## Development
 
 Skill:
